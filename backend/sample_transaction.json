@@ -1,0 +1,12 @@
+{
+  "id": "TX-DUBAI01",
+  "customer": "Maya Patel",
+  "card": "4821",
+  "amount": 840,
+  "currency": "USD",
+  "merchant": "TechWorld",
+  "city": "Dubai, AE",
+  "country": "AE",
+  "channel": "Card",
+  "risk": 72
+}

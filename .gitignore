@@ -1,0 +1,26 @@
+# deps
+node_modules/
+**/node_modules/
+
+# builds
+dist/
+build/
+
+# env & secrets  (NEVER commit keys — Aegis uses ADC / Secret Manager)
+.env
+.env.*
+!.env.example
+*.key
+*-key.json
+service-account*.json
+gha-creds-*.json
+
+# python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# misc
+.DS_Store
+*.log
