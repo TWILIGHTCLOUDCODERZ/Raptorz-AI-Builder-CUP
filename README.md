@@ -41,5 +41,4 @@ Full plan: [AEGIS-ROADMAP.md](AEGIS-ROADMAP.md)
    ```bash
    cd frontend && npm install && npm run dev
    ```
-
-See [infra/README.md](infra/README.md) for details on what gets provisioned.
+ned.
