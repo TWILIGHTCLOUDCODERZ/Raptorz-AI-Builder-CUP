@@ -109,6 +109,16 @@ echo ">> Granting topic-scoped publish access to simulator SA..."
 gcloud pubsub topics add-iam-policy-binding transactions \
   --member="serviceAccount:${SIM_SA}" --role="roles/pubsub.publisher" >/dev/null
 
+# Cloud Build (used by `gcloud run deploy --source`) runs as the Compute Engine
+# default service account. Orgs that disable automatic IAM grants leave it with
+# no permissions, so builds fail to read the uploaded source. Grant the builder role.
+echo ">> Granting Cloud Build role to the Compute Engine default service account..."
+PROJECT_NUMBER="$(gcloud projects describe "$PROJECT_ID" --format='value(projectNumber)')"
+gcloud projects add-iam-policy-binding "$PROJECT_ID" \
+  --member="serviceAccount:${PROJECT_NUMBER}-compute@developer.gserviceaccount.com" \
+  --role="roles/cloudbuild.builds.builder" --condition=None >/dev/null \
+  || echo "   (grant may already exist — continuing.)"
+
 echo ""
 echo "============================================================"
 echo " Phase 0 complete."

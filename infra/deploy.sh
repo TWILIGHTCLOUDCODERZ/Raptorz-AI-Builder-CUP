@@ -6,8 +6,9 @@
 set -euo pipefail
 
 PROJECT_ID="${PROJECT_ID:-CHANGE_ME}"
-REGION="${REGION:-us-central1}"
-MODEL="${GEMINI_MODEL:-gemini-3.5-pro}"
+REGION="${REGION:-us-central1}"                 # Cloud Run + Firestore region
+MODEL="${GEMINI_MODEL:-gemini-3.5-flash}"       # Gemini 3.5 (meets "3.5 or newer")
+MODEL_LOCATION="${MODEL_LOCATION:-global}"      # 3.5-flash is served from the global endpoint
 ALLOW_UNAUTH="${ALLOW_UNAUTH:-true}"   # demo convenience; set false to require auth
 SERVICE="aegis-backend"
 
@@ -25,7 +26,10 @@ gcloud run deploy "$SERVICE" \
   --project "$PROJECT_ID" \
   --region "$REGION" \
   --service-account "aegis-runtime@${PROJECT_ID}.iam.gserviceaccount.com" \
-  --set-env-vars "GOOGLE_CLOUD_PROJECT=${PROJECT_ID},GOOGLE_CLOUD_LOCATION=${REGION},GOOGLE_GENAI_USE_VERTEXAI=true,GEMINI_MODEL=${MODEL}" \
+  --set-env-vars "GOOGLE_CLOUD_PROJECT=${PROJECT_ID},GOOGLE_CLOUD_LOCATION=${MODEL_LOCATION},GOOGLE_GENAI_USE_VERTEXAI=true,GEMINI_MODEL=${MODEL}" \
+  --cpu 1 --memory 512Mi \
+  --min-instances 0 --max-instances 3 \
+  --concurrency 40 --timeout 120 \
   $AUTH_FLAG
 
 URL="$(gcloud run services describe "$SERVICE" --project "$PROJECT_ID" --region "$REGION" --format='value(status.url)')"

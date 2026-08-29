@@ -85,7 +85,7 @@ def _specialist(name: str, payload: dict, evidence: list[str]) -> AgentStep:
             config=types.GenerateContentConfig(
                 system_instruction=_SPECIALISTS[name],
                 temperature=0.2,
-                max_output_tokens=200,
+                max_output_tokens=1024,
             ),
         )
         return AgentStep(agent=name, thought=(resp.text or "").strip(), evidence=evidence)

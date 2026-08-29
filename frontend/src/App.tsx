@@ -10,6 +10,16 @@ type Decision = 'Approved' | 'Step-up' | 'Held' | 'Blocked';
 type Transaction = { id: string; time: string; customer: string; card: string; amount: number; merchant: string; city: string; country: string; channel: string; risk: number; decision: Decision; reason: string; };
 type NavItem = { label: string; icon: typeof LayoutDashboard };
 
+const API_BASE = (import.meta.env as any).VITE_API_URL || 'https://aegis-backend-282323062361.us-central1.run.app';
+
+type LiveStep = { agent: string; thought: string; evidence: string[]; status: string };
+type LiveResult = { decision: string; confidence: number; reason_codes: string[]; rationale: string };
+
+const AGENT_ICON: Record<string, typeof Bot> = {
+  Orchestrator: Bot, Investigator: Fingerprint, 'Network Analyst': Network,
+  Intel: Globe2, Compliance: Shield, Critic: BrainCircuit,
+};
+
 const navItems: NavItem[] = [
   { label: 'Command Center', icon: LayoutDashboard }, { label: 'Investigations', icon: FileSearch },
   { label: 'Network Graph', icon: Network }, { label: 'Customer 360', icon: UserRound },
@@ -53,7 +63,6 @@ function App() {
         merchant: merchants[Math.floor(Math.random() * merchants.length)], city: locations[Math.floor(Math.random() * locations.length)], country: 'US', channel: ['Card', 'Mobile', 'ACH'][Math.floor(Math.random() * 3)], risk, decision, reason: risk > 62 ? 'Behavioral anomaly detected' : 'Baseline behavior match',
       };
       setTransactions((current) => [transaction, ...current].slice(0, 10));
-      if (decision === 'Blocked' || decision === 'Step-up') setSelected(transaction);
     }, 4800);
     return () => { window.clearInterval(clockTimer); window.clearInterval(streamTimer); };
   }, [streaming]);
@@ -100,6 +109,76 @@ function DecisionChart() { return <div className="decision-chart"><div className
 
 function PlaceholderPage({ activeNav, transactions, selected, onSelect }: { activeNav: string; transactions: Transaction[]; selected: Transaction; onSelect: (transaction: Transaction) => void }) { const isInvestigation = activeNav === 'Investigations'; return <section className="placeholder-page"><div className="page-heading"><div><div className="eyebrow"><span className="pulse-small" /> AEGIS MODULE</div><h1>{activeNav}</h1><p>{isInvestigation ? 'Multi-agent investigations, live reasoning, and human decisions.' : 'Explore intelligence across your entire defense network.'}</p></div><button className="stream-button on"><Sparkles size={16} /> AI active</button></div>{isInvestigation ? <div className="investigation-layout"><div className="case-list panel"><div className="panel-heading"><div><div className="section-kicker red-kicker">ACTIVE CASES</div><h2>Investigation queue</h2></div><span className="count-pill">{transactions.filter((t) => t.risk > 55).length}</span></div>{transactions.filter((t) => t.risk > 55).map((transaction) => <button className={`case-item ${selected.id === transaction.id ? 'selected' : ''}`} key={transaction.id} onClick={() => onSelect(transaction)}><div className={`risk-score ${transaction.risk > 85 ? 'critical' : 'high'}`}>{transaction.risk}</div><div><strong>{transaction.customer}</strong><span>{transaction.merchant} · {number(transaction.amount)}</span><small>{transaction.id}</small></div><ChevronRight size={15} /></button>)}</div><InvestigationPanel transaction={selected} /></div> : <div className="module-card panel"><div className="module-graphic"><Network size={42} /></div><h2>{activeNav} is ready</h2><p>This workspace is connected to the live defense stream. Select an alert or investigation to explore the intelligence behind each decision.</p><button className="stream-button on" onClick={() => onSelect(transactions[0])}>Open latest activity <ArrowUpRight size={16} /></button></div>}</section>; }
 
-function InvestigationPanel({ transaction }: { transaction: Transaction }) { const steps = [{ icon: Bot, name: 'Orchestrator', text: 'Routing: high-value transaction with a foreign geo. Starting deep investigation.', status: 'done' }, { icon: Fingerprint, name: 'Investigator', text: 'Reviewed 90-day baseline, device fingerprint, and transaction velocity.', status: 'done' }, { icon: Network, name: 'Network Analyst', text: 'One new device connected to 3 accounts. No known mule-ring overlap.', status: 'done' }, { icon: Globe2, name: 'Intel', text: 'Merchant reputation is clean. No sanctions or adverse media matches.', status: 'done' }, { icon: Shield, name: 'Compliance', text: 'Controls satisfied. No filing obligation at this stage.', status: 'working' }]; return <div className="investigation-panel panel"><div className="investigation-top"><div><div className="section-kicker blue-kicker"><span className="blue-dot" /> LIVE INVESTIGATION</div><h2>{transaction.customer}</h2><span className="case-reference">{transaction.id} · opened 14:31:54</span></div><div className="risk-gauge"><div className="gauge-ring" style={{ '--risk': `${transaction.risk * 3.6}deg` } as React.CSSProperties}><strong>{transaction.risk}</strong></div><span>risk score</span></div></div><div className="transaction-detail"><div><span>Amount</span><strong>{number(transaction.amount)}</strong></div><div><span>Merchant</span><strong>{transaction.merchant}</strong></div><div><span>Location</span><strong><MapPin size={14} /> {transaction.city}</strong></div><div><span>Signal</span><strong className="signal-red">{transaction.reason}</strong></div></div><div className="memory-callout"><BrainCircuit size={20} /><div><span>MEMORY RECALL</span><p>Customer confirmed Dubai travel on Mar 3. Pattern matches — not re-challenging.</p></div><Check size={18} /></div><div className="agent-timeline">{steps.map(({ icon: Icon, name, text, status }, index) => <div className="agent-step" key={name}><div className={`agent-icon ${status}`}><Icon size={16} /></div><div className="agent-content"><div><strong>{name}</strong><span className={status}>{status === 'working' ? 'working…' : `completed · ${index + 1}.${index + 2}s`}</span></div><p>{text}</p><div className="evidence-chip"><Check size={12} /> Evidence attached</div></div></div>)}</div><div className="decision-box"><div><span className="section-kicker green-kicker">ADAPTIVE DECISION</span><h3>Approve with confidence</h3><p>Reason codes: <strong>travel_memory_match</strong> · <strong>merchant_reputation_clear</strong></p></div><div className="confidence">98.2%<span>confidence</span></div></div><div className="analyst-actions"><button className="action-primary"><Check size={16} /> Approve</button><button><ShieldAlert size={16} /> Override</button><button><ArrowUpRight size={16} /> Escalate</button><button><BrainCircuit size={16} /> Add to memory</button></div></div>; }
+function InvestigationPanel({ transaction }: { transaction: Transaction }) {
+  const [steps, setSteps] = useState<LiveStep[]>([]);
+  const [result, setResult] = useState<LiveResult | null>(null);
+  const [memory, setMemory] = useState<string[]>([]);
+  const [status, setStatus] = useState<'idle' | 'running' | 'done' | 'error'>('idle');
+  const [error, setError] = useState('');
+
+  useEffect(() => { setSteps([]); setResult(null); setMemory([]); setStatus('idle'); setError(''); }, [transaction.id]);
+
+  async function runInvestigation() {
+    setStatus('running'); setSteps([]); setResult(null); setMemory([]); setError('');
+    try {
+      const payload = { id: transaction.id, customer: transaction.customer, card: transaction.card, amount: transaction.amount, currency: 'USD', merchant: transaction.merchant, city: transaction.city, country: transaction.country, channel: transaction.channel, risk: transaction.risk };
+      const res = await fetch(`${API_BASE}/investigate/stream`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) });
+      if (!res.ok || !res.body) throw new Error(`Backend responded ${res.status}`);
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const events = buffer.split('\n\n');
+        buffer = events.pop() || '';
+        for (const evt of events) {
+          const evName = evt.match(/^event:\s*(.*)$/m)?.[1]?.trim();
+          const dataMatch = evt.match(/^data:\s*([\s\S]*)$/m);
+          if (!dataMatch) continue;
+          const obj = JSON.parse(dataMatch[1]);
+          if (evName === 'case') { setResult(obj.result); setMemory(obj.memory_hits || []); }
+          else { setSteps((current) => [...current, obj as LiveStep]); }
+        }
+      }
+      setStatus('done');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+      setStatus('error');
+    }
+  }
+
+  const decisionClass = result ? (result.decision === 'Blocked' ? 'blocked' : result.decision === 'Step-up' ? 'stepup' : result.decision === 'Held' ? 'held' : '') : '';
+  const decisionHead = result ? (result.decision === 'Approved' ? 'Approve with confidence' : result.decision === 'Blocked' ? 'Block — verify with customer' : result.decision === 'Step-up' ? 'Step-up verification' : 'Hold for review') : '';
+
+  return (
+    <div className="investigation-panel panel">
+      <div className="investigation-top">
+        <div>
+          <div className="section-kicker blue-kicker"><span className="blue-dot" /> LIVE INVESTIGATION</div>
+          <h2>{transaction.customer}</h2>
+          <span className="case-reference">{transaction.id} · {transaction.merchant}</span>
+        </div>
+        <div className="risk-gauge">
+          <div className="gauge-ring" style={{ '--risk': `${transaction.risk * 3.6}deg` } as React.CSSProperties}><strong>{transaction.risk}</strong></div>
+          <span>risk score</span>
+        </div>
+      </div>
+      <div className="transaction-detail">
+        <div><span>Amount</span><strong>{number(transaction.amount)}</strong></div>
+        <div><span>Merchant</span><strong>{transaction.merchant}</strong></div>
+        <div><span>Location</span><strong><MapPin size={14} /> {transaction.city}</strong></div>
+        <div><span>Channel</span><strong>{transaction.channel}</strong></div>
+      </div>
+      {status === 'idle' && <div className="inv-run"><button className="blue" onClick={runInvestigation}><Sparkles size={16} /> Run live investigation · Gemini 3.5</button></div>}
+      {status === 'error' && <div className="inv-error">Investigation failed: {error}. Confirm the backend is live and reachable.</div>}
+      {memory.length > 0 && <div className="memory-callout"><BrainCircuit size={20} /><div><span>MEMORY RECALL</span>{memory.map((m, i) => <p key={i}>{m}</p>)}</div><Check size={18} /></div>}
+      {steps.length > 0 && <div className="agent-timeline">{steps.map((step, index) => { const Icon = AGENT_ICON[step.agent] || Bot; return <div className="agent-step" key={`${step.agent}-${index}`}><div className="agent-icon"><Icon size={16} /></div><div className="agent-content"><div><strong>{step.agent}</strong><span>completed</span></div><p>{step.thought}</p>{step.evidence && step.evidence.length > 0 && <div className="evidence-list">{step.evidence.map((e, i) => <span key={i}><Check size={10} /> {e}</span>)}</div>}</div></div>; })}{status === 'running' && <div className="agent-step"><div className="agent-icon working"><Bot size={16} /></div><div className="agent-content"><div><strong>Agents</strong><span className="working">analyzing…</span></div><p>Gemini 3.5 is reasoning over the evidence…</p></div></div>}</div>}
+      {result && <div className={`decision-box ${decisionClass}`}><div><span className="section-kicker green-kicker">ADAPTIVE DECISION</span><h3>{decisionHead}</h3><p>Reason codes: {result.reason_codes.map((c, i) => <strong key={i}>{c}{i < result.reason_codes.length - 1 ? ' · ' : ''}</strong>)}</p><p className="decision-rationale">{result.rationale}</p></div><div className="confidence">{Math.round(result.confidence * 100)}%<span>confidence</span></div></div>}
+      {status === 'done' && <div className="analyst-actions"><button className="action-primary"><Check size={16} /> Approve</button><button><ShieldAlert size={16} /> Override</button><button><ArrowUpRight size={16} /> Escalate</button><button><BrainCircuit size={16} /> Add to memory</button></div>}
+    </div>
+  );
+}
 
 export default App;
