@@ -1,7 +1,7 @@
-// Data models for the AI Fraud Detection + Step-Up demo.
+// Data models for the AI Fraud Detection + Step-Up demo (Tyson scenario).
 // Kept separate so the UI can later be wired to real risk/OTP APIs.
 
-export type RiskLevel = 'low' | 'medium' | 'high';
+export type RiskLevel = 'low' | 'medium' | 'high' | 'critical';
 export type OtpChannel = 'mobile' | 'email';
 export type Phase =
   | 'idle'
@@ -19,17 +19,18 @@ export interface Customer {
   cardMasked: string;
   mobileMasked: string;
   emailMasked: string;
+  normalLocation: string;
 }
 
 export interface TransactionInfo {
+  id: string;
+  time: string;
   amount: number;
   merchant: string;
   channel: string;
-  currentLocation: string;
-  previousLocation: string;
-  timeDiffSeconds: number;
-  tapTime: string;
-  onlineTime: string;
+  location: string;
+  device: string;
+  network: string;
 }
 
 export interface RuleCheck {
@@ -41,7 +42,7 @@ export interface AISignal {
   label: string;
   status: string;
   level: 'high' | 'warn' | 'info';
-  icon: string; // lucide icon name resolved in the component
+  icon: string;
 }
 
 export interface RiskFactor {
@@ -49,24 +50,35 @@ export interface RiskFactor {
   positive: boolean;
 }
 
+export interface RiskBreakdownItem {
+  label: string;
+  points: number;
+}
+
 export interface Scenario {
   level: RiskLevel;
   score: number;
   requiresOtp: boolean;
+  blocks: boolean;      // critical / stolen → hard block, OTP cannot override
+  notifyRm: boolean;
   headline: string;
+  reason?: string;      // e.g. card_reported_stolen
   signals: AISignal[];
   factors: RiskFactor[];
+  breakdown: RiskBreakdownItem[];
+}
+
+export interface RiskMatrixRow {
+  range: string;
+  level: string;
+  decision: string;
+  cx: string;
+  rm: string;
+  tone: RiskLevel;
 }
 
 export interface FraudInvestigation {
   summary: string;
   evidence: string[];
   recommendation: string;
-}
-
-export interface OTPVerification {
-  channel: OtpChannel;
-  attempts: number;
-  maxAttempts: number;
-  verified: boolean;
 }
