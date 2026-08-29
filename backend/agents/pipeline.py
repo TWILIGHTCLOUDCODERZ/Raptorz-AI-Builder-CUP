@@ -129,6 +129,20 @@ def _decide(txn: Transaction, findings: list[dict], memory: list[str], card_stat
     # Hard gate first — a compromised card never depends on the LLM.
     if card_status in _COMPROMISED:
         return _hard_block(txn, card_status, tier)
+    # Auto-pay + step-up gate (deterministic policy): a high-risk transaction disables
+    # auto-approval and requires OTP. OTP verified -> approve; no OTP -> block.
+    if txn.auto_pay and (txn.risk or 0) >= 71:
+        if txn.otp_verified is True:
+            return DecisionResult(
+                decision="Approved", confidence=0.97,
+                reason_codes=["step_up_completed", "otp_verified", "auto_pay_re_enabled"],
+                rationale="Auto-approval was disabled and step-up required; the customer verified via OTP, so the payment continues.",
+            )
+        return DecisionResult(
+            decision="Blocked", confidence=0.95,
+            reason_codes=["auto_pay_disabled", "step_up_required", "otp_not_received"],
+            rationale="Auto-approval was disabled and step-up authentication required; no OTP verification was received, so the transaction is blocked.",
+        )
     if MOCK:
         return _mock_decision(txn, memory, card_status, tier)
     try:
@@ -245,6 +259,20 @@ def investigate_stream(txn: Transaction, store: MemoryStore) -> Iterator[Union[A
         thought=f"{card['summary']}.{gate_note}",
         evidence=[f"card_status={card['card_status']}", f"tier={tier}"],
     ))
+
+    if txn.auto_pay:
+        high = (txn.risk or 0) >= 71
+        if high and txn.otp_verified is True:
+            ap_note = "Auto-approval was ON → temporarily disabled. Step-up (OTP) required; OTP verified → payment continues."
+        elif high:
+            ap_note = "Auto-approval was ON → temporarily disabled. Step-up (OTP) required; no OTP received → transaction blocked."
+        else:
+            ap_note = "Auto-approval ON; risk within limits — no step-up required."
+        yield emit(AgentStep(
+            agent="Step-Up Control",
+            thought=ap_note,
+            evidence=["auto_pay=on", f"otp_verified={txn.otp_verified}", f"risk={txn.risk}"],
+        ))
 
     hist = T.get_transaction_history(txn)
     dev = T.check_device_and_geo(txn)

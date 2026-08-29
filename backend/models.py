@@ -18,6 +18,8 @@ class Transaction(BaseModel):
     country: str = ""
     channel: str = "Card"
     risk: int = 0  # optional inbound pre-score (0-100); 0 = unknown
+    auto_pay: bool = False              # customer has auto-payment / auto-approval enabled
+    otp_verified: Optional[bool] = None  # step-up outcome: True verified, False/None not verified
 
 
 class AgentStep(BaseModel):

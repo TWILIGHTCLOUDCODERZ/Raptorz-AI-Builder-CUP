@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 
 type Decision = 'Approved' | 'Step-up' | 'Held' | 'Blocked';
-type Transaction = { id: string; time: string; customer: string; card: string; amount: number; merchant: string; city: string; country: string; channel: string; risk: number; decision: Decision; reason: string; };
+type Transaction = { id: string; time: string; customer: string; card: string; amount: number; merchant: string; city: string; country: string; channel: string; risk: number; decision: Decision; reason: string; autoPay?: boolean; otpVerified?: boolean; };
 type NavItem = { label: string; icon: typeof LayoutDashboard };
 
 const API_BASE = (import.meta.env as any).VITE_API_URL || 'https://aegis-backend-282323062361.us-central1.run.app';
@@ -16,8 +16,8 @@ type LiveStep = { agent: string; thought: string; evidence: string[]; status: st
 type LiveResult = { decision: string; confidence: number; reason_codes: string[]; rationale: string };
 
 const AGENT_ICON: Record<string, typeof Bot> = {
-  Orchestrator: Bot, 'Card Status': CreditCard, Investigator: Fingerprint, 'Network Analyst': Network,
-  Intel: Globe2, Compliance: Shield, Critic: BrainCircuit,
+  Orchestrator: Bot, 'Card Status': CreditCard, 'Step-Up Control': ShieldAlert, Investigator: Fingerprint,
+  'Network Analyst': Network, Intel: Globe2, Compliance: Shield, Critic: BrainCircuit,
 };
 
 const navItems: NavItem[] = [
@@ -30,6 +30,8 @@ const initialTransactions: Transaction[] = [
   { id: 'TX-9F24A8', time: '14:32:08', customer: 'Maya Patel', card: '4821', amount: 840, merchant: 'TechWorld', city: 'Dubai, AE', country: 'AE', channel: 'Card', risk: 28, decision: 'Approved', reason: 'Confirmed travel memory' },
   { id: 'TX-VIP-STLN', time: '14:33:20', customer: 'Eleanor Whitfield', card: '8899', amount: 15200, merchant: 'Genève Horlogerie', city: 'Geneva, CH', country: 'CH', channel: 'Card', risk: 88, decision: 'Blocked', reason: 'VIP card reported stolen' },
   { id: 'TX-VIP-MC', time: '14:33:05', customer: 'Eleanor Whitfield', card: '8891', amount: 48000, merchant: 'Maison Watches', city: 'Monaco, MC', country: 'MC', channel: 'Card', risk: 74, decision: 'Approved', reason: 'VIP travel memory' },
+  { id: 'TX-TYSON-BLK', time: '12:00:00', customer: 'Tyson', card: '1234', amount: 480, merchant: 'Italy Online Store', city: 'Milan, IT', country: 'IT', channel: 'Web', risk: 82, decision: 'Blocked', reason: 'Auto-pay off · no OTP received', autoPay: true, otpVerified: false },
+  { id: 'TX-TYSON-OK', time: '12:04:00', customer: 'Tyson', card: '1234', amount: 480, merchant: 'Italy Online Store', city: 'Milan, IT', country: 'IT', channel: 'Web', risk: 82, decision: 'Approved', reason: 'OTP verified', autoPay: true, otpVerified: true },
   { id: 'TX-9F24A7', time: '14:31:54', customer: 'Ethan Brooks', card: '1190', amount: 12400, merchant: 'Wire Transfer', city: 'Austin, US', country: 'US', channel: 'Wire', risk: 94, decision: 'Blocked', reason: 'New device + new payee' },
   { id: 'TX-9F24A6', time: '14:31:41', customer: 'Sofia Andersson', card: '7734', amount: 64.28, merchant: 'Nordic Market', city: 'Stockholm, SE', country: 'SE', channel: 'Card', risk: 9, decision: 'Approved', reason: 'Known pattern' },
   { id: 'TX-9F24A5', time: '14:31:26', customer: 'Marcus Lee', card: '3402', amount: 2180, merchant: 'Luxe Electronics', city: 'San Francisco, US', country: 'US', channel: 'Card', risk: 67, decision: 'Step-up', reason: 'Velocity threshold' },
@@ -123,7 +125,7 @@ function InvestigationPanel({ transaction }: { transaction: Transaction }) {
   async function runInvestigation() {
     setStatus('running'); setSteps([]); setResult(null); setMemory([]); setError('');
     try {
-      const payload = { id: transaction.id, customer: transaction.customer, card: transaction.card, amount: transaction.amount, currency: 'USD', merchant: transaction.merchant, city: transaction.city, country: transaction.country, channel: transaction.channel, risk: transaction.risk };
+      const payload = { id: transaction.id, customer: transaction.customer, card: transaction.card, amount: transaction.amount, currency: 'USD', merchant: transaction.merchant, city: transaction.city, country: transaction.country, channel: transaction.channel, risk: transaction.risk, auto_pay: transaction.autoPay ?? false, otp_verified: transaction.otpVerified ?? null };
       const res = await fetch(`${API_BASE}/investigate/stream`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) });
       if (!res.ok || !res.body) throw new Error(`Backend responded ${res.status}`);
       const reader = res.body.getReader();

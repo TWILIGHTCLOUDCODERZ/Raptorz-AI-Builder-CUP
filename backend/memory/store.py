@@ -24,6 +24,12 @@ _SEED_CUSTOMERS = {
             "Recurring luxury watch & boutique purchases confirmed legit",
         ],
     },
+    "Tyson": {
+        "tier": "premium",
+        "confirmed_legit": [
+            "Usual card activity is in Dubai, UAE",
+        ],
+    },
 }
 
 
