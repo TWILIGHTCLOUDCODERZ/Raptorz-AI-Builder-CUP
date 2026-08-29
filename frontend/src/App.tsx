@@ -3,7 +3,7 @@ import {
   Activity, AlertCircle, ArrowDownRight, ArrowUpRight, Bell, Bot, BrainCircuit, BriefcaseBusiness,
   Check, ChevronRight, CircleHelp, Clock3, CreditCard, Database, FileSearch, Fingerprint, Globe2,
   LayoutDashboard, LineChart, ListFilter, MapPin, Menu, Network, PanelLeftClose, Search, Shield,
-  ShieldAlert, Sparkles, Target, UserRound, Users, X, Zap, Layers, LogOut,
+  ShieldAlert, Sparkles, Target, UserRound, Users, X, Zap, Layers, LogOut, Lock,
 } from 'lucide-react';
 import ArchitecturePage from './ArchitecturePage';
 
@@ -157,8 +157,27 @@ function InvestigationPanel({ transaction }: { transaction: Transaction }) {
     }
   }
 
+  const codes = result?.reason_codes ?? [];
+  const isBlocked = result?.decision === 'Blocked';
+  const nonApprove = !!result && result.decision !== 'Approved';
+  const tier: 'low' | 'medium' | 'high' | 'critical' = transaction.risk <= 30 ? 'low' : transaction.risk <= 70 ? 'medium' : transaction.risk <= 90 ? 'high' : 'critical';
   const decisionClass = result ? (result.decision === 'Blocked' ? 'blocked' : result.decision === 'Step-up' ? 'stepup' : result.decision === 'Held' ? 'held' : '') : '';
-  const decisionHead = result ? (result.decision === 'Approved' ? 'Approve with confidence' : result.decision === 'Blocked' ? 'Block — verify with customer' : result.decision === 'Step-up' ? 'Step-up verification' : 'Hold for review') : '';
+  const decisionHead = result ? (result.decision === 'Approved' ? 'Approve with confidence' : result.decision === 'Blocked' ? 'Block — protect customer' : result.decision === 'Step-up' ? 'Step-up verification' : 'Hold for review') : '';
+  const otpStatus = codes.includes('otp_not_received') ? 'NOT SENT' : (codes.includes('otp_verified') || codes.includes('step_up_completed')) ? 'VERIFIED' : result?.decision === 'Step-up' ? 'REQUESTED' : '—';
+  const RISK_TIERS = [
+    { range: '0–30', label: 'Low', action: 'Auto-approve', tone: 'low' },
+    { range: '31–70', label: 'Medium', action: 'OTP verify', tone: 'medium' },
+    { range: '71–90', label: 'High', action: 'Strong step-up', tone: 'high' },
+    { range: '91–100', label: 'Critical', action: 'Block + case', tone: 'critical' },
+  ];
+  const actionItems: [string, string, boolean][] = result ? [
+    ['Card Status', isBlocked ? 'BLOCKED' : 'ACTIVE', isBlocked],
+    ['Auto-Pay', nonApprove ? 'DISABLED' : 'ON', nonApprove],
+    ['OTP', otpStatus, otpStatus === 'NOT SENT'],
+    ['Fraud Case', isBlocked ? 'CREATED' : 'NONE', isBlocked],
+    ['Customer Notified', nonApprove ? 'YES' : 'NO', false],
+    ['RM Notification', tier === 'high' || tier === 'critical' ? 'SENT' : 'NONE', false],
+  ] : [];
 
   return (
     <div className="investigation-panel panel">
@@ -169,21 +188,54 @@ function InvestigationPanel({ transaction }: { transaction: Transaction }) {
           <span className="case-reference">{transaction.id} · {transaction.merchant}</span>
         </div>
         <div className="risk-gauge">
-          <div className="gauge-ring" style={{ '--risk': `${transaction.risk * 3.6}deg` } as React.CSSProperties}><strong>{transaction.risk}</strong></div>
+          <div className={`gauge-ring gauge-${tier}`} style={{ '--risk': `${transaction.risk * 3.6}deg` } as React.CSSProperties}><strong>{transaction.risk}</strong></div>
           <span>risk score</span>
         </div>
       </div>
+
+      <div className="risk-strip">
+        {RISK_TIERS.map((t) => <div key={t.range} className={`risk-tier ${t.tone} ${tier === t.tone ? 'on' : ''}`}><span className="rt-range">{t.range}</span><span className="rt-label">{t.label}</span><span className="rt-action">{t.action}</span></div>)}
+      </div>
+
       <div className="transaction-detail">
         <div><span>Amount</span><strong>{number(transaction.amount)}</strong></div>
         <div><span>Merchant</span><strong>{transaction.merchant}</strong></div>
         <div><span>Location</span><strong><MapPin size={14} /> {transaction.city}</strong></div>
         <div><span>Channel</span><strong>{transaction.channel}</strong></div>
       </div>
+
       {status === 'idle' && <div className="inv-run"><button className="blue" onClick={runInvestigation}><Sparkles size={16} /> Run live investigation · Gemini 3.5</button></div>}
       {status === 'error' && <div className="inv-error">Investigation failed: {error}. Confirm the backend is live and reachable.</div>}
       {memory.length > 0 && <div className="memory-callout"><BrainCircuit size={20} /><div><span>MEMORY RECALL</span>{memory.map((m, i) => <p key={i}>{m}</p>)}</div><Check size={18} /></div>}
-      {steps.length > 0 && <div className="agent-timeline">{steps.map((step, index) => { const Icon = AGENT_ICON[step.agent] || Bot; return <div className="agent-step" key={`${step.agent}-${index}`}><div className="agent-icon"><Icon size={16} /></div><div className="agent-content"><div><strong>{step.agent}</strong><span>completed</span></div><p>{step.thought}</p>{step.evidence && step.evidence.length > 0 && <div className="evidence-list">{step.evidence.map((e, i) => <span key={i}><Check size={10} /> {e}</span>)}</div>}</div></div>; })}{status === 'running' && <div className="agent-step"><div className="agent-icon working"><Bot size={16} /></div><div className="agent-content"><div><strong>Agents</strong><span className="working">analyzing…</span></div><p>Gemini 3.5 is reasoning over the evidence…</p></div></div>}</div>}
-      {result && <div className={`decision-box ${decisionClass}`}><div><span className="section-kicker green-kicker">ADAPTIVE DECISION</span><h3>{decisionHead}</h3><p>Reason codes: {result.reason_codes.map((c, i) => <strong key={i}>{c}{i < result.reason_codes.length - 1 ? ' · ' : ''}</strong>)}</p><p className="decision-rationale">{result.rationale}</p></div><div className="confidence">{Math.round(result.confidence * 100)}%<span>confidence</span></div></div>}
+
+      {steps.length > 0 && <div className="agent-track">
+        <div className="track-head">MULTI-AGENT INVESTIGATION <span>{steps.length} agents · Gemini 3.5</span></div>
+        <div className="agent-timeline">
+          {steps.map((step, index) => { const Icon = AGENT_ICON[step.agent] || Bot; return (
+            <div className="agent-step" key={`${step.agent}-${index}`}>
+              <div className="agent-icon"><Icon size={16} /></div>
+              <div className="agent-content">
+                <div><strong><b className="agent-num">{index + 1}</b> {step.agent}</strong><span>done</span></div>
+                <p>{step.thought}</p>
+                {step.evidence && step.evidence.length > 0 && <div className="evidence-list">{step.evidence.map((e, i) => <span key={i}><Check size={10} /> {e}</span>)}</div>}
+              </div>
+            </div>
+          ); })}
+          {status === 'running' && <div className="agent-step"><div className="agent-icon working"><Bot size={16} /></div><div className="agent-content"><div><strong>Agents</strong><span className="working">analyzing…</span></div><p>Gemini 3.5 is reasoning over the evidence…</p></div></div>}
+        </div>
+      </div>}
+
+      {isBlocked && <div className="block-banner"><Lock size={22} /><div><strong>CARD BLOCKED</strong><span>{tier === 'critical' ? 'No OTP sent — customer protected · fraud case opened' : 'High risk — step-up not completed'}</span></div></div>}
+
+      {result && <div className={`decision-box ${decisionClass}`}><div><span className="section-kicker green-kicker">AEGIS DECISION</span><h3>{decisionHead}</h3><p>Reason codes: {result.reason_codes.map((c, i) => <strong key={i}>{c}{i < result.reason_codes.length - 1 ? ' · ' : ''}</strong>)}</p><p className="decision-rationale">{result.rationale}</p></div><div className="confidence">{Math.round(result.confidence * 100)}%<span>confidence</span></div></div>}
+
+      {result && <div className="action-taken">
+        <div className="at-head">ACTION TAKEN BY AEGIS</div>
+        {actionItems.map(([k, v, danger]) => <div className="at-row" key={k}><Check size={13} /><span>{k}</span><b className={danger ? 'danger' : ''}>{v}</b></div>)}
+      </div>}
+
+      {result && (tier === 'high' || tier === 'critical') && <div className="rm-summary"><div className="rm-head"><Bell size={13} /> RM ALERT · AI SUMMARY FOR TESSA</div><p>{result.rationale}</p></div>}
+
       {status === 'done' && <div className="analyst-actions"><button className="action-primary"><Check size={16} /> Approve</button><button><ShieldAlert size={16} /> Override</button><button><ArrowUpRight size={16} /> Escalate</button><button><BrainCircuit size={16} /> Add to memory</button></div>}
     </div>
   );
