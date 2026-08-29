@@ -4,7 +4,7 @@
 #
 # Do these MANUAL steps first, in the Cloud Console (cannot be scripted safely):
 #   1. Create a project and note its PROJECT_ID.
-#   2. Link a billing account, then Billing > Credits and redeem the hackathon $150 code.
+#   2. Link a billing account (ensure billing is enabled on the project).
 #
 # Then run:
 #   export PROJECT_ID=your-project-id

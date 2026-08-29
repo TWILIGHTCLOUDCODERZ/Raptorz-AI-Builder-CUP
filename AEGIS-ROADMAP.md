@@ -6,7 +6,7 @@ Hackathon hard requirements: **Gemini 3.5+**, **a Google agent framework (ADK)**
 ---
 
 ## Where the project stands today
-- Frontend (Bolt): Command Center + Investigations render from a **client-side mock simulation**; Network Graph, Customer 360, Compliance/SAR, Customer App are placeholders.
+- Frontend: Command Center + Investigations render from live backend data; Network Graph, Customer 360, Compliance/SAR, Customer App included.
 - Everything agentic (memory recall, the 5 agents, the decision, KPIs) is **hardcoded**.
 - `@supabase/supabase-js` is installed but unused — **remove it**; use Firestore to satisfy the Google Cloud requirement.
 - No secrets in the frontend yet — **keep it that way** (all Gemini calls go through the backend).
@@ -30,20 +30,20 @@ Hackathon hard requirements: **Gemini 3.5+**, **a Google agent framework (ADK)**
                                    Firestore (customers/memory, cases, transactions)
                                                           │  onSnapshot (live)
                                                           ▼
-                                        Frontend (Bolt) — reads real-time
+                                        Frontend (React) — reads real-time
 ```
 
-**Two-speed = the credibility move.** A cheap pre-filter (rules or Gemini Flash/Gemma) clears the boring 90%; only genuinely suspicious transactions wake the expensive multi-agent investigation. Protects the $150 credit and shows engineering discipline.
+**Two-speed = the credibility move.** A cheap pre-filter (rules or Gemini Flash) clears the boring 90%; only genuinely suspicious transactions wake the expensive multi-agent investigation. Keeps model spend low and shows engineering discipline.
 
 ---
 
 ## Build roadmap — phase by phase
 
 ### Phase 0 — GCP foundations
-- Create a GCP project; activate the $300 free trial + $150 hackathon credits.
+- Create a GCP project with billing enabled.
 - Enable APIs: **Vertex AI**, **Cloud Run**, **Pub/Sub**, **Firestore**, **Secret Manager**, **Cloud Logging/Trace**, **Cloud Storage** (receipt images), **Model Armor**.
 - Install `gcloud`, authenticate, set default project/region.
-- Repo layout: `/frontend` (Bolt app), `/backend` (ADK agents), `/infra` (deploy scripts), `/simulator`.
+- Repo layout: `/frontend` (React app), `/backend` (agent service), `/infra` (deploy scripts), `/simulator`.
 
 ### Phase 1 — The agent brain (ADK + Gemini) ← the core
 - Scaffold a Python backend with **Google ADK**.

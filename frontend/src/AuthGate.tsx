@@ -2,7 +2,7 @@ import { useState } from 'react';
 import {
   createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, updateProfile,
 } from 'firebase/auth';
-import { Activity, ArrowRight, BrainCircuit, Fingerprint, Loader2, Lock, Mail, ShieldCheck, User } from 'lucide-react';
+import { Activity, ArrowRight, BrainCircuit, Fingerprint, Github, Globe2, Loader2, Lock, Mail, ShieldCheck, User } from 'lucide-react';
 import { auth, googleProvider } from './firebase';
 
 const NAVY = '#081727';
@@ -25,7 +25,7 @@ function friendlyError(code: string, message: string): string {
 }
 
 export default function AuthGate({ onGuest }: { onGuest: (name: string) => void }) {
-  const [mode, setMode] = useState<'signin' | 'signup'>('signin');
+  const [mode, setMode] = useState<'signin' | 'signup' | 'creator'>('signin');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -98,19 +98,20 @@ export default function AuthGate({ onGuest }: { onGuest: (name: string) => void 
       <div className="flex-1 flex items-center justify-center p-6">
         <div className="w-full max-w-[420px]">
           <div className="rounded-2xl p-7 sm:p-8" style={{ background: 'linear-gradient(150deg, rgba(20,48,79,.75), rgba(13,34,58,.85))', border: '1px solid rgba(90,130,170,.22)', boxShadow: '0 20px 60px rgba(0,0,0,.35)' }}>
-            <h2 className="text-xl font-bold">{mode === 'signin' ? 'Welcome back' : 'Create your account'}</h2>
-            <p className="text-[12px] text-[#7f99b3] mt-1">{mode === 'signin' ? 'Sign in to the Aegis analyst console.' : 'Set up access to the Aegis console.'}</p>
+            <h2 className="text-xl font-bold">{mode === 'signin' ? 'Welcome back' : mode === 'signup' ? 'Create your account' : 'Meet the creator'}</h2>
+            <p className="text-[12px] text-[#7f99b3] mt-1">{mode === 'signin' ? 'Sign in to the Aegis analyst console.' : mode === 'signup' ? 'Set up access to the Aegis console.' : 'The mind behind Aegis.'}</p>
 
-            <div className="mt-5 grid grid-cols-2 gap-1 p-1 rounded-xl" style={{ background: 'rgba(3,14,28,.4)' }}>
-              {(['signin', 'signup'] as const).map((m) => (
+            <div className="mt-5 grid grid-cols-3 gap-1 p-1 rounded-xl" style={{ background: 'rgba(3,14,28,.4)' }}>
+              {(['signin', 'signup', 'creator'] as const).map((m) => (
                 <button key={m} onClick={() => { setMode(m); setError(''); }}
-                  className="text-[13px] font-medium py-2 rounded-lg transition"
+                  className="text-[12px] font-medium py-2 rounded-lg transition"
                   style={m === mode ? { background: 'rgba(66,133,244,.16)', color: '#dbe9f8' } : { color: '#7f99b3' }}>
-                  {m === 'signin' ? 'Sign in' : 'Create account'}
+                  {m === 'signin' ? 'Sign in' : m === 'signup' ? 'Sign up' : 'Creator'}
                 </button>
               ))}
             </div>
 
+            {mode === 'creator' ? <CreatorPanel /> : (<>
             <form onSubmit={submit} className="mt-5 space-y-3.5">
               {mode === 'signup' && (
                 <Field icon={User} label="Full name"><input value={name} onChange={(e) => setName(e.target.value)} placeholder="Alex Rivera" className="w-full bg-transparent outline-none text-[14px] placeholder:text-[#5b7591]" /></Field>
@@ -141,6 +142,7 @@ export default function AuthGate({ onGuest }: { onGuest: (name: string) => void 
                 <button type="submit" disabled={!guestName.trim()} className="rounded-xl px-4 text-[13px] font-semibold text-white transition disabled:opacity-40" style={{ background: 'rgba(66,133,244,.28)', border: '1px solid rgba(66,133,244,.45)' }}>Enter</button>
               </form>
             </div>
+            </>)}
 
             <div className="mt-4 text-center text-[12px]">
               <a href="#fraud-journey" className="text-[#5da0ff]">View executive demo →</a>
@@ -149,6 +151,30 @@ export default function AuthGate({ onGuest }: { onGuest: (name: string) => void 
 
           <p className="text-center text-[11px] text-[#5b7591] mt-4">Secured by Firebase Authentication.</p>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function CreatorPanel() {
+  return (
+    <div className="mt-5">
+      <div className="flex items-center gap-4">
+        <div style={{ width: 58, height: 58, borderRadius: 16, display: 'grid', placeItems: 'center', background: 'linear-gradient(135deg,#265a9a,#4285f4)', color: '#eaf2fb', font: "700 22px 'DM Sans', sans-serif", boxShadow: '0 0 22px rgba(66,133,244,.35)' }}>D</div>
+        <div>
+          <div className="text-[19px] font-bold text-[#eaf2fb]">Deepan</div>
+          <div className="text-[12px] text-[#7fb0ff] tracking-wide">Cloud Architect</div>
+        </div>
+      </div>
+      <p className="mt-4 text-[13px] text-[#a9c0d6] leading-relaxed">Creator of <b className="text-[#dbe9f8]">Aegis</b> — an autonomous, real-time fraud &amp; financial-crime defense platform built on Gemini and Google Cloud.</p>
+      <div className="mt-4 grid gap-2">
+        <a href="https://deepantechnoids.github.io/" target="_blank" rel="noreferrer" className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-[13px] transition hover:brightness-125" style={{ background: 'rgba(20,49,80,.4)', border: '1px solid rgba(104,142,180,.25)', color: '#cfe0ef' }}><Globe2 size={15} className="text-[#5da0ff]" /> deepantechnoids.github.io</a>
+        <a href="https://github.com/TWILIGHTCLOUDCODERZ/Aegis-Agentic-Google-Hackathon" target="_blank" rel="noreferrer" className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-[13px] transition hover:brightness-125" style={{ background: 'rgba(20,49,80,.4)', border: '1px solid rgba(104,142,180,.25)', color: '#cfe0ef' }}><Github size={15} className="text-[#5da0ff]" /> Aegis on GitHub</a>
+      </div>
+      <div className="mt-4 flex flex-wrap gap-1.5">
+        {['Gemini 3.5', 'Google Cloud', 'Cloud Run', 'Firestore', 'Multi-agent AI'].map((t) => (
+          <span key={t} className="text-[10px] px-2.5 py-1 rounded-full" style={{ background: 'rgba(66,133,244,.12)', color: '#7fb0ff', border: '1px solid rgba(66,133,244,.25)' }}>{t}</span>
+        ))}
       </div>
     </div>
   );
