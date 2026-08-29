@@ -9,11 +9,21 @@ from __future__ import annotations
 
 from models import AgentStep, Case, Transaction
 
-_SEED_MEMORY = {
-    "Maya Patel": [
-        "Confirmed Dubai travel on Mar 3 — recurring each March",
-        "Recurring $840 electronics purchase confirmed legit",
-    ],
+_SEED_CUSTOMERS = {
+    "Maya Patel": {
+        "tier": "premium",
+        "confirmed_legit": [
+            "Confirmed Dubai travel on Mar 3 — recurring each March",
+            "Recurring $840 electronics purchase confirmed legit",
+        ],
+    },
+    "Eleanor Whitfield": {
+        "tier": "vip",
+        "confirmed_legit": [
+            "Confirmed annual travel to Monaco each May",
+            "Recurring luxury watch & boutique purchases confirmed legit",
+        ],
+    },
 }
 
 
@@ -21,7 +31,7 @@ class MemoryStore:
     def __init__(self) -> None:
         self._db = None
         self._mem: dict[str, dict] = {
-            "customers": {k: dict(confirmed_legit=v) for k, v in _SEED_MEMORY.items()},
+            "customers": {k: dict(v) for k, v in _SEED_CUSTOMERS.items()},
             "cases": {},
             "transactions": {},
         }
@@ -29,11 +39,11 @@ class MemoryStore:
             from google.cloud import firestore
 
             self._db = firestore.Client()
-            # ensure the seed exists in Firestore too (id-empotent)
-            for customer, facts in _SEED_MEMORY.items():
+            # ensure the seed exists in Firestore too (idempotent)
+            for customer, profile in _SEED_CUSTOMERS.items():
                 ref = self._db.collection("customers").document(customer)
                 if not ref.get().exists:
-                    ref.set({"confirmed_legit": facts})
+                    ref.set(profile)
             print("[memory] Firestore connected.")
         except Exception as exc:  # noqa: BLE001
             print(f"[memory] Firestore unavailable, using in-memory store: {exc}")
@@ -49,6 +59,17 @@ class MemoryStore:
             except Exception as exc:  # noqa: BLE001
                 print(f"[memory] read error: {exc}")
         return self._mem["customers"].get(customer, {}).get("confirmed_legit", [])
+
+    def get_customer_tier(self, customer: str) -> str:
+        """standard | premium | vip — drives friction/handling in the decision."""
+        if self._db:
+            try:
+                doc = self._db.collection("customers").document(customer).get()
+                if doc.exists:
+                    return doc.to_dict().get("tier", "standard")
+            except Exception as exc:  # noqa: BLE001
+                print(f"[memory] tier read error: {exc}")
+        return self._mem["customers"].get(customer, {}).get("tier", "standard")
 
     # ---- writes ----
     def add_memory(self, customer: str, fact: str) -> None:

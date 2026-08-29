@@ -86,3 +86,22 @@ def check_merchant_reputation(txn: Transaction) -> dict:
             f"Merchant '{txn.merchant}' reputation {'elevated' if risky else 'clean'}"
         ),
     }
+
+
+# Card lifecycle status — a HARD signal. A reported-stolen/lost/frozen card is
+# fraud regardless of customer tier (VIP can never be exploited as a soft target).
+_CARD_STATUS = {
+    "8899": "reported_stolen",  # Eleanor Whitfield's stolen VIP card
+}
+
+
+def check_card_status(txn: Transaction) -> dict:
+    """Return the card's lifecycle status from the card registry."""
+    status = _CARD_STATUS.get(txn.card, "active")
+    labels = {
+        "active": "Card active and in good standing",
+        "reported_stolen": "CARD REPORTED STOLEN — any use is fraud",
+        "lost": "Card reported lost — blocked for protection",
+        "frozen": "Card frozen by the customer",
+    }
+    return {"card_status": status, "summary": labels.get(status, f"status={status}")}

@@ -1,0 +1,12 @@
+{
+  "id": "TX-VIP-STLN",
+  "customer": "Eleanor Whitfield",
+  "card": "8899",
+  "amount": 15200,
+  "currency": "USD",
+  "merchant": "Genève Horlogerie",
+  "city": "Geneva, CH",
+  "country": "CH",
+  "channel": "Card",
+  "risk": 88
+}
