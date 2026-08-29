@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Activity, AlertCircle, ArrowDownRight, ArrowUpRight, Bell, Bot, BrainCircuit, BriefcaseBusiness,
   Check, ChevronRight, CircleHelp, Clock3, CreditCard, Database, FileSearch, Fingerprint, Globe2,
   LayoutDashboard, LineChart, ListFilter, MapPin, Menu, Network, PanelLeftClose, Search, Shield,
-  ShieldAlert, Sparkles, Target, UserRound, Users, X, Zap, Layers, LogOut, Lock,
+  ShieldAlert, Sparkles, Target, UserRound, Users, X, Zap, Layers, LogOut, Lock, RefreshCw,
 } from 'lucide-react';
 import ArchitecturePage from './ArchitecturePage';
 import FraudJourney from './fraud-journey/FraudJourney';
@@ -126,7 +126,14 @@ function InvestigationPanel({ transaction }: { transaction: Transaction }) {
   const [status, setStatus] = useState<'idle' | 'running' | 'done' | 'error'>('idle');
   const [error, setError] = useState('');
 
-  useEffect(() => { setSteps([]); setResult(null); setMemory([]); setStatus('idle'); setError(''); }, [transaction.id]);
+  const startedRef = useRef('');
+  useEffect(() => {
+    // Aegis auto-launches the investigation the moment a case is selected.
+    if (startedRef.current === transaction.id) return;
+    startedRef.current = transaction.id;
+    runInvestigation();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [transaction.id]);
 
   async function runInvestigation() {
     setStatus('running'); setSteps([]); setResult(null); setMemory([]); setError('');
@@ -206,7 +213,11 @@ function InvestigationPanel({ transaction }: { transaction: Transaction }) {
         <div><span>Channel</span><strong>{transaction.channel}</strong></div>
       </div>
 
-      {status === 'idle' && <div className="inv-run"><button className="blue" onClick={runInvestigation}><Sparkles size={16} /> Run live investigation · Gemini 3.5</button></div>}
+      <div className="inv-run">
+        {status === 'running' || status === 'idle'
+          ? <button className="blue running" disabled><span className="inv-live-dot" /> LIVE INVESTIGATION · GEMINI 3.5 LLM — RUNNING</button>
+          : <button className="blue" onClick={runInvestigation}><RefreshCw size={15} /> Re-run Investigation</button>}
+      </div>
       {status === 'error' && <div className="inv-error">Investigation failed: {error}. Confirm the backend is live and reachable.</div>}
       {memory.length > 0 && <div className="memory-callout"><BrainCircuit size={20} /><div><span>MEMORY RECALL</span>{memory.map((m, i) => <p key={i}>{m}</p>)}</div><Check size={18} /></div>}
 
