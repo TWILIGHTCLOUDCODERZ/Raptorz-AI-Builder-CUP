@@ -78,7 +78,7 @@ function App() {
       <aside className={`sidebar ${sidebarOpen ? 'is-open' : ''}`}>
         <div className="brand"><img src="/Aegis_Logo.png" alt="Aegis" /><div><strong>AEGIS</strong><span>Autonomous Defense</span></div><button className="sidebar-close" onClick={() => setSidebarOpen(false)}><X size={18} /></button></div>
         <div className="workspace-label">SECURITY OPERATIONS</div>
-        <nav>{navItems.map(({ label, icon: Icon }) => <button key={label} className={`nav-item ${activeNav === label ? 'active' : ''}`} onClick={() => { setActiveNav(label); setSidebarOpen(false); }}><Icon size={18} /><span>{label}</span>{label === 'Investigations' && <b>{investigated.length}</b>}</button>)}</nav>
+        <nav>{navItems.map(({ label, icon: Icon }) => <button key={label} className={`nav-item ${activeNav === label ? 'active' : ''}`} onClick={() => { if (label === 'Customer App') { window.location.hash = '#fraud-journey'; return; } setActiveNav(label); setSidebarOpen(false); }}><Icon size={18} /><span>{label}</span>{label === 'Investigations' && <b>{investigated.length}</b>}</button>)}</nav>
         <div className="sidebar-bottom"><button className="nav-item"><CircleHelp size={18} /><span>Help center</span></button><div className="user-card"><div className="avatar">AR</div><div><strong>Alex Rivera</strong><span>Senior analyst</span></div><ChevronRight size={15} /></div></div>
       </aside>
       <main className="main-content">
