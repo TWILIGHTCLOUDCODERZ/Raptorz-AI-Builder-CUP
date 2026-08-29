@@ -64,7 +64,7 @@ export default function AuthGate({ onGuest }: { onGuest: (name: string) => void 
         <div className="absolute -top-24 -left-24 h-72 w-72 rounded-full blur-3xl" style={{ background: 'rgba(66,133,244,.18)' }} />
         <div className="relative">
           <div className="flex items-center gap-4">
-            <img src="/Aegis_Logo.png" alt="Aegis" className="h-16 w-16 rounded-2xl" style={{ filter: 'drop-shadow(0 0 22px rgba(130,211,255,.45))' }} />
+            <img src="/Aegis-ARC.png" alt="Aegis" className="h-16 w-auto rounded-2xl" style={{ objectFit: 'contain', filter: 'drop-shadow(0 0 22px rgba(130,211,255,.45))' }} />
             <div>
               <div className="font-extrabold tracking-[.22em] text-[24px]" style={{ background: 'linear-gradient(90deg,#eaf2fb,#7fb0ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>AEGIS</div>
               <div className="text-[11px] text-[#7591ae] tracking-[.2em]">AI INTELLIGENCE</div>
@@ -94,7 +94,7 @@ export default function AuthGate({ onGuest }: { onGuest: (name: string) => void 
       <div className="flex-1 flex items-center justify-center p-6">
         <div className="w-full max-w-[420px]">
           <div className="lg:hidden flex flex-col items-center gap-2 mb-8">
-            <img src="/Aegis_Logo.png" alt="Aegis" className="h-14 w-14 rounded-2xl" style={{ filter: 'drop-shadow(0 0 18px rgba(130,211,255,.4))' }} />
+            <img src="/Aegis-ARC.png" alt="Aegis" className="h-14 w-auto rounded-2xl" style={{ objectFit: 'contain', filter: 'drop-shadow(0 0 18px rgba(130,211,255,.4))' }} />
             <span className="font-extrabold tracking-[.22em] text-[18px]">AEGIS</span>
           </div>
 
