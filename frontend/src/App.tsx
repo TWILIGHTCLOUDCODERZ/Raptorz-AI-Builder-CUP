@@ -3,8 +3,9 @@ import {
   Activity, AlertCircle, ArrowDownRight, ArrowUpRight, Bell, Bot, BrainCircuit, BriefcaseBusiness,
   Check, ChevronRight, CircleHelp, Clock3, CreditCard, Database, FileSearch, Fingerprint, Globe2,
   LayoutDashboard, LineChart, ListFilter, MapPin, Menu, Network, PanelLeftClose, Search, Shield,
-  ShieldAlert, Sparkles, Target, UserRound, Users, X, Zap,
+  ShieldAlert, Sparkles, Target, UserRound, Users, X, Zap, Layers,
 } from 'lucide-react';
+import ArchitecturePage from './ArchitecturePage';
 
 type Decision = 'Approved' | 'Step-up' | 'Held' | 'Blocked';
 type Transaction = { id: string; time: string; customer: string; card: string; amount: number; merchant: string; city: string; country: string; channel: string; risk: number; decision: Decision; reason: string; autoPay?: boolean; otpVerified?: boolean; };
@@ -21,9 +22,10 @@ const AGENT_ICON: Record<string, typeof Bot> = {
 };
 
 const navItems: NavItem[] = [
-  { label: 'Command Center', icon: LayoutDashboard }, { label: 'Investigations', icon: FileSearch },
+  { label: 'Aegis AI Intelligence', icon: LayoutDashboard }, { label: 'Investigations', icon: FileSearch },
   { label: 'Network Graph', icon: Network }, { label: 'Customer 360', icon: UserRound },
-  { label: 'Compliance / SAR', icon: BriefcaseBusiness }, { label: 'Customer App', icon: CreditCard },
+  { label: 'Compliance / SAR', icon: BriefcaseBusiness }, { label: 'Architecture', icon: Layers },
+  { label: 'Customer App', icon: CreditCard },
 ];
 
 const initialTransactions: Transaction[] = [
@@ -46,8 +48,8 @@ const merchants = ['TechWorld', 'Blue Bottle', 'Luxe Electronics', 'Metro Rail',
 const locations = ['Dubai, AE', 'Austin, US', 'London, UK', 'Singapore, SG', 'Toronto, CA', 'New York, US'];
 const number = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: value < 100 ? 2 : 0 }).format(value);
 
-function App() {
-  const [activeNav, setActiveNav] = useState('Command Center');
+function App({ onSignOut }: { onSignOut: () => void }) {
+  const [activeNav, setActiveNav] = useState('Aegis AI Intelligence');
   const [transactions, setTransactions] = useState(initialTransactions);
   const [selected, setSelected] = useState<Transaction>(initialTransactions[1]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -81,12 +83,12 @@ function App() {
         <div className="brand"><img src="/Aegis_Logo.png" alt="Aegis" /><div><strong>AEGIS</strong><span>Autonomous Defense</span></div><button className="sidebar-close" onClick={() => setSidebarOpen(false)}><X size={18} /></button></div>
         <div className="workspace-label">SECURITY OPERATIONS</div>
         <nav>{navItems.map(({ label, icon: Icon }) => <button key={label} className={`nav-item ${activeNav === label ? 'active' : ''}`} onClick={() => { if (label === 'Customer App') { window.location.hash = '#fraud-journey'; return; } setActiveNav(label); setSidebarOpen(false); }}><Icon size={18} /><span>{label}</span>{label === 'Investigations' && <b>{investigated.length}</b>}</button>)}</nav>
-        <div className="sidebar-bottom"><button className="nav-item"><CircleHelp size={18} /><span>Help center</span></button><div className="user-card"><div className="avatar">AR</div><div><strong>Alex Rivera</strong><span>Senior analyst</span></div><ChevronRight size={15} /></div></div>
+        <div className="sidebar-bottom"><button className="nav-item"><CircleHelp size={18} /><span>Help center</span></button><div className="user-card" onClick={onSignOut} title="Sign out" style={{ cursor: 'pointer' }}><div className="avatar">AR</div><div><strong>Alex Rivera</strong><span>Senior analyst</span></div><ChevronRight size={15} /></div></div>
       </aside>
       <main className="main-content">
         <header className="topbar"><button className="mobile-menu" onClick={() => setSidebarOpen(true)}><Menu size={20} /></button><div className="breadcrumb"><span>Workspace</span><ChevronRight size={14} /><strong>{activeNav}</strong></div><div className="top-actions"><div className="search-box"><Search size={16} /><input placeholder="Search transactions, customers..." /></div><div className="live-status"><span className="live-dot" /> LIVE <span className="throughput">1,284 txns/s</span></div><span className="demo-badge">DEMO</span><button className="icon-button" onClick={() => setShowNotifications(!showNotifications)}><Bell size={18} /><i /></button><div className="top-avatar">AR</div></div>{showNotifications && <div className="notification-pop"><div className="pop-title">Notifications <span>3 new</span></div><p><ShieldAlert size={15} /> High-risk wire transfer blocked</p><p><BrainCircuit size={15} /> Memory recall resolved false positive</p><p><Activity size={15} /> Stream health is nominal</p></div>}</header>
         <div className="page-wrap">
-          {activeNav === 'Command Center' ? <CommandCenter transactions={transactions} blocked={blocked} selected={selected} onSelect={setSelected} streaming={streaming} onToggle={() => setStreaming(!streaming)} /> : <PlaceholderPage activeNav={activeNav} transactions={transactions} selected={selected} onSelect={setSelected} />}
+          {activeNav === 'Aegis AI Intelligence' ? <CommandCenter transactions={transactions} blocked={blocked} selected={selected} onSelect={setSelected} streaming={streaming} onToggle={() => setStreaming(!streaming)} /> : activeNav === 'Architecture' ? <ArchitecturePage /> : <PlaceholderPage activeNav={activeNav} transactions={transactions} selected={selected} onSelect={setSelected} />}
         </div>
       </main>
     </div>
@@ -95,7 +97,7 @@ function App() {
 
 function CommandCenter({ transactions, blocked, selected, onSelect, streaming, onToggle }: { transactions: Transaction[]; blocked: Transaction[]; selected: Transaction; onSelect: (transaction: Transaction) => void; streaming: boolean; onToggle: () => void }) {
   return <>
-    <section className="page-heading"><div><div className="eyebrow"><span className="pulse-small" /> REAL-TIME OVERVIEW</div><h1>Command Center</h1><p>Autonomous defense for every transaction.</p></div><div className="heading-actions"><span className="last-updated"><Clock3 size={14} /> Updated just now</span><button className={`stream-button ${streaming ? 'on' : ''}`} onClick={onToggle}><Activity size={16} /> {streaming ? 'Stream active' : 'Stream paused'}</button></div></section>
+    <section className="page-heading"><div><div className="eyebrow"><span className="pulse-small" /> REAL-TIME OVERVIEW</div><h1>Aegis AI Intelligence</h1><p>Autonomous defense for every transaction.</p></div><div className="heading-actions"><span className="last-updated"><Clock3 size={14} /> Updated just now</span><button className={`stream-button ${streaming ? 'on' : ''}`} onClick={onToggle}><Activity size={16} /> {streaming ? 'Stream active' : 'Stream paused'}</button></div></section>
     <section className="kpi-grid"><Kpi icon={Activity} label="Transactions monitored" value="2,481,905" delta="+12.8%" positive accent="blue" /><Kpi icon={ShieldAlert} label="Fraud blocked" value={number(184290)} meta="21 incidents" accent="red" /><Kpi icon={Target} label="False declines prevented" value="68.4%" delta="+62% vs rules-only" positive accent="green" /><Kpi icon={Clock3} label="Avg. resolution time" value="18s" delta="down from 12m" positive accent="amber" /><Kpi icon={Users} label="Analyst hours saved" value="1,248h" meta="this week" accent="blue" /><Kpi icon={Shield} label="Money protected" value="$4.82M" delta="+18.6%" positive accent="green" /></section>
     <div className="dashboard-grid"><section className="panel feed-panel"><div className="panel-heading"><div><div className="section-kicker"><span className="green-dot" /> LIVE FEED</div><h2>Transaction activity</h2></div><button className="filter-button"><ListFilter size={15} /> Filter</button></div><div className="feed-table-head"><span>Transaction</span><span>Customer</span><span>Merchant</span><span>Location</span><span>Decision</span></div><div className="feed-list">{transactions.map((transaction) => <TransactionRow key={transaction.id} transaction={transaction} onClick={() => onSelect(transaction)} />)}</div><button className="view-all">View all activity <ArrowUpRight size={15} /></button></section><aside className="panel alert-panel"><div className="panel-heading"><div><div className="section-kicker red-kicker"><span className="red-dot" /> NEEDS ATTENTION</div><h2>Alert queue <span className="count-pill">{Math.max(3, blocked.length + 2)}</span></h2></div><button className="more-button">•••</button></div><div className="alert-list">{[selected, ...blocked, transactions[3]].filter((value, index, array) => value && array.findIndex((item) => item.id === value.id) === index).slice(0, 4).map((transaction) => <button className="alert-item" key={transaction.id} onClick={() => onSelect(transaction)}><div className={`risk-score ${transaction.risk > 85 ? 'critical' : 'high'}`}>{transaction.risk}</div><div className="alert-copy"><strong>{transaction.customer}</strong><span>{transaction.id} · {transaction.city}</span></div><div className="alert-value">{number(transaction.amount)}<small>{transaction.decision}</small></div><ChevronRight size={15} /></button>)}</div><button className="view-all">Open investigation queue <ArrowUpRight size={15} /></button></aside></div>
     <div className="lower-grid"><section className="panel chart-panel"><div className="panel-heading"><div><div className="section-kicker">PERFORMANCE</div><h2>Defense activity <span className="muted-inline">/ last 24 hours</span></h2></div><div className="legend"><span><i className="legend-blue" /> Fraud caught</span><span><i className="legend-line" /> False positives</span></div></div><ActivityChart /></section><section className="panel chart-panel distribution-panel"><div className="panel-heading"><div><div className="section-kicker">DECISIONS</div><h2>Decision distribution</h2></div><span className="chart-period">Today <ChevronRight size={14} /></span></div><DecisionChart /></section></div>
