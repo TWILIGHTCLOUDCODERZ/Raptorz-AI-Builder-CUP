@@ -71,7 +71,7 @@ export default function AuthGate({ onGuest }: { onGuest: (name: string) => void 
             </div>
           </div>
           <h1 className="mt-6 sm:mt-7 text-2xl sm:text-3xl lg:text-[34px] font-extrabold leading-tight tracking-tight">Autonomous defense<br className="hidden sm:block" /> for every transaction.</h1>
-          <p className="mt-3 text-[13px] sm:text-[14px] text-[#8fa8c1] max-w-lg leading-relaxed">Real-time, multi-agent fraud intelligence on Gemini — the full architecture, end to end.</p>
+          <p className="mt-3 text-[13px] sm:text-[14px] text-[#8fa8c1] max-w-lg leading-relaxed">Real-time, multi-agent fraud intelligence on Gemini — investigate, verify, protect.</p>
         </div>
 
         {/* framed, glowing architecture diagram (this page only) */}
@@ -82,9 +82,9 @@ export default function AuthGate({ onGuest }: { onGuest: (name: string) => void 
                 <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#ff5f57', display: 'inline-block' }} />
                 <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#febc2e', display: 'inline-block' }} />
                 <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#28c840', display: 'inline-block' }} />
-                <span style={{ marginLeft: 10, fontSize: 10.5, color: '#6d87a0', fontFamily: "'Space Mono', monospace" }}>aegis · reference architecture</span>
+                <span style={{ marginLeft: 10, fontSize: 10.5, color: '#6d87a0', fontFamily: "'Space Mono', monospace" }}>aegis · ai fraud intelligence</span>
               </div>
-              <img src="/architecture-diagram.png" alt="Aegis architecture" style={{ width: '100%', display: 'block' }} />
+              <img src="/Aegis-ARC.png" alt="Aegis ARC" style={{ width: '100%', maxHeight: 360, objectFit: 'contain', display: 'block', background: '#0a1526' }} />
             </div>
           </div>
         </div>
@@ -160,7 +160,7 @@ function CreatorPanel() {
   return (
     <div className="mt-5 rounded-2xl p-5" style={{ border: '1px solid rgba(66,133,244,.45)', background: 'rgba(66,133,244,.05)', boxShadow: '0 0 26px rgba(66,133,244,.28), inset 0 0 30px rgba(66,133,244,.05)' }}>
       <div className="flex items-center gap-4">
-        <img src="/Aegis-ARC.png" alt="Aegis ARC" className="h-16 w-16 rounded-2xl" style={{ objectFit: 'cover', border: '1px solid rgba(66,133,244,.5)', boxShadow: '0 0 18px rgba(66,133,244,.45)' }} />
+        <img src="/deepan.jpg" alt="Deepan" className="h-16 w-16 rounded-2xl" style={{ objectFit: 'cover', border: '1px solid rgba(66,133,244,.5)', boxShadow: '0 0 18px rgba(66,133,244,.45)' }} />
         <div>
           <div className="text-[20px] font-bold" style={{ color: '#eaf2fb', textShadow: '0 0 14px rgba(120,180,255,.55)' }}>Deepan</div>
           <div className="text-[12px] text-[#7fb0ff] tracking-wide">Cloud Architect</div>
