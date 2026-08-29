@@ -24,13 +24,14 @@ function friendlyError(code: string, message: string): string {
   }
 }
 
-export default function AuthGate() {
+export default function AuthGate({ onGuest }: { onGuest: (name: string) => void }) {
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [guestName, setGuestName] = useState('');
 
   const run = async (fn: () => Promise<unknown>) => {
     setBusy(true); setError('');
@@ -128,7 +129,18 @@ export default function AuthGate() {
               <GoogleG /> Continue with Google
             </button>
 
-            <div className="mt-5 text-center text-[12px]">
+            <div className="mt-5 pt-4 border-t border-white/10">
+              <span className="text-[11px] text-[#7f99b3]">Or continue as guest</span>
+              <form onSubmit={(e) => { e.preventDefault(); if (guestName.trim()) onGuest(guestName.trim()); }} className="flex gap-2 mt-2">
+                <span className="flex-1 flex items-center gap-2.5 rounded-xl px-3 py-2.5" style={{ background: 'rgba(20,49,80,.4)', border: '1px solid rgba(104,142,180,.25)' }}>
+                  <User size={16} className="text-[#5b7591] shrink-0" />
+                  <input value={guestName} onChange={(e) => setGuestName(e.target.value)} placeholder="Your name" className="w-full bg-transparent outline-none text-[14px] placeholder:text-[#5b7591]" />
+                </span>
+                <button type="submit" disabled={!guestName.trim()} className="rounded-xl px-4 text-[13px] font-semibold text-white transition disabled:opacity-40" style={{ background: 'rgba(66,133,244,.28)', border: '1px solid rgba(66,133,244,.45)' }}>Enter</button>
+              </form>
+            </div>
+
+            <div className="mt-4 text-center text-[12px]">
               <a href="#fraud-journey" className="text-[#5da0ff]">View executive demo →</a>
             </div>
           </div>
