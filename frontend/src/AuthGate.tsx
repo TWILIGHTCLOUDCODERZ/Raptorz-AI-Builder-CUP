@@ -56,35 +56,39 @@ export default function AuthGate({ onGuest }: { onGuest: (name: string) => void 
   const google = () => run(() => signInWithPopup(auth, googleProvider));
 
   return (
-    <div className="min-h-screen w-full flex text-[#e7eef8]"
+    <div className="min-h-screen w-full flex flex-col lg:flex-row text-[#e7eef8]"
       style={{ background: `radial-gradient(circle at 78% -12%, rgba(30,81,139,.28), transparent 34%), ${NAVY}`, fontFamily: "'DM Sans', system-ui, sans-serif" }}>
 
-      {/* left — brand */}
-      <div className="hidden lg:flex flex-col justify-between w-[46%] p-14 border-r border-white/10 relative overflow-hidden">
-        <div className="absolute -top-24 -left-24 h-72 w-72 rounded-full blur-3xl" style={{ background: 'rgba(66,133,244,.18)' }} />
+      {/* left/top — brand + realistic architecture showcase */}
+      <div className="w-full lg:w-[54%] px-6 py-8 sm:px-10 lg:px-14 lg:py-12 flex flex-col justify-center gap-7 lg:border-r border-white/10 relative overflow-hidden">
+        <div className="absolute -top-24 -left-24 h-72 w-72 rounded-full blur-3xl pointer-events-none" style={{ background: 'rgba(66,133,244,.18)' }} />
         <div className="relative">
-          <div className="flex items-center gap-4">
-            <img src="/Aegis-ARC.png" alt="Aegis" className="h-16 w-auto rounded-2xl" style={{ objectFit: 'contain', filter: 'drop-shadow(0 0 22px rgba(130,211,255,.45))' }} />
+          <div className="flex items-center gap-3.5">
+            <img src="/Aegis_Logo.png" alt="Aegis" className="h-14 w-14 rounded-2xl" style={{ objectFit: 'cover', filter: 'drop-shadow(0 0 20px rgba(130,211,255,.4))' }} />
             <div>
-              <div className="font-extrabold tracking-[.22em] text-[24px]" style={{ background: 'linear-gradient(90deg,#eaf2fb,#7fb0ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>AEGIS</div>
+              <div className="font-extrabold tracking-[.22em] text-[22px]" style={{ background: 'linear-gradient(90deg,#eaf2fb,#7fb0ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>AEGIS</div>
               <div className="text-[11px] text-[#7591ae] tracking-[.2em]">AI INTELLIGENCE</div>
             </div>
           </div>
-          <h1 className="mt-16 text-4xl font-extrabold leading-tight tracking-tight">Autonomous defense<br />for every transaction.</h1>
-          <p className="mt-4 text-[#8fa8c1] max-w-md leading-relaxed">Real-time, multi-agent fraud intelligence on Gemini — it investigates, verifies the customer, and blocks only when it must.</p>
-          <div className="mt-10 space-y-4 max-w-md">
-            {[
-              { icon: BrainCircuit, t: 'Multi-agent investigation', d: 'Seven specialist agents reason over each anomaly on Gemini 3.5.' },
-              { icon: Fingerprint, t: 'Memory that stops false declines', d: 'Recalls confirmed behaviour so it never re-challenges the same pattern.' },
-              { icon: ShieldCheck, t: 'Step-up, not block', d: 'Disables auto-pay, verifies via OTP, and alerts the relationship manager.' },
-            ].map((f) => (
-              <div key={f.t} className="flex gap-3">
-                <span className="grid place-items-center h-10 w-10 rounded-xl shrink-0" style={{ background: 'rgba(66,133,244,.12)', color: '#5da0ff' }}><f.icon size={18} /></span>
-                <div><div className="font-semibold text-[14px]">{f.t}</div><div className="text-[12px] text-[#7f99b3]">{f.d}</div></div>
+          <h1 className="mt-6 sm:mt-7 text-2xl sm:text-3xl lg:text-[34px] font-extrabold leading-tight tracking-tight">Autonomous defense<br className="hidden sm:block" /> for every transaction.</h1>
+          <p className="mt-3 text-[13px] sm:text-[14px] text-[#8fa8c1] max-w-lg leading-relaxed">Real-time, multi-agent fraud intelligence on Gemini — the full architecture, end to end.</p>
+        </div>
+
+        {/* framed, glowing architecture diagram (this page only) */}
+        <div className="relative diagram-float">
+          <div style={{ borderRadius: 16, padding: 1.5, background: 'linear-gradient(135deg, rgba(66,133,244,.6), rgba(139,92,246,.45) 50%, rgba(66,133,244,.12))', boxShadow: '0 40px 90px rgba(0,0,0,.55), 0 0 70px rgba(66,133,244,.16)' }}>
+            <div style={{ borderRadius: 14.5, overflow: 'hidden', background: '#0a1526', border: '1px solid rgba(255,255,255,.06)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '10px 14px', background: 'rgba(255,255,255,.03)', borderBottom: '1px solid rgba(255,255,255,.06)' }}>
+                <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#ff5f57', display: 'inline-block' }} />
+                <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#febc2e', display: 'inline-block' }} />
+                <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#28c840', display: 'inline-block' }} />
+                <span style={{ marginLeft: 10, fontSize: 10.5, color: '#6d87a0', fontFamily: "'Space Mono', monospace" }}>aegis · reference architecture</span>
               </div>
-            ))}
+              <img src="/architecture-diagram.png" alt="Aegis architecture" style={{ width: '100%', display: 'block' }} />
+            </div>
           </div>
         </div>
+
         <div className="relative flex items-center gap-2 text-[11px] text-[#63809d]">
           <Activity size={13} className="text-[#34a853]" /> Live on Google Cloud Run · Gemini 3.5 · Firebase Auth
         </div>
@@ -93,11 +97,6 @@ export default function AuthGate({ onGuest }: { onGuest: (name: string) => void 
       {/* right — form */}
       <div className="flex-1 flex items-center justify-center p-6">
         <div className="w-full max-w-[420px]">
-          <div className="lg:hidden flex flex-col items-center gap-2 mb-8">
-            <img src="/Aegis-ARC.png" alt="Aegis" className="h-14 w-auto rounded-2xl" style={{ objectFit: 'contain', filter: 'drop-shadow(0 0 18px rgba(130,211,255,.4))' }} />
-            <span className="font-extrabold tracking-[.22em] text-[18px]">AEGIS</span>
-          </div>
-
           <div className="rounded-2xl p-7 sm:p-8" style={{ background: 'linear-gradient(150deg, rgba(20,48,79,.75), rgba(13,34,58,.85))', border: '1px solid rgba(90,130,170,.22)', boxShadow: '0 20px 60px rgba(0,0,0,.35)' }}>
             <h2 className="text-xl font-bold">{mode === 'signin' ? 'Welcome back' : 'Create your account'}</h2>
             <p className="text-[12px] text-[#7f99b3] mt-1">{mode === 'signin' ? 'Sign in to the Aegis analyst console.' : 'Set up access to the Aegis console.'}</p>
