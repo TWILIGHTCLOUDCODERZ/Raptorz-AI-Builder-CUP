@@ -1,15 +1,58 @@
 import { useState } from 'react';
-import { Activity, ArrowRight, BrainCircuit, Fingerprint, Lock, Mail, ShieldCheck, User } from 'lucide-react';
+import {
+  createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, updateProfile,
+} from 'firebase/auth';
+import { Activity, ArrowRight, BrainCircuit, Fingerprint, Loader2, Lock, Mail, ShieldCheck, User } from 'lucide-react';
+import { auth, googleProvider } from './firebase';
 
 const NAVY = '#081727';
 
-export default function AuthGate({ onAuthed }: { onAuthed: () => void }) {
+function friendlyError(code: string, message: string): string {
+  switch (code) {
+    case 'auth/invalid-email': return 'Enter a valid email address.';
+    case 'auth/missing-password':
+    case 'auth/weak-password': return 'Password must be at least 6 characters.';
+    case 'auth/email-already-in-use': return 'That email is already registered — sign in instead.';
+    case 'auth/invalid-credential':
+    case 'auth/wrong-password':
+    case 'auth/user-not-found': return 'Incorrect email or password.';
+    case 'auth/operation-not-allowed': return 'This sign-in method is not enabled in Firebase yet (Authentication → Sign-in method).';
+    case 'auth/popup-closed-by-user':
+    case 'auth/cancelled-popup-request': return '';
+    case 'auth/unauthorized-domain': return 'This domain is not authorized in Firebase Auth (add it under Authentication → Settings → Authorized domains).';
+    default: return message || 'Something went wrong. Please try again.';
+  }
+}
+
+export default function AuthGate() {
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [name, setName] = useState('');
-  const [email, setEmail] = useState('analyst@aegis.ai');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
 
-  const submit = (e: React.FormEvent) => { e.preventDefault(); onAuthed(); };
+  const run = async (fn: () => Promise<unknown>) => {
+    setBusy(true); setError('');
+    try { await fn(); } // onAuthStateChanged in main.tsx handles the redirect
+    catch (e: unknown) {
+      const err = e as { code?: string; message?: string };
+      setError(friendlyError(err.code ?? '', err.message ?? ''));
+    } finally { setBusy(false); }
+  };
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    run(async () => {
+      if (mode === 'signup') {
+        const cred = await createUserWithEmailAndPassword(auth, email, password);
+        if (name) await updateProfile(cred.user, { displayName: name });
+      } else {
+        await signInWithEmailAndPassword(auth, email, password);
+      }
+    });
+  };
+  const google = () => run(() => signInWithPopup(auth, googleProvider));
 
   return (
     <div className="min-h-screen w-full flex text-[#e7eef8]"
@@ -39,7 +82,7 @@ export default function AuthGate({ onAuthed }: { onAuthed: () => void }) {
           </div>
         </div>
         <div className="relative flex items-center gap-2 text-[11px] text-[#63809d]">
-          <Activity size={13} className="text-[#34a853]" /> Live on Google Cloud Run · Gemini 3.5 · Firestore
+          <Activity size={13} className="text-[#34a853]" /> Live on Google Cloud Run · Gemini 3.5 · Firebase Auth
         </div>
       </div>
 
@@ -57,7 +100,7 @@ export default function AuthGate({ onAuthed }: { onAuthed: () => void }) {
 
             <div className="mt-5 grid grid-cols-2 gap-1 p-1 rounded-xl" style={{ background: 'rgba(3,14,28,.4)' }}>
               {(['signin', 'signup'] as const).map((m) => (
-                <button key={m} onClick={() => setMode(m)}
+                <button key={m} onClick={() => { setMode(m); setError(''); }}
                   className="text-[13px] font-medium py-2 rounded-lg transition"
                   style={m === mode ? { background: 'rgba(66,133,244,.16)', color: '#dbe9f8' } : { color: '#7f99b3' }}>
                   {m === 'signin' ? 'Sign in' : 'Create account'}
@@ -69,29 +112,28 @@ export default function AuthGate({ onAuthed }: { onAuthed: () => void }) {
               {mode === 'signup' && (
                 <Field icon={User} label="Full name"><input value={name} onChange={(e) => setName(e.target.value)} placeholder="Alex Rivera" className="w-full bg-transparent outline-none text-[14px] placeholder:text-[#5b7591]" /></Field>
               )}
-              <Field icon={Mail} label="Email"><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@bank.com" className="w-full bg-transparent outline-none text-[14px] placeholder:text-[#5b7591]" /></Field>
-              <Field icon={Lock} label="Password"><input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" className="w-full bg-transparent outline-none text-[14px] placeholder:text-[#5b7591]" /></Field>
+              <Field icon={Mail} label="Email"><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@bank.com" required className="w-full bg-transparent outline-none text-[14px] placeholder:text-[#5b7591]" /></Field>
+              <Field icon={Lock} label="Password"><input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required className="w-full bg-transparent outline-none text-[14px] placeholder:text-[#5b7591]" /></Field>
 
-              {mode === 'signin' && <div className="text-right"><span className="text-[12px] text-[#5da0ff] cursor-pointer">Forgot password?</span></div>}
+              {error && <div className="text-[12px] rounded-lg px-3 py-2" style={{ background: 'rgba(234,67,53,.12)', color: '#f2a49d', border: '1px solid rgba(234,67,53,.3)' }}>{error}</div>}
 
-              <button type="submit" className="w-full flex items-center justify-center gap-2 rounded-xl py-3 font-semibold text-white transition" style={{ background: '#4285f4' }}>
-                {mode === 'signin' ? 'Sign in' : 'Create account'} <ArrowRight size={16} />
+              <button type="submit" disabled={busy} className="w-full flex items-center justify-center gap-2 rounded-xl py-3 font-semibold text-white transition disabled:opacity-60" style={{ background: '#4285f4' }}>
+                {busy ? <Loader2 size={16} className="animate-spin" /> : <>{mode === 'signin' ? 'Sign in' : 'Create account'} <ArrowRight size={16} /></>}
               </button>
             </form>
 
             <div className="flex items-center gap-3 my-4 text-[11px] text-[#5b7591]"><div className="flex-1 h-px bg-white/10" /> OR <div className="flex-1 h-px bg-white/10" /></div>
 
-            <button onClick={onAuthed} className="w-full flex items-center justify-center gap-2 rounded-xl py-2.5 text-[13px] font-medium transition" style={{ background: '#fff', color: '#1f2937' }}>
+            <button onClick={google} disabled={busy} className="w-full flex items-center justify-center gap-2 rounded-xl py-2.5 text-[13px] font-medium transition disabled:opacity-60" style={{ background: '#fff', color: '#1f2937' }}>
               <GoogleG /> Continue with Google
             </button>
 
-            <div className="mt-5 flex items-center justify-between text-[12px]">
-              <button onClick={onAuthed} className="text-[#8fa8c1] hover:text-[#dbe9f8] transition">Enter console as guest →</button>
-              <a href="#fraud-journey" className="text-[#5da0ff]">View executive demo</a>
+            <div className="mt-5 text-center text-[12px]">
+              <a href="#fraud-journey" className="text-[#5da0ff]">View executive demo →</a>
             </div>
           </div>
 
-          <p className="text-center text-[11px] text-[#5b7591] mt-4">Demo / POC — no real authentication or credentials are stored.</p>
+          <p className="text-center text-[11px] text-[#5b7591] mt-4">Secured by Firebase Authentication.</p>
         </div>
       </div>
     </div>

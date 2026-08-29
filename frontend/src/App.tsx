@@ -3,7 +3,7 @@ import {
   Activity, AlertCircle, ArrowDownRight, ArrowUpRight, Bell, Bot, BrainCircuit, BriefcaseBusiness,
   Check, ChevronRight, CircleHelp, Clock3, CreditCard, Database, FileSearch, Fingerprint, Globe2,
   LayoutDashboard, LineChart, ListFilter, MapPin, Menu, Network, PanelLeftClose, Search, Shield,
-  ShieldAlert, Sparkles, Target, UserRound, Users, X, Zap, Layers,
+  ShieldAlert, Sparkles, Target, UserRound, Users, X, Zap, Layers, LogOut,
 } from 'lucide-react';
 import ArchitecturePage from './ArchitecturePage';
 
@@ -47,8 +47,10 @@ const customers = ['Olivia Martin', 'Liam Chen', 'Maya Patel', 'Ethan Brooks', '
 const merchants = ['TechWorld', 'Blue Bottle', 'Luxe Electronics', 'Metro Rail', 'Coinbase', 'Amazon Business'];
 const locations = ['Dubai, AE', 'Austin, US', 'London, UK', 'Singapore, SG', 'Toronto, CA', 'New York, US'];
 const number = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: value < 100 ? 2 : 0 }).format(value);
+function initialsOf(name: string) { const p = name.trim().split(/\s+/); if (p.length >= 2 && p[0] && p[1]) return (p[0][0] + p[1][0]).toUpperCase(); return (name.split('@')[0] || 'U').slice(0, 2).toUpperCase(); }
 
-function App({ onSignOut }: { onSignOut: () => void }) {
+function App({ user, onSignOut }: { user: { name: string; email: string }; onSignOut: () => void }) {
+  const initials = initialsOf(user.name);
   const [activeNav, setActiveNav] = useState('Aegis AI Intelligence');
   const [transactions, setTransactions] = useState(initialTransactions);
   const [selected, setSelected] = useState<Transaction>(initialTransactions[1]);
@@ -83,10 +85,10 @@ function App({ onSignOut }: { onSignOut: () => void }) {
         <div className="brand"><img src="/Aegis_Logo.png" alt="Aegis" /><div><strong>AEGIS</strong><span>Autonomous Defense</span></div><button className="sidebar-close" onClick={() => setSidebarOpen(false)}><X size={18} /></button></div>
         <div className="workspace-label">SECURITY OPERATIONS</div>
         <nav>{navItems.map(({ label, icon: Icon }) => <button key={label} className={`nav-item ${activeNav === label ? 'active' : ''}`} onClick={() => { if (label === 'Customer App') { window.location.hash = '#fraud-journey'; return; } setActiveNav(label); setSidebarOpen(false); }}><Icon size={18} /><span>{label}</span>{label === 'Investigations' && <b>{investigated.length}</b>}</button>)}</nav>
-        <div className="sidebar-bottom"><button className="nav-item"><CircleHelp size={18} /><span>Help center</span></button><div className="user-card" onClick={onSignOut} title="Sign out" style={{ cursor: 'pointer' }}><div className="avatar">AR</div><div><strong>Alex Rivera</strong><span>Senior analyst</span></div><ChevronRight size={15} /></div></div>
+        <div className="sidebar-bottom"><button className="nav-item"><CircleHelp size={18} /><span>Help center</span></button><div className="user-card" onClick={onSignOut} title="Sign out" style={{ cursor: 'pointer' }}><div className="avatar">{initials}</div><div><strong>{user.name}</strong><span>Sign out</span></div><LogOut size={15} /></div></div>
       </aside>
       <main className="main-content">
-        <header className="topbar"><button className="mobile-menu" onClick={() => setSidebarOpen(true)}><Menu size={20} /></button><div className="breadcrumb"><span>Workspace</span><ChevronRight size={14} /><strong>{activeNav}</strong></div><div className="top-actions"><div className="search-box"><Search size={16} /><input placeholder="Search transactions, customers..." /></div><div className="live-status"><span className="live-dot" /> LIVE <span className="throughput">1,284 txns/s</span></div><span className="demo-badge">DEMO</span><button className="icon-button" onClick={() => setShowNotifications(!showNotifications)}><Bell size={18} /><i /></button><div className="top-avatar">AR</div></div>{showNotifications && <div className="notification-pop"><div className="pop-title">Notifications <span>3 new</span></div><p><ShieldAlert size={15} /> High-risk wire transfer blocked</p><p><BrainCircuit size={15} /> Memory recall resolved false positive</p><p><Activity size={15} /> Stream health is nominal</p></div>}</header>
+        <header className="topbar"><button className="mobile-menu" onClick={() => setSidebarOpen(true)}><Menu size={20} /></button><div className="breadcrumb"><span>Workspace</span><ChevronRight size={14} /><strong>{activeNav}</strong></div><div className="top-actions"><div className="search-box"><Search size={16} /><input placeholder="Search transactions, customers..." /></div><div className="live-status"><span className="live-dot" /> LIVE <span className="throughput">1,284 txns/s</span></div><span className="demo-badge">DEMO</span><button className="icon-button" onClick={() => setShowNotifications(!showNotifications)}><Bell size={18} /><i /></button><div className="top-avatar" title={user.email}>{initials}</div></div>{showNotifications && <div className="notification-pop"><div className="pop-title">Notifications <span>3 new</span></div><p><ShieldAlert size={15} /> High-risk wire transfer blocked</p><p><BrainCircuit size={15} /> Memory recall resolved false positive</p><p><Activity size={15} /> Stream health is nominal</p></div>}</header>
         <div className="page-wrap">
           {activeNav === 'Aegis AI Intelligence' ? <CommandCenter transactions={transactions} blocked={blocked} selected={selected} onSelect={setSelected} streaming={streaming} onToggle={() => setStreaming(!streaming)} /> : activeNav === 'Architecture' ? <ArchitecturePage /> : <PlaceholderPage activeNav={activeNav} transactions={transactions} selected={selected} onSelect={setSelected} />}
         </div>
