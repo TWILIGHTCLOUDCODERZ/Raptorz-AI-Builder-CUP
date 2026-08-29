@@ -14,7 +14,7 @@ import {
 const PHASE_ORDER: Phase[] = ['idle', 'received', 'rules', 'ai', 'score', 'stepup', 'otp', 'approved', 'blocked'];
 const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-export default function FraudJourney() {
+export default function FraudJourney({ embedded = false }: { embedded?: boolean }) {
   const [phase, setPhase] = useState<Phase>('idle');
   const [level, setLevel] = useState<RiskLevel | null>(null);
   const [channel, setChannel] = useState<OtpChannel | null>(null);
@@ -68,8 +68,8 @@ export default function FraudJourney() {
   const investigation = level === 'critical' ? CRITICAL_INVESTIGATION : INVESTIGATION;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white via-violet-50/40 to-indigo-50/60 text-slate-800">
-      <header className="sticky top-0 z-20 backdrop-blur bg-white/70 border-b border-slate-200/70">
+    <div className="fj-dark" style={{ minHeight: embedded ? undefined : '100vh', background: embedded ? 'transparent' : '#081727' }}>
+      {!embedded && <header className="sticky top-0 z-20 backdrop-blur bg-white/70 border-b border-slate-200/70">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-4">
           <button onClick={() => { location.hash = ''; }} className="text-sm text-slate-500 hover:text-indigo-600 flex items-center gap-1.5"><ArrowLeft size={15} /> Aegis</button>
           <div className="h-5 w-px bg-slate-200" />
@@ -85,9 +85,9 @@ export default function FraudJourney() {
             <button onClick={reset} className="text-xs font-medium text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50 rounded-lg px-3 py-1.5">Reset</button>
           </div>
         </div>
-      </header>
+      </header>}
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+      <main className={embedded ? 'space-y-6' : 'max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-6'}>
         <DemoControls onStart={() => startTransaction('high')} onRisk={startTransaction} onChannel={chooseChannel} onApprove={approve} onBlock={block} />
         {showArch && <ArchitectureView steps={ARCHITECTURE} />}
 

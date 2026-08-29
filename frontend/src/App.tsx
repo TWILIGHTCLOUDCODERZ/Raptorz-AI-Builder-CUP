@@ -6,6 +6,8 @@ import {
   ShieldAlert, Sparkles, Target, UserRound, Users, X, Zap, Layers, LogOut, Lock,
 } from 'lucide-react';
 import ArchitecturePage from './ArchitecturePage';
+import FraudJourney from './fraud-journey/FraudJourney';
+import { Customer360, ComplianceSAR, NetworkGraph } from './ConsolePages';
 
 type Decision = 'Approved' | 'Step-up' | 'Held' | 'Blocked';
 type Transaction = { id: string; time: string; customer: string; card: string; amount: number; merchant: string; city: string; country: string; channel: string; risk: number; decision: Decision; reason: string; autoPay?: boolean; otpVerified?: boolean; };
@@ -84,13 +86,13 @@ function App({ user, onSignOut }: { user: { name: string; email: string }; onSig
       <aside className={`sidebar ${sidebarOpen ? 'is-open' : ''}`}>
         <div className="brand"><img src="/Aegis_Logo.png" alt="Aegis" /><div><strong>AEGIS</strong><span>Autonomous Defense</span></div><button className="sidebar-close" onClick={() => setSidebarOpen(false)}><X size={18} /></button></div>
         <div className="workspace-label">SECURITY OPERATIONS</div>
-        <nav>{navItems.map(({ label, icon: Icon }) => <button key={label} className={`nav-item ${activeNav === label ? 'active' : ''}`} onClick={() => { if (label === 'Customer App') { window.location.hash = '#fraud-journey'; return; } setActiveNav(label); setSidebarOpen(false); }}><Icon size={18} /><span>{label}</span>{label === 'Investigations' && <b>{investigated.length}</b>}</button>)}</nav>
+        <nav>{navItems.map(({ label, icon: Icon }) => <button key={label} className={`nav-item ${activeNav === label ? 'active' : ''}`} onClick={() => { setActiveNav(label); setSidebarOpen(false); }}><Icon size={18} /><span>{label}</span>{label === 'Investigations' && <b>{investigated.length}</b>}</button>)}</nav>
         <div className="sidebar-bottom"><button className="nav-item"><CircleHelp size={18} /><span>Help center</span></button><div className="user-card" onClick={onSignOut} title="Sign out" style={{ cursor: 'pointer' }}><div className="avatar">{initials}</div><div><strong>{user.name}</strong><span>Sign out</span></div><LogOut size={15} /></div></div>
       </aside>
       <main className="main-content">
         <header className="topbar"><button className="mobile-menu" onClick={() => setSidebarOpen(true)}><Menu size={20} /></button><div className="breadcrumb"><span>Workspace</span><ChevronRight size={14} /><strong>{activeNav}</strong></div><div className="top-actions"><div className="search-box"><Search size={16} /><input placeholder="Search transactions, customers..." /></div><div className="live-status"><span className="live-dot" /> LIVE <span className="throughput">1,284 txns/s</span></div><span className="demo-badge">DEMO</span><button className="icon-button" onClick={() => setShowNotifications(!showNotifications)}><Bell size={18} /><i /></button><div className="top-avatar" title={user.email}>{initials}</div></div>{showNotifications && <div className="notification-pop"><div className="pop-title">Notifications <span>3 new</span></div><p><ShieldAlert size={15} /> High-risk wire transfer blocked</p><p><BrainCircuit size={15} /> Memory recall resolved false positive</p><p><Activity size={15} /> Stream health is nominal</p></div>}</header>
         <div className="page-wrap">
-          {activeNav === 'Aegis AI Intelligence' ? <CommandCenter transactions={transactions} blocked={blocked} selected={selected} onSelect={setSelected} streaming={streaming} onToggle={() => setStreaming(!streaming)} /> : activeNav === 'Architecture' ? <ArchitecturePage /> : <PlaceholderPage activeNav={activeNav} transactions={transactions} selected={selected} onSelect={setSelected} />}
+          {activeNav === 'Aegis AI Intelligence' ? <CommandCenter transactions={transactions} blocked={blocked} selected={selected} onSelect={setSelected} streaming={streaming} onToggle={() => setStreaming(!streaming)} /> : activeNav === 'Architecture' ? <ArchitecturePage /> : activeNav === 'Customer App' ? <FraudJourney embedded /> : activeNav === 'Customer 360' ? <Customer360 /> : activeNav === 'Compliance / SAR' ? <ComplianceSAR /> : activeNav === 'Network Graph' ? <NetworkGraph /> : <PlaceholderPage activeNav={activeNav} transactions={transactions} selected={selected} onSelect={setSelected} />}
         </div>
       </main>
     </div>
