@@ -1,17 +1,25 @@
-import { initializeApp } from 'firebase/app';
+import { getApp, getApps, initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 
-// Firebase web apiKey is NOT a secret — it identifies the project; security is
-// enforced by Firebase Auth + rules. Safe to ship in client code.
+// Firebase web config is loaded from build-time env (VITE_FIREBASE_*). The values
+// live in frontend/.env locally (gitignored) and in Secret Manager for deploys —
+// injected at build time by infra/deploy-frontend.sh. Firebase web keys are not
+// secret (they ship to the browser); this just keeps them out of committed source.
+const env = import.meta.env as Record<string, string | undefined>;
+
 const firebaseConfig = {
-  apiKey: 'REDACTED_FIREBASE_WEB_KEY',
-  authDomain: 'deepan-gemini-xprize.firebaseapp.com',
-  projectId: 'deepan-gemini-xprize',
-  storageBucket: 'deepan-gemini-xprize.firebasestorage.app',
-  messagingSenderId: '807655655153',
-  appId: '1:807655655153:web:8dde92ee27c6ef614b0b50',
+  apiKey: env.VITE_FIREBASE_API_KEY,
+  authDomain: env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: env.VITE_FIREBASE_APP_ID,
 };
 
-const app = initializeApp(firebaseConfig);
+if (!firebaseConfig.apiKey) {
+  console.warn('[firebase] VITE_FIREBASE_* env not set — create frontend/.env (see .env.example).');
+}
+
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();

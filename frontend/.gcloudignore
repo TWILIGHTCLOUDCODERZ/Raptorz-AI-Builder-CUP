@@ -1,0 +1,8 @@
+# Uploaded to Cloud Build for `gcloud run deploy --source`.
+# Keep .env.production (deploy-frontend.sh writes it from Secret Manager) in the
+# build context; exclude the local .env so it never ships from a workstation.
+node_modules
+dist
+.env
+.env.local
+.git

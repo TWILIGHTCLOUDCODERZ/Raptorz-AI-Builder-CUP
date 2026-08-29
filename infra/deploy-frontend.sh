@@ -14,6 +14,14 @@ if [[ "$PROJECT_ID" == "CHANGE_ME" ]]; then
   exit 1
 fi
 
+echo ">> Fetching Firebase config from Secret Manager..."
+if gcloud secrets versions access latest --secret=firebase-config --project "$PROJECT_ID" > ./frontend/.env.production 2>/dev/null; then
+  echo "   injected firebase-config into the build."
+else
+  rm -f ./frontend/.env.production
+  echo "   WARNING: no 'firebase-config' secret — run infra/set-firebase-secret.sh first, or auth breaks on the deployed site."
+fi
+
 echo ">> Deploying $SERVICE to Cloud Run (project=$PROJECT_ID region=$REGION)..."
 gcloud run deploy "$SERVICE" \
   --source ./frontend \
@@ -22,6 +30,7 @@ gcloud run deploy "$SERVICE" \
   --allow-unauthenticated \
   --cpu 1 --memory 256Mi --min-instances 0 --max-instances 3 --concurrency 80
 
+rm -f ./frontend/.env.production
 URL="$(gcloud run services describe "$SERVICE" --project "$PROJECT_ID" --region "$REGION" --format='value(status.url)')"
 echo ""
 echo "============================================================"

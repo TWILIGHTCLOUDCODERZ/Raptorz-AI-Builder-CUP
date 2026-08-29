@@ -63,9 +63,12 @@ export default function AuthGate({ onGuest }: { onGuest: (name: string) => void 
       <div className="hidden lg:flex flex-col justify-between w-[46%] p-14 border-r border-white/10 relative overflow-hidden">
         <div className="absolute -top-24 -left-24 h-72 w-72 rounded-full blur-3xl" style={{ background: 'rgba(66,133,244,.18)' }} />
         <div className="relative">
-          <div className="flex items-center gap-3">
-            <img src="/Aegis_Logo.png" alt="Aegis" className="h-10 w-10 rounded-xl" style={{ filter: 'drop-shadow(0 0 12px rgba(130,211,255,.3))' }} />
-            <div><div className="font-bold tracking-[.18em] text-[15px]">AEGIS</div><div className="text-[10px] text-[#7591ae] tracking-wide">AI INTELLIGENCE</div></div>
+          <div className="flex items-center gap-4">
+            <img src="/Aegis_Logo.png" alt="Aegis" className="h-16 w-16 rounded-2xl" style={{ filter: 'drop-shadow(0 0 22px rgba(130,211,255,.45))' }} />
+            <div>
+              <div className="font-extrabold tracking-[.22em] text-[24px]" style={{ background: 'linear-gradient(90deg,#eaf2fb,#7fb0ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>AEGIS</div>
+              <div className="text-[11px] text-[#7591ae] tracking-[.2em]">AI INTELLIGENCE</div>
+            </div>
           </div>
           <h1 className="mt-16 text-4xl font-extrabold leading-tight tracking-tight">Autonomous defense<br />for every transaction.</h1>
           <p className="mt-4 text-[#8fa8c1] max-w-md leading-relaxed">Real-time, multi-agent fraud intelligence on Gemini — it investigates, verifies the customer, and blocks only when it must.</p>
@@ -90,9 +93,9 @@ export default function AuthGate({ onGuest }: { onGuest: (name: string) => void 
       {/* right — form */}
       <div className="flex-1 flex items-center justify-center p-6">
         <div className="w-full max-w-[420px]">
-          <div className="lg:hidden flex items-center gap-2 mb-8 justify-center">
-            <img src="/Aegis_Logo.png" alt="Aegis" className="h-9 w-9 rounded-lg" />
-            <span className="font-bold tracking-[.18em]">AEGIS</span>
+          <div className="lg:hidden flex flex-col items-center gap-2 mb-8">
+            <img src="/Aegis_Logo.png" alt="Aegis" className="h-14 w-14 rounded-2xl" style={{ filter: 'drop-shadow(0 0 18px rgba(130,211,255,.4))' }} />
+            <span className="font-extrabold tracking-[.22em] text-[18px]">AEGIS</span>
           </div>
 
           <div className="rounded-2xl p-7 sm:p-8" style={{ background: 'linear-gradient(150deg, rgba(20,48,79,.75), rgba(13,34,58,.85))', border: '1px solid rgba(90,130,170,.22)', boxShadow: '0 20px 60px rgba(0,0,0,.35)' }}>

@@ -65,12 +65,16 @@ const DEPLOY = [
 export default function ArchitecturePage() {
   return (
     <section className="placeholder-page">
-      <div className="page-heading">
-        <div>
-          <div className="eyebrow"><span className="pulse-small" /> SYSTEM VIEW</div>
-          <h1>Architecture</h1>
-          <p>Two-speed decisioning, the multi-agent fleet, step-up + RM, and the hosted apps — end to end on Google Cloud.</p>
-        </div>
+      <div style={{ position: 'relative', padding: '6px 0 24px', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', top: -40, left: -30, width: 220, height: 220, borderRadius: '50%', background: 'radial-gradient(circle, rgba(66,133,244,.18), transparent 70%)', pointerEvents: 'none' }} />
+        <div className="eyebrow" style={{ marginBottom: 12 }}><span className="pulse-small" /> SYSTEM VIEW · GOOGLE CLOUD</div>
+        <h1 style={{ fontSize: 'clamp(30px,5vw,46px)', fontWeight: 900, letterSpacing: '-.035em', lineHeight: 1.04, margin: 0, background: 'linear-gradient(105deg,#7fb0ff 0%,#a78bfa 46%,#5da0ff 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+          Aegis Architecture
+        </h1>
+        <p style={{ color: '#8ba3bb', fontSize: 14, marginTop: 12, maxWidth: 660, lineHeight: 1.6 }}>
+          Two-speed decisioning · a multi-agent fleet on <b style={{ color: '#bcd6ff' }}>Gemini 3.5</b> · step-up &amp; RM alerts · hosted end-to-end on <b style={{ color: '#bcd6ff' }}>Google Cloud</b>.
+        </p>
+        <div style={{ height: 3, width: 130, marginTop: 18, borderRadius: 3, background: 'linear-gradient(90deg,#4285f4,#8b5cf6,transparent)' }} />
       </div>
 
       <div className="panel" style={{ padding: 20 }}>
