@@ -158,11 +158,11 @@ export default function AuthGate({ onGuest }: { onGuest: (name: string) => void 
 
 function CreatorPanel() {
   return (
-    <div className="mt-5">
+    <div className="mt-5 rounded-2xl p-5" style={{ border: '1px solid rgba(66,133,244,.45)', background: 'rgba(66,133,244,.05)', boxShadow: '0 0 26px rgba(66,133,244,.28), inset 0 0 30px rgba(66,133,244,.05)' }}>
       <div className="flex items-center gap-4">
-        <div style={{ width: 58, height: 58, borderRadius: 16, display: 'grid', placeItems: 'center', background: 'linear-gradient(135deg,#265a9a,#4285f4)', color: '#eaf2fb', font: "700 22px 'DM Sans', sans-serif", boxShadow: '0 0 22px rgba(66,133,244,.35)' }}>D</div>
+        <img src="/Aegis-ARC.png" alt="Aegis ARC" className="h-16 w-16 rounded-2xl" style={{ objectFit: 'cover', border: '1px solid rgba(66,133,244,.5)', boxShadow: '0 0 18px rgba(66,133,244,.45)' }} />
         <div>
-          <div className="text-[19px] font-bold text-[#eaf2fb]">Deepan</div>
+          <div className="text-[20px] font-bold" style={{ color: '#eaf2fb', textShadow: '0 0 14px rgba(120,180,255,.55)' }}>Deepan</div>
           <div className="text-[12px] text-[#7fb0ff] tracking-wide">Cloud Architect</div>
         </div>
       </div>

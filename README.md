@@ -32,6 +32,22 @@ Two speeds: a **fast path** (rules + a Gemini Flash pre-filter) decides in milli
 
 A normal Dubai purchase auto-approves (risk 18). Two hours later the same card is used in Italy — new device, new network, behaviour mismatch → risk 82. Instead of blocking, Aegis **disables auto-pay, requests OTP, and alerts RM Tessa**. Verify → approve; no OTP → block. A reported-stolen card in a new country → risk 97 → **hard block + fraud case** (OTP cannot override a stolen card).
 
+## Results — measured on a synthetic benchmark
+
+Aegis's real decision policy vs. a traditional rules-only engine, over **276 labeled transactions** (`backend/eval/evaluate.py`):
+
+| Metric | Rules-only | **Aegis** |
+|---|---|---|
+| Fraud caught (recall) | 12.7% | **95.2%** |
+| Hard false-decline rate | 39.0% | **3.8%** |
+| Block precision | 8.8% | **88.2%** |
+
+- **Caught 95.2% of fraud** vs. 12.7% for rules-only — AI catches the stolen-card, account-takeover and impossible-travel cases blunt rules miss.
+- **Cut hard false declines by ~90%** (39% → 3.8%) — memory approves confirmed-legit activity and a lightweight OTP step-up replaces most declines.
+- Every decision is automated (approve / step-up / block) in seconds — no manual analyst triage queue.
+
+Reproduce: `python backend/eval/evaluate.py`. Illustrative on synthetic data; production thresholds are calibrated on the bank's historical fraud / false-positive data.
+
 ## Key capabilities
 
 - **Multi-agent investigation** on Gemini 3.5, streamed live into the analyst console
