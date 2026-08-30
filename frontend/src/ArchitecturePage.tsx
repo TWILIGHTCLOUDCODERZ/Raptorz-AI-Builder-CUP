@@ -3,6 +3,7 @@ import {
   Gauge, Globe2, Layers, Lock, Mail, Network, Radio, Scale, ShieldAlert, ShieldCheck, Smartphone,
   Sparkles, UserRound, Zap,
 } from 'lucide-react';
+import ArchitectureExplorer from './ArchitectureExplorer';
 
 type Tone = { border: string; bg: string; head: string };
 const T: Record<string, Tone> = {
@@ -78,7 +79,7 @@ export default function ArchitecturePage() {
       </div>
 
       <div className="panel" style={{ padding: 20 }}>
-        <img src="/architecture-diagram.png" alt="Aegis architecture diagram" style={{ width: '100%', borderRadius: 12, marginBottom: 16, border: '1px solid rgba(90,130,170,.2)', display: 'block' }} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
+        <div style={{ marginBottom: 16 }}><ArchitectureExplorer /></div>
         <div className="flex flex-wrap gap-4 mb-4 text-[11px]" style={{ color: '#8ba3bb' }}>
           <span className="flex items-center gap-1.5"><i className="inline-block h-3 w-3 rounded" style={{ background: 'rgba(66,133,244,.5)' }} /> Real-time decisioning</span>
           <span className="flex items-center gap-1.5"><i className="inline-block h-3 w-3 rounded" style={{ background: 'rgba(139,92,246,.5)' }} /> AI investigation (generative)</span>
