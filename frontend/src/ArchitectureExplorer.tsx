@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 type Svc = { id: string; name: string; tag: string; detail: string; x: number; y: number; w: number; h: number };
 
@@ -20,9 +20,12 @@ const SERVICES: Svc[] = [
   { id: 'frontend',  name: 'Frontend · Cloud Run (NGINX)', tag: '9 · Console',  detail: 'Analyst console + executive demo — live cases & dashboard, real-time agent step trace and the step-up demo via Firestore / SSE.', x: 71,   y: 70.5, w: 27,   h: 17 },
 ];
 
+const AUTO_CLOSE_MS = 10000;
+
 export default function ArchitectureExplorer() {
   const [active, setActive] = useState<string | null>(null);
   const [hover, setHover] = useState<string | null>(null);
+  const [paused, setPaused] = useState(false); // pointer resting on the popup
 
   const sel = SERVICES.find((s) => s.id === active) || null;
   const focus = SERVICES.find((s) => s.id === (active ?? hover)) || null;
@@ -30,12 +33,24 @@ export default function ArchitectureExplorer() {
   const origin = focus ? `${focus.x + focus.w / 2}% ${focus.y + focus.h / 2}%` : '50% 50%';
   const anim = 'transform .5s cubic-bezier(.2,.8,.2,1)';
 
+  // auto-dismiss the popup after 10s of no action; hovering the popup pauses it
+  useEffect(() => {
+    if (!active || paused) return;
+    const t = window.setTimeout(() => setActive(null), AUTO_CLOSE_MS);
+    return () => window.clearTimeout(t);
+  }, [active, paused]);
+
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, gap: 10, flexWrap: 'wrap' }}>
         <div className="section-kicker" style={{ color: '#5da0ff' }}><span className="blue-dot" /> INTERACTIVE — HOVER OR CLICK A SERVICE</div>
         {active && <button onClick={() => setActive(null)} className="stream-button">Reset view</button>}
       </div>
+
+      <style>{`
+        @keyframes aegisPopIn { from { opacity:0; transform:scale(.9) translateY(8px) } to { opacity:1; transform:none } }
+        @keyframes aegisCountdown { from { width:100% } to { width:0% } }
+      `}</style>
 
       <div style={{ position: 'relative', width: '100%', aspectRatio: '1536 / 1024', borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(90,130,170,.25)', background: '#0a1526' }}>
         <img src="/Aegis-ARC.png" alt="Aegis architecture" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', transformOrigin: origin, transform: `scale(${zoom})`, transition: anim }} />
@@ -50,6 +65,38 @@ export default function ArchitectureExplorer() {
             );
           })}
         </div>
+
+        {/* in-frame popup — gradient title border, close ✕, 10s auto-close */}
+        {sel && (
+          <div
+            onMouseEnter={() => setPaused(true)}
+            onMouseLeave={() => setPaused(false)}
+            style={{ position: 'absolute', left: 14, bottom: 14, width: 'min(360px, 62%)', zIndex: 5,
+              padding: 1.5, borderRadius: 14, animation: 'aegisPopIn .28s cubic-bezier(.2,.8,.2,1)',
+              background: 'linear-gradient(135deg, rgba(66,133,244,.9), rgba(167,139,250,.7) 52%, rgba(66,133,244,.15))',
+              boxShadow: '0 24px 60px rgba(0,0,0,.6), 0 0 34px rgba(66,133,244,.28)' }}>
+            <div style={{ borderRadius: 12.5, overflow: 'hidden', background: '#0b1a2e', border: '1px solid rgba(255,255,255,.05)' }}>
+              {/* title bar */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '11px 12px 11px 14px', background: 'linear-gradient(90deg, rgba(66,133,244,.16), rgba(167,139,250,.06))', borderBottom: '1px solid rgba(120,160,200,.18)' }}>
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#5da0ff', boxShadow: '0 0 10px #5da0ff', flex: 'none' }} />
+                <strong style={{ color: '#eaf2fb', fontSize: 14, letterSpacing: '-.01em', flex: 1, lineHeight: 1.2 }}>{sel.name}</strong>
+                <span style={{ fontSize: 10, color: '#7fb0ff', border: '1px solid rgba(66,133,244,.35)', borderRadius: 6, padding: '2px 7px', flex: 'none', fontFamily: "'Space Mono', monospace" }}>{sel.tag}</span>
+                <button onClick={() => setActive(null)} aria-label="Close" title="Close"
+                  style={{ flex: 'none', width: 24, height: 24, display: 'grid', placeItems: 'center', cursor: 'pointer', borderRadius: 7, marginLeft: 2, color: '#9fb6cd', background: 'rgba(255,255,255,.04)', border: '1px solid rgba(120,160,200,.22)', lineHeight: 0 }}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" /></svg>
+                </button>
+              </div>
+              {/* body */}
+              <p style={{ color: '#a9c0d6', fontSize: 12.5, lineHeight: 1.55, margin: 0, padding: '12px 14px 14px' }}>{sel.detail}</p>
+              {/* countdown bar */}
+              <div style={{ height: 3, background: 'rgba(255,255,255,.05)' }}>
+                <div key={sel.id + (paused ? ':p' : ':r')} style={{ height: '100%', background: 'linear-gradient(90deg,#4285f4,#a78bfa)',
+                  animation: `aegisCountdown ${AUTO_CLOSE_MS}ms linear forwards`,
+                  animationPlayState: paused ? 'paused' : 'running' }} />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 12 }}>
@@ -62,16 +109,6 @@ export default function ArchitectureExplorer() {
         })}
       </div>
 
-      {sel && (
-        <div style={{ marginTop: 12, padding: 16, borderRadius: 12, background: 'rgba(66,133,244,.07)', border: '1px solid rgba(66,133,244,.3)', boxShadow: '0 0 26px rgba(66,133,244,.12)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 9, flexWrap: 'wrap' }}>
-            <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#5da0ff', boxShadow: '0 0 10px #5da0ff', display: 'inline-block' }} />
-            <strong style={{ color: '#eaf2fb', fontSize: 15 }}>{sel.name}</strong>
-            <span style={{ fontSize: 10, color: '#7fb0ff', border: '1px solid rgba(66,133,244,.3)', borderRadius: 6, padding: '2px 7px' }}>{sel.tag}</span>
-          </div>
-          <p style={{ color: '#a9c0d6', fontSize: 13, lineHeight: 1.6, margin: '8px 0 0' }}>{sel.detail}</p>
-        </div>
-      )}
     </div>
   );
 }
