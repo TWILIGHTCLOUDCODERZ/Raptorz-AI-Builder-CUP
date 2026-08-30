@@ -27,7 +27,11 @@ from tools import investigation_tools as T
 PROJECT = os.getenv("GOOGLE_CLOUD_PROJECT")
 LOCATION = os.getenv("GOOGLE_CLOUD_LOCATION", "us-central1")
 MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash")
-MOCK = os.getenv("AEGIS_MOCK", "").lower() == "true" or not PROJECT
+# Gemini API key (optional) — mounted from Secret Manager on Cloud Run. When unset,
+# the backend authenticates to Vertex AI via the runtime service account (ADC).
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+_OFFLINE = os.getenv("AEGIS_OFFLINE", "").lower() == "true" or os.getenv("AEGIS_MOCK", "").lower() == "true"
+MOCK = _OFFLINE or (not PROJECT and not GEMINI_API_KEY)
 
 _COMPROMISED = ("reported_stolen", "lost", "frozen")
 
@@ -39,7 +43,7 @@ def _get_client():
     if _client is None:
         from google import genai
 
-        _client = genai.Client(vertexai=True, project=PROJECT, location=LOCATION)
+        _client = genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else genai.Client(vertexai=True, project=PROJECT, location=LOCATION)
     return _client
 
 

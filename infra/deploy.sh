@@ -20,6 +20,14 @@ fi
 AUTH_FLAG="--no-allow-unauthenticated"
 [[ "$ALLOW_UNAUTH" == "true" ]] && AUTH_FLAG="--allow-unauthenticated"
 
+# Optional: mount the Gemini API key from Secret Manager (if stored via
+# infra/set-gemini-secret.sh). Otherwise the backend uses Vertex AI (ADC, no key).
+SECRET_FLAG=""
+if gcloud secrets describe gemini-api-key --project "$PROJECT_ID" >/dev/null 2>&1; then
+  SECRET_FLAG="--set-secrets=GEMINI_API_KEY=gemini-api-key:latest"
+  echo ">> Mounting Gemini API key from Secret Manager."
+fi
+
 echo ">> Deploying $SERVICE to Cloud Run (project=$PROJECT_ID region=$REGION)..."
 gcloud run deploy "$SERVICE" \
   --source ./backend \
@@ -30,7 +38,7 @@ gcloud run deploy "$SERVICE" \
   --cpu 1 --memory 512Mi \
   --min-instances 0 --max-instances 3 \
   --concurrency 40 --timeout 120 \
-  $AUTH_FLAG
+  $AUTH_FLAG $SECRET_FLAG
 
 URL="$(gcloud run services describe "$SERVICE" --project "$PROJECT_ID" --region "$REGION" --format='value(status.url)')"
 echo ""

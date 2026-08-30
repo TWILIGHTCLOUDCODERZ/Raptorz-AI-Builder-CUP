@@ -8,7 +8,7 @@
 
 Aegis doesn't just detect fraud — it *investigates*, *verifies the customer*, and blocks only when it must.
 
-`Gemini 3.5` · `Google GenAI SDK` · `Cloud Run` · `Pub/Sub` · `Firestore` · `Firebase Auth` · `React + TypeScript`
+`Gemini 3.5` · `Google GenAI SDK` · `Cloud Run` · `Pub/Sub` · `Firestore` · `Secret Manager` · `Firebase Auth` · `React + TypeScript`
 
 </div>
 
@@ -20,11 +20,29 @@ Traditional rule engines ask *"is this transaction suspicious?"* — Aegis asks 
 
 A **multi-agent system on Gemini 3.5** runs the investigation: an Orchestrator delegates to specialist agents (Card Status, Step-Up Control, Investigator, Network, Intel, Compliance, Critic), each reasoning over evidence, then a memory- and policy-aware adaptive decision — with a relationship-manager alert and an AI-drafted case for high/critical risk.
 
+## Scope
+
+- **Real-time transaction risk decisioning** across card, wire and online channels.
+- **Behavioural & contextual fraud detection** — device, network, geo-velocity, and history that rule thresholds miss.
+- **Adaptive step-up authentication** (Mobile / Email OTP) that verifies the customer instead of declining them.
+- **Multi-agent investigation & explainability** on Gemini 3.5, with an auto-drafted case and a relationship-manager alert.
+- **Analyst console** (command center, live investigations, Customer 360, Compliance/SAR, Network Graph) and an **executive step-up walkthrough**.
+- **Boundaries:** this build is a proof-of-concept on synthetic data — no real payments, card data, messages or core-banking integrations. The risk *decision* is made by the policy/risk engine; generative AI produces explanations only.
+
+## Solution
+
+Aegis runs a **two-speed architecture**:
+
+1. **Fast path (milliseconds)** — a rules + Gemini Flash pre-filter clears the ~90% of benign traffic and makes the instant allow / decline / step-up call.
+2. **Deep path (seconds, async)** — only genuinely suspicious transactions wake a **multi-agent investigation on Gemini 3.5**. An Orchestrator delegates to seven specialist agents, weighs **customer memory** (confirmed-legit patterns), applies **policy gates** (stolen-card hard block, auto-pay + OTP, VIP handling), and returns an adaptive decision with reason codes, a confidence score and an evidence summary.
+
+For high/critical risk it **disables auto-pay, requests OTP, and alerts the relationship manager** with an AI-generated explanation. A stolen card is blocked regardless of tier; a VIP is never cold-declined.
+
 ## Reference architecture
 
 ![Aegis architecture](frontend/public/architecture-diagram.png)
 
-Two speeds: a **fast path** (rules + a Gemini Flash pre-filter) decides in milliseconds; only genuinely suspicious transactions wake the **deep path** (async multi-agent investigation on Gemini 3.5). The **risk engine / policy makes the decision** — generative AI is used only for investigation summaries and explanations, never to authorize the payment.
+The **risk engine / policy makes the decision** — generative AI is used only for investigation summaries and explanations, never to authorize the payment.
 
 ## The Tyson case flow
 
@@ -48,6 +66,16 @@ Aegis's real decision policy vs. a traditional rules-only engine, over **276 lab
 
 Reproduce: `python backend/eval/evaluate.py`. Illustrative on synthetic data; production thresholds are calibrated on the bank's historical fraud / false-positive data.
 
+## Benefits for banking
+
+- **Recovered revenue** — banks lose more to *false declines* than to actual card fraud; cutting them ~90% turns declined-but-legitimate spend back into approved transactions and keeps customers loyal.
+- **Lower fraud losses** — behavioural, device and network signals catch sophisticated fraud (stolen card, account takeover, impossible travel) that static rules approve.
+- **Better customer experience** — verify, don't block: a quick OTP replaces an embarrassing decline; VIPs get white-glove handling and are never cold-declined.
+- **Analyst efficiency** — every case is auto-investigated and explained in seconds, with an AI-drafted narrative; analysts review, they don't triage from scratch.
+- **Relationship-manager insight** — high-risk activity raises an RM alert with a plain-language explanation, so the bank protects the client and the relationship at once.
+- **Explainable & auditable** — reason codes, confidence and an evidence chain on every decision support model-risk governance and regulatory review.
+- **Elastic & cost-aware** — scales to zero on Cloud Run; a cheap pre-filter means Gemini only runs on the small fraction of transactions that need deep analysis.
+
 ## Key capabilities
 
 - **Multi-agent investigation** on Gemini 3.5, streamed live into the analyst console
@@ -55,14 +83,15 @@ Reproduce: `python backend/eval/evaluate.py`. Illustrative on synthetic data; pr
 - **Risk matrix policy** — Low → auto-approve · Medium → OTP · High → step-up + RM alert · Critical → block + investigation
 - **Step-up, not block** — auto-pay disabled → Mobile/Email OTP → verify or block
 - **VIP handling** — a false decline costs more than the fraud, so VIPs are never cold-declined; a stolen card is blocked regardless of tier
+- **Interactive architecture explorer** — hover/click any Google Cloud service to zoom in and read what it does
 - **Analyst console** — command center, auto-launching investigations, Customer 360, Compliance/SAR, Network Graph, Architecture
-- **Executive step-up demo** — a presentable, self-contained journey
+- **Executive step-up walkthrough** — a presentable, self-contained journey
 
 ## Monorepo layout
 
 ```
 project/
-├── frontend/     # React + TypeScript + Tailwind — analyst console + executive demo
+├── frontend/     # React + TypeScript + Tailwind — analyst console + executive walkthrough
 ├── backend/      # FastAPI + Google GenAI SDK + Gemini 3.5 — multi-agent investigation
 ├── infra/        # GCP setup + Cloud Run deploy scripts + Secret Manager
 ├── simulator/    # Pub/Sub transaction publisher
@@ -78,7 +107,7 @@ project/
 | **Cloud Run** | Hosts the backend agent service and the static frontend (scales to zero) |
 | **Pub/Sub** | Event backbone — transactions stream in and wake the router |
 | **Firestore** | Customer memory (confirmed-legit, tier), cases, live agent-step streaming |
-| **Secret Manager** | Frontend build config (Firebase web keys) — single source of truth |
+| **Secret Manager** | Firebase web config **and the Gemini API key** — single source of truth, injected at build/runtime |
 | **Cloud Build + Artifact Registry** | Builds and stores container images on every deploy |
 | **Model Armor** | Prompt-injection / PII guardrails around the Gemini calls |
 | **Cloud Storage** | Receipt / evidence uploads for multimodal verification |
@@ -114,64 +143,83 @@ npm run dev
 ```
 Open **http://localhost:5173** → sign in with Firebase, or **continue as guest** (no account needed).
 
-### 2) Backend (optional — runs in a deterministic mock mode with no cloud)
+### 2) Backend (optional — runs offline, deterministic, no cloud)
 ```bash
 cd backend
 pip install -r requirements.txt
 # PowerShell:
-$env:AEGIS_MOCK="true"; uvicorn app:app --reload --port 8080
+$env:AEGIS_OFFLINE="true"; uvicorn app:app --reload --port 8080
 # bash:
-AEGIS_MOCK=true uvicorn app:app --reload --port 8080
+AEGIS_OFFLINE=true uvicorn app:app --reload --port 8080
 ```
 Point the frontend at it by setting `VITE_API_URL=http://localhost:8080` in `frontend/.env`, then restart `npm run dev`.
-For **real Gemini** locally instead of mock: `gcloud auth application-default login`, drop `AEGIS_MOCK`, and set `GOOGLE_CLOUD_PROJECT` / `GOOGLE_CLOUD_LOCATION=global` / `GEMINI_MODEL=gemini-3.5-flash`.
+To run against **live Gemini** locally: `gcloud auth application-default login`, drop `AEGIS_OFFLINE`, and set `GOOGLE_CLOUD_PROJECT` / `GOOGLE_CLOUD_LOCATION=global` / `GEMINI_MODEL=gemini-3.5-flash`.
 
 ---
 
-## Deploy to Google Cloud
+## Deploy to Google Cloud — detailed steps
 
-All scripts build **from source via Cloud Build** — no local Docker needed. Run them from the repo root (Cloud Shell works out of the box).
+All scripts build **from source via Cloud Build** — no local Docker needed. Run them from the repo root; **Cloud Shell** works out of the box (gcloud is pre-installed and authenticated).
 
+**Step 0 — one-time in the Cloud Console:** create a project, link a billing account, and note the `PROJECT_ID`.
+
+**Step 1 — provision the project.** Enables the APIs and creates Firestore, Pub/Sub topics, the Storage bucket, the Artifact Registry repo, and the least-privilege service accounts (`aegis-runtime`, `aegis-sim`):
 ```bash
 export PROJECT_ID=<your-project-id>
-
-# 1) Provision — APIs, Firestore, Pub/Sub, Storage, Artifact Registry, service accounts
 bash infra/setup.sh
-
-# 2) Backend → Cloud Run (Gemini 3.5-flash on the global endpoint)
-bash infra/deploy.sh
-
-# 3) Store the frontend config in Secret Manager (one-time — see below)
-bash infra/set-firebase-secret.sh
-
-# 4) Frontend → Cloud Run (nginx), injecting the config from Secret Manager
-bash infra/deploy-frontend.sh
 ```
-`deploy-frontend.sh` prints the live URL: the analyst console at `/` and the executive demo at `/#fraud-journey`.
+
+**Step 2 — (optional) store the Gemini API key in Secret Manager.** Skip this to use Vertex AI via the runtime service account (no key). To use a Gemini API key instead — stored in Secret Manager and mounted to Cloud Run at runtime:
+```bash
+PROJECT_ID=$PROJECT_ID GEMINI_API_KEY=<your-gemini-api-key> bash infra/set-gemini-secret.sh
+```
+
+**Step 3 — deploy the backend to Cloud Run** (Gemini 3.5-flash on the global endpoint; mounts the Gemini key secret if present):
+```bash
+PROJECT_ID=$PROJECT_ID bash infra/deploy.sh
+```
+It prints the backend URL and a `curl` health/investigate test.
+
+**Step 4 — store the frontend config in Secret Manager.** Create `frontend/.env` with your `VITE_FIREBASE_*` values, then:
+```bash
+PROJECT_ID=$PROJECT_ID bash infra/set-firebase-secret.sh
+```
+
+**Step 5 — deploy the frontend to Cloud Run** (nginx; fetches the Firebase config from Secret Manager and bakes it into the build):
+```bash
+PROJECT_ID=$PROJECT_ID bash infra/deploy-frontend.sh
+```
+It prints the live URL: the analyst console at `/` and the executive walkthrough at `/#fraud-journey`.
+
+**Step 6 — enable Firebase sign-in** (once): in the Firebase console → Authentication → Sign-in method, enable **Email/Password** (and Google); under Settings → Authorized domains, add your Cloud Run domain. *(Guest login works without this.)*
 
 ---
 
 ## Details stored in Secret Manager
 
-The frontend build config (Firebase web keys + the backend URL) is kept in **Secret Manager** as the single source of truth — never hardcoded in committed source.
+Sensitive config is held in **Secret Manager** as the single source of truth — never hardcoded in committed source.
 
+**1. Frontend config — secret `firebase-config`** (Firebase web keys + backend URL):
 - Values live in `frontend/.env` locally (gitignored).
-- **`infra/set-firebase-secret.sh`** stores that file as the secret **`firebase-config`**.
-- **`infra/deploy-frontend.sh`** fetches `firebase-config` and injects it into the build (`.env.production`), then bakes it into the SPA.
+- `infra/set-firebase-secret.sh` stores that file as the secret.
+- `infra/deploy-frontend.sh` fetches it and injects it into the build, then bakes it into the SPA.
 
-```bash
-# create/update frontend/.env, then:
-PROJECT_ID=<your-project-id> bash infra/set-firebase-secret.sh
-```
+> Firebase **web** keys are not secret — they identify the project and ship to the browser to initialize Firebase; security comes from Firebase Auth + rules. Secret Manager keeps them out of committed source and centralizes them.
 
-> Note: Firebase **web** keys are not secret — they identify the project and ship to the browser to initialize Firebase; security comes from Firebase Auth + rules. Secret Manager here keeps them out of committed source and centralizes them, injected at build time.
+**2. Gemini API key — secret `gemini-api-key`** (optional):
+- By default the backend authenticates to **Vertex AI** via the `aegis-runtime` service account (Application Default Credentials) — **no key in code**.
+- To use a Gemini API key instead, store it with `infra/set-gemini-secret.sh`. `infra/deploy.sh` detects the secret and **mounts it to Cloud Run at runtime** as `GEMINI_API_KEY` — it never appears in the repo, the image, or the frontend.
 
 ## Authentication
 
-- **Firebase Auth** — email/password + Google sign-in. Enable the providers in the Firebase console (Authentication → Sign-in method) and add your domains under Authentication → Settings → Authorized domains.
-- **Guest mode** — enter a name and proceed; no Firebase setup required (handy for demos).
+- **Firebase Auth** — email/password + Google sign-in. Enable the providers in the Firebase console and add your domains under Authorized domains.
+- **Guest mode** — enter a name and proceed; no Firebase setup required.
 
 ---
+
+## Conclusion
+
+Aegis reframes fraud defense from *"block anything suspicious"* to *"verify the customer, block only real fraud."* By pairing a fast rules/Flash pre-filter with a Gemini 3.5 multi-agent investigation, customer memory, and adaptive step-up, it catches the sophisticated fraud that rules miss **and** cuts the false declines that cost banks revenue and trust — on the benchmark, **95% of fraud caught and ~90% fewer false declines**. It runs end-to-end on Google Cloud (Cloud Run, Pub/Sub, Firestore, Vertex AI, Secret Manager), scales to zero, keeps every secret in Secret Manager, and explains every decision — giving a bank both stronger protection and a better customer experience from the same event.
 
 ## Creator
 
@@ -179,4 +227,4 @@ PROJECT_ID=<your-project-id> bash infra/set-firebase-secret.sh
 
 ## Disclaimer
 
-Demo / proof-of-concept. Simulated transactions, risk scoring and OTP — no real payments, messages, or banking integrations. All data is synthetic.
+Proof-of-concept. Simulated transactions, risk scoring and OTP — no real payments, messages, or banking integrations. All data is synthetic.
