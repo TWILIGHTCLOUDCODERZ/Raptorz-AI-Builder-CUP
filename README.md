@@ -143,7 +143,7 @@ npm run dev
 ```
 Open **http://localhost:5173** → sign in with Firebase, or **continue as guest** (no account needed).
 
-### 2) Backend (optional — runs offline, deterministic, no cloud)
+### 2) Backend ( — runs offline, deterministic, no cloud)
 ```bash
 cd backend
 pip install -r requirements.txt
@@ -169,7 +169,7 @@ export PROJECT_ID=<your-project-id>
 bash infra/setup.sh
 ```
 
-**Step 2 — (optional) store the Gemini API key in Secret Manager.** Skip this to use Vertex AI via the runtime service account (no key). To use a Gemini API key instead — stored in Secret Manager and mounted to Cloud Run at runtime:
+**Step 2 — store the Gemini API key in Secret Manager.** Skip this to use Vertex AI via the runtime service account (no key). To use a Gemini API key instead — stored in Secret Manager and mounted to Cloud Run at runtime:
 ```bash
 PROJECT_ID=$PROJECT_ID GEMINI_API_KEY=<your-gemini-api-key> bash infra/set-gemini-secret.sh
 ```
@@ -206,7 +206,7 @@ Sensitive config is held in **Secret Manager** as the single source of truth —
 
 > Firebase **web** keys are not secret — they identify the project and ship to the browser to initialize Firebase; security comes from Firebase Auth + rules. Secret Manager keeps them out of committed source and centralizes them.
 
-**2. Gemini API key — secret `gemini-api-key`** (optional):
+**2. Gemini API key — secret `gemini-api-key`** :
 - By default the backend authenticates to **Vertex AI** via the `aegis-runtime` service account (Application Default Credentials) — **no key in code**.
 - To use a Gemini API key instead, store it with `infra/set-gemini-secret.sh`. `infra/deploy.sh` detects the secret and **mounts it to Cloud Run at runtime** as `GEMINI_API_KEY` — it never appears in the repo, the image, or the frontend.
 
