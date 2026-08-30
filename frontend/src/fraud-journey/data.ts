@@ -10,6 +10,8 @@ export const OTP_SECONDS = 120;
 export const CUSTOMER: Customer = {
   name: 'Tyson',
   cardMasked: '**** **** **** 1234',
+  cardTier: 'VIP',
+  autoPay: true,
   mobileMasked: '+60 ******935',
   emailMasked: 't******@email.com',
   normalLocation: 'Dubai, UAE',

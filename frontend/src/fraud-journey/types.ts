@@ -17,6 +17,8 @@ export type Phase =
 export interface Customer {
   name: string;
   cardMasked: string;
+  cardTier: string;   // e.g. VIP
+  autoPay: boolean;   // auto-pay enabled on the card
   mobileMasked: string;
   emailMasked: string;
   normalLocation: string;

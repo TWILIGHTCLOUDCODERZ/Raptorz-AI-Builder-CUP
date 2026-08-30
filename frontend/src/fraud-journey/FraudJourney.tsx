@@ -23,6 +23,7 @@ export default function FraudJourney({ embedded = false }: { embedded?: boolean 
   const [secondsLeft, setSecondsLeft] = useState(OTP_SECONDS);
   const [showInv, setShowInv] = useState(false);
   const [showArch, setShowArch] = useState(false);
+  const [blockReason, setBlockReason] = useState<'otp_timeout' | 'otp_failed' | 'manual' | null>(null);
   const runId = useRef(0);
 
   const scenario = level ? SCENARIOS[level] : null;
@@ -33,7 +34,7 @@ export default function FraudJourney({ embedded = false }: { embedded?: boolean 
 
   async function startTransaction(lvl: RiskLevel = 'high') {
     const id = ++runId.current;
-    setLevel(lvl); setChannel(null); setAttempts(0); setOtpError(''); setSecondsLeft(OTP_SECONDS); setShowInv(false);
+    setLevel(lvl); setChannel(null); setAttempts(0); setOtpError(''); setSecondsLeft(OTP_SECONDS); setShowInv(false); setBlockReason(null);
     setPhase('received'); await delay(1100); if (runId.current !== id) return;
     setPhase('rules'); await delay(1500); if (runId.current !== id) return;
     setPhase('ai'); await delay(1900); if (runId.current !== id) return;
@@ -42,26 +43,30 @@ export default function FraudJourney({ embedded = false }: { embedded?: boolean 
     setPhase(sc.blocks ? 'blocked' : sc.requiresOtp ? 'stepup' : 'approved');
   }
 
+  // OTP countdown — if the customer does not share the code within 2 minutes,
+  // Aegis blocks the transaction (verify the customer, otherwise protect them).
   useEffect(() => {
-    if (phase !== 'otp' || secondsLeft <= 0) return;
+    if (phase !== 'otp') return;
+    if (secondsLeft <= 0) { runId.current++; setBlockReason('otp_timeout'); setPhase('blocked'); return; }
     const t = setTimeout(() => setSecondsLeft((s) => s - 1), 1000);
     return () => clearTimeout(t);
   }, [phase, secondsLeft]);
 
   const chooseChannel = (c: OtpChannel) => {
-    runId.current++; setChannel(c); setOtpError(''); setSecondsLeft(OTP_SECONDS); setAttempts(0);
+    runId.current++; setChannel(c); setOtpError(''); setSecondsLeft(OTP_SECONDS); setAttempts(0); setBlockReason(null);
     setLevel((l) => (l && l !== 'low' ? l : 'high')); setPhase('otp');
   };
   const verifyOtp = (code: string) => {
+    // OTP shared correctly (within the 2-minute window) → transaction passes
     if (code === DEMO_OTP && secondsLeft > 0) { setOtpError(''); setPhase('approved'); return; }
     const a = attempts + 1; setAttempts(a);
     setOtpError(secondsLeft <= 0 ? 'Code expired — please resend.' : 'Incorrect code — please try again.');
-    if (a >= 3) setPhase('blocked');
+    if (a >= 3) { setBlockReason('otp_failed'); setPhase('blocked'); }
   };
   const resendOtp = () => { setSecondsLeft(OTP_SECONDS); setOtpError(''); };
   const approve = () => { runId.current++; setLevel((l) => l ?? 'high'); setPhase('approved'); };
-  const block = () => { runId.current++; setLevel((l) => l ?? 'critical'); setPhase('blocked'); };
-  const reset = () => { runId.current++; setPhase('idle'); setLevel(null); setChannel(null); setAttempts(0); setOtpError(''); setShowInv(false); };
+  const block = () => { runId.current++; setBlockReason('manual'); setLevel((l) => l ?? 'critical'); setPhase('blocked'); };
+  const reset = () => { runId.current++; setPhase('idle'); setLevel(null); setChannel(null); setAttempts(0); setOtpError(''); setShowInv(false); setBlockReason(null); };
 
   const channelLabel = channel === 'mobile' ? 'Mobile OTP' : 'Email OTP';
   const outcome: 'pending' | 'approved' | 'blocked' = phase === 'approved' ? 'approved' : phase === 'blocked' ? 'blocked' : 'pending';
@@ -113,7 +118,9 @@ export default function FraudJourney({ embedded = false }: { embedded?: boolean 
               <div className="space-y-3">
                 <Row label="Customer" value={CUSTOMER.name} />
                 <Row label="Card" value={CUSTOMER.cardMasked} mono />
+                <Row label="Card tier" value={CUSTOMER.cardTier} accent />
                 <Row label="Card status" value={level === 'critical' ? 'REPORTED STOLEN' : 'Active'} danger={level === 'critical'} />
+                <Row label="Auto-pay" value={autoDisabled ? 'Suspended · verify customer' : CUSTOMER.autoPay ? 'Enabled' : 'Off'} danger={autoDisabled} />
                 <Row label="Normal location" value={CUSTOMER.normalLocation} />
                 <div className="h-px bg-slate-100" />
                 <Row label={`Transaction (${mainTx.time})`} value={`$${mainTx.amount.toFixed(2)}`} strong />
@@ -138,8 +145,8 @@ export default function FraudJourney({ embedded = false }: { embedded?: boolean 
             {phase === 'idle' && (
               <div className="rounded-2xl border-2 border-dashed border-slate-200 bg-white/50 p-10 text-center">
                 <span className="grid place-items-center h-12 w-12 rounded-2xl bg-indigo-50 text-indigo-600 mx-auto mb-3"><CreditCard size={22} /></span>
-                <div className="font-semibold text-slate-800">Tyson · cross-country card activity</div>
-                <p className="text-sm text-slate-500 mt-1 max-w-md mx-auto">A normal Dubai purchase auto-approves. Two hours later the same card is used in Italy — watch AI catch what the rules miss, then <b>verify</b> the customer instead of blocking.</p>
+                <div className="font-semibold text-slate-800">Tyson · VIP card · auto-pay enabled</div>
+                <p className="text-sm text-slate-500 mt-1 max-w-md mx-auto">His normal <b>Dubai</b> purchase <b>auto-approves</b> on the VIP card. Two hours later the same card is used in <b>Italy</b> — <b>Dubai → Italy in 2h</b> is impossible travel, so auto-pay is suspended and Aegis asks for an OTP: <b>share it → approved</b>; <b>not shared in 2 min → blocked</b>.</p>
                 <button onClick={() => startTransaction('high')} className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl px-5 py-2.5">▶ Start Transaction <ArrowRight size={15} /></button>
               </div>
             )}
@@ -171,9 +178,26 @@ export default function FraudJourney({ embedded = false }: { embedded?: boolean 
             {phase === 'stepup' && <StepUpCard mobile={CUSTOMER.mobileMasked} email={CUSTOMER.emailMasked} amount={mainTx.amount} location={mainTx.location} time={mainTx.time} onChoose={chooseChannel} />}
 
             {phase === 'otp' && channel && (
-              <OtpScreen channel={channel} target={channel === 'mobile' ? CUSTOMER.mobileMasked : CUSTOMER.emailMasked}
-                secondsLeft={secondsLeft} attempts={attempts} maxAttempts={3} error={otpError} demoMode demoOtp={DEMO_OTP}
-                onVerify={verifyOtp} onResend={resendOtp} />
+              <>
+                <div className="rounded-xl bg-amber-50 ring-1 ring-amber-200 px-4 py-3 text-[13px] text-amber-800 flex items-start gap-2">
+                  <Clock size={16} className="mt-0.5 shrink-0 text-amber-600" />
+                  <span><b>Share the OTP to approve.</b> Enter the code sent to your {channelLabel} to pass this payment. If it is <b>not shared within 2 minutes</b>, the transaction is automatically <b>blocked</b> to protect the customer.</span>
+                </div>
+                <OtpScreen channel={channel} target={channel === 'mobile' ? CUSTOMER.mobileMasked : CUSTOMER.emailMasked}
+                  secondsLeft={secondsLeft} attempts={attempts} maxAttempts={3} error={otpError} demoMode demoOtp={DEMO_OTP}
+                  onVerify={verifyOtp} onResend={resendOtp} />
+              </>
+            )}
+
+            {phase === 'blocked' && level !== 'critical' && (
+              <div className="rounded-xl bg-rose-50 ring-1 ring-rose-200 px-4 py-3 text-[13px] text-rose-700 flex items-start gap-2">
+                <ShieldCheck size={16} className="mt-0.5 shrink-0 text-rose-600" />
+                <span><b>Transaction blocked.</b> {blockReason === 'otp_timeout'
+                  ? 'The one-time passcode was not shared within 2 minutes, so Aegis blocked the payment and protected the customer.'
+                  : blockReason === 'otp_failed'
+                  ? 'The one-time passcode could not be verified, so the payment was blocked.'
+                  : 'Step-up verification was not completed.'}</span>
+              </div>
             )}
 
             {(phase === 'approved' || phase === 'blocked') && scenario && (
@@ -198,11 +222,15 @@ export default function FraudJourney({ embedded = false }: { embedded?: boolean 
   );
 }
 
-function Row({ label, value, mono, strong, danger }: { label: string; value: string; mono?: boolean; strong?: boolean; danger?: boolean }) {
+function Row({ label, value, mono, strong, danger, accent }: { label: string; value: string; mono?: boolean; strong?: boolean; danger?: boolean; accent?: boolean }) {
   return (
     <div className="flex items-center justify-between gap-3">
       <span className="text-xs text-slate-500">{label}</span>
-      <span className={`text-right ${mono ? 'font-mono text-[13px]' : ''} ${strong ? 'text-lg font-bold text-slate-900' : 'text-sm font-medium'} ${danger ? 'text-rose-600' : 'text-slate-800'}`}>{value}</span>
+      {accent ? (
+        <span className="inline-flex items-center gap-1 text-[12px] font-bold text-violet-700 bg-violet-50 ring-1 ring-violet-200 rounded-full px-2.5 py-0.5">★ {value}</span>
+      ) : (
+        <span className={`text-right ${mono ? 'font-mono text-[13px]' : ''} ${strong ? 'text-lg font-bold text-slate-900' : 'text-sm font-medium'} ${danger ? 'text-rose-600' : 'text-slate-800'}`}>{value}</span>
+      )}
     </div>
   );
 }
