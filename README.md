@@ -10,6 +10,10 @@ Aegis doesn't just detect fraud — it *investigates*, *verifies the customer*, 
 
 `Gemini 3.5` · `Google GenAI SDK` · `Cloud Run` · `Pub/Sub` · `Firestore` · `Secret Manager` · `Firebase Auth` · `React + TypeScript`
 
+**[▶ Live demo](https://aegis-frontend-gehlmzbhuq-uc.a.run.app/#)**  ·  **[▶ Demo video (YouTube)](https://youtu.be/lzjEZpbEk8Y)**  ·  **[◆ GitHub repo](https://github.com/TWILIGHTCLOUDCODERZ/Aegis-Agentic-Google-Hackathon)**
+
+Jump to: [Run it locally](#run-it-locally) · [Deploy to Google Cloud](#deploy-to-google-cloud--detailed-steps)
+
 </div>
 
 ---
@@ -19,6 +23,18 @@ Aegis doesn't just detect fraud — it *investigates*, *verifies the customer*, 
 Traditional rule engines ask *"is this transaction suspicious?"* — Aegis asks *"does this match the customer's normal identity, device, location and behaviour?"* If not, it **verifies the customer** (step-up OTP) instead of blocking them, and only hard-blocks confirmed fraud (e.g. a reported-stolen card).
 
 A **multi-agent system on Gemini 3.5** runs the investigation: an Orchestrator delegates to specialist agents (Card Status, Step-Up Control, Investigator, Network, Intel, Compliance, Critic), each reasoning over evidence, then a memory- and policy-aware adaptive decision — with a relationship-manager alert and an AI-drafted case for high/critical risk.
+
+### Agent orchestration — a custom multi-agent layer on the Google GenAI SDK
+
+Aegis does **not** use a turnkey agent framework — it implements its **own lightweight multi-agent orchestration directly on the Google GenAI SDK** (`google-genai`), so every step is transparent and fully under the app's control:
+
+- An **Orchestrator** receives the transaction and fans out to purpose-built specialist agents.
+- Each **specialist** is its own Gemini 3.5 call with a dedicated role, prompt and **structured (JSON) output** — Card Status, Step-Up Control, Investigator, Network Analyst, Intel, Compliance.
+- A **Critic** agent reviews and challenges the draft verdict before it is finalised.
+- The Orchestrator **merges the evidence**, applies deterministic **policy gates** (stolen-card hard block, auto-pay + OTP step-up, VIP handling) and **customer memory**, and returns one adaptive decision with reason codes, a confidence score and an evidence summary.
+- Every agent step **streams live** to the analyst console over Server-Sent Events (SSE).
+
+The full pipeline is in [`backend/agents/pipeline.py`](backend/agents/pipeline.py). Because the orchestration is our own code on the GenAI SDK, it also runs in a deterministic **offline mode** (`AEGIS_OFFLINE=true`) with no cloud calls — useful for demos, tests and the eval benchmark.
 
 ## Scope
 
@@ -103,7 +119,7 @@ project/
 | Service | Role |
 |---|---|
 | **Vertex AI — Gemini 3.5** | Reasoning for the specialist agents + investigation/RM summaries (global endpoint) |
-| **Google GenAI SDK** | Agent framework — orchestrator + specialists, structured decision output |
+| **Google GenAI SDK** | Foundation for the **custom multi-agent orchestration** — orchestrator + specialist agents with structured decision output |
 | **Cloud Run** | Hosts the backend agent service and the static frontend (scales to zero) |
 | **Pub/Sub** | Event backbone — transactions stream in and wake the router |
 | **Firestore** | Customer memory (confirmed-legit, tier), cases, live agent-step streaming |
@@ -115,11 +131,79 @@ project/
 
 ---
 
+## Deployed on Google Cloud
+
+Aegis is **live on Google Cloud** — project `ultra-mediator-506312-t2`, region `us-central1`. Verified from Cloud Shell:
+
+**Cloud Run — two services serving:**
+
+| Service | URL |
+|---|---|
+| `aegis-backend` | https://aegis-backend-282323062361.us-central1.run.app |
+| `aegis-frontend` | https://aegis-frontend-282323062361.us-central1.run.app |
+
+- **Pub/Sub topics:** `transactions` · `transactions-dead-letter`
+- **Firestore:** `(default)` database · `us-central1` · Native mode
+- **Secret Manager:** `firebase-config`
+- **Vertex AI (Gemini 3.5), Cloud Build, Artifact Registry, Cloud Storage, Cloud Logging** — all enabled and active (see billing → *Services this month*).
+
+<details>
+<summary><b>Cloud Shell verification — click to expand</b></summary>
+
+```console
+$ gcloud config set project ultra-mediator-506312-t2
+
+$ gcloud run services list --platform managed --format="table(SERVICE,REGION,URL)"
+SERVICE         REGION       URL
+aegis-backend   us-central1  https://aegis-backend-282323062361.us-central1.run.app
+aegis-frontend  us-central1  https://aegis-frontend-282323062361.us-central1.run.app
+
+$ gcloud pubsub topics list
+projects/ultra-mediator-506312-t2/topics/transactions-dead-letter
+projects/ultra-mediator-506312-t2/topics/transactions
+
+$ gcloud firestore databases list --format="table(name, locationId, type)"
+NAME                                              LOCATION_ID   TYPE
+projects/ultra-mediator-506312-t2/databases/(default)   us-central1   FIRESTORE_NATIVE
+
+$ gcloud secrets list --format="table(name, createTime)"
+NAME             CREATED
+firebase-config  2026-08-29T14:57:40
+
+$ gcloud services list --enabled --format="value(config.name)"
+aiplatform.googleapis.com          # Vertex AI — Gemini 3.5
+run.googleapis.com                 # Cloud Run
+pubsub.googleapis.com              # Pub/Sub
+firestore.googleapis.com           # Firestore
+secretmanager.googleapis.com       # Secret Manager
+cloudbuild.googleapis.com          # Cloud Build
+artifactregistry.googleapis.com    # Artifact Registry
+storage.googleapis.com             # Cloud Storage
+logging.googleapis.com             # Cloud Logging
+```
+</details>
+
+> Cost so far is negligible (single-digit **RM** on the billing report) — the fast-path pre-filter means Gemini/Vertex AI only runs on the small fraction of transactions that need deep analysis, and Cloud Run scales to zero.
+
+<!-- Console screenshots: save PNGs to docs/screenshots/ and reference them here, e.g.
+![Cloud Run services](docs/screenshots/cloud-run.png)
+![Billing — services this month](docs/screenshots/billing.png)
+![Cloud Shell verification](docs/screenshots/cloudshell.png)
+-->
+
+---
+
 ## Run it locally
 
 ### Prerequisites
 - **Node.js 20+**
 - **Python 3.12+** (only if you want to run the backend locally)
+
+### 0) Get the code
+```bash
+git clone https://github.com/TWILIGHTCLOUDCODERZ/Aegis-Agentic-Google-Hackathon.git
+cd Aegis-Agentic-Google-Hackathon
+```
 
 ### 1) Frontend (talks to the deployed backend by default)
 ```bash
@@ -143,7 +227,7 @@ npm run dev
 ```
 Open **http://localhost:5173** → sign in with Firebase, or **continue as guest** (no account needed).
 
-### 2) Backend ( — runs offline, deterministic, no cloud)
+### 2) Backend (runs offline, deterministic, no cloud)
 ```bash
 cd backend
 pip install -r requirements.txt
@@ -206,7 +290,7 @@ Sensitive config is held in **Secret Manager** as the single source of truth —
 
 > Firebase **web** keys are not secret — they identify the project and ship to the browser to initialize Firebase; security comes from Firebase Auth + rules. Secret Manager keeps them out of committed source and centralizes them.
 
-**2. Gemini API key — secret `gemini-api-key`** :
+**2. Gemini API key — secret `gemini-api-key`:**
 - By default the backend authenticates to **Vertex AI** via the `aegis-runtime` service account (Application Default Credentials) — **no key in code**.
 - To use a Gemini API key instead, store it with `infra/set-gemini-secret.sh`. `infra/deploy.sh` detects the secret and **mounts it to Cloud Run at runtime** as `GEMINI_API_KEY` — it never appears in the repo, the image, or the frontend.
 

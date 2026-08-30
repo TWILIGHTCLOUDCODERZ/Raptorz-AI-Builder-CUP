@@ -24,3 +24,7 @@ venv/
 # misc
 .DS_Store
 *.log
+
+# large media — demo videos live on YouTube, not in git
+videos/
+*.mp4
