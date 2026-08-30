@@ -2,19 +2,22 @@ import { useState } from 'react';
 
 type Svc = { id: string; name: string; tag: string; detail: string; x: number; y: number; w: number; h: number };
 
-// Hotspot rects are % of the 1536×1024 diagram, positioned over each service's
-// box in the numbered flow. Estimated — nudge x/y/w/h to match your exact PNG;
-// the chips below drive the same zoom/highlight regardless of exact alignment.
+// Hotspot rects are % of the 1536×1024 "Aegis ARC" diagram, positioned over each
+// numbered box. Estimated from the artwork — nudge x/y/w/h to fine-tune; the chips
+// below drive the same zoom/highlight regardless of exact pixel alignment.
 const SERVICES: Svc[] = [
-  { id: 'run', name: 'Cloud Run', tag: 'Compute', detail: 'Hosts the transaction API, the multi-agent backend and the static frontend. Scales to zero; built from source.', x: 20, y: 33, w: 10, h: 14 },
-  { id: 'pubsub', name: 'Pub/Sub', tag: 'Events', detail: 'Event backbone — transactions stream in and wake the router (event-driven autonomous routing).', x: 30.5, y: 33, w: 9, h: 14 },
-  { id: 'vertex', name: 'Vertex AI · Gemini 3.5', tag: 'AI', detail: 'The deep-path multi-agent investigation — seven specialist agents reason over the evidence on Gemini 3.5.', x: 52, y: 27, w: 21, h: 18 },
-  { id: 'firestore', name: 'Firestore', tag: 'Memory', detail: 'Customer memory (confirmed-legit, tier), cases, agent steps and live streaming to the console.', x: 52, y: 47, w: 21, h: 11 },
-  { id: 'decision', name: 'Adaptive Decision', tag: 'Policy', detail: 'Orchestrator output: Approve / Step-up / Hold / Block — with reason codes, confidence and an evidence summary.', x: 82, y: 29, w: 15, h: 24 },
-  { id: 'firebase', name: 'Firebase Authentication', tag: 'Auth', detail: 'Sign-in / sign-up (email-password + Google) and security rules; a guest mode needs no account.', x: 7, y: 58, w: 15, h: 20 },
-  { id: 'stepup', name: 'Step-Up · Mobile / Email OTP', tag: 'Verify', detail: 'Auto-pay disabled → Mobile/Email OTP → verify or block. Verify the customer instead of declining them.', x: 31, y: 58, w: 21, h: 18 },
-  { id: 'rm', name: 'RM Alert + Investigation', tag: 'Analyst', detail: 'AI-generated explanation for the relationship manager: risk, evidence highlights and an auto-drafted case.', x: 54, y: 60, w: 19, h: 16 },
-  { id: 'frontend', name: 'Frontend · Cloud Run', tag: 'Console', detail: 'Analyst console + executive demo — live cases, agent step trace and dashboards via Firestore / SSE.', x: 62, y: 74, w: 21, h: 18 },
+  { id: 'client',    name: 'Client · Mobile / Web / POS',   tag: '1 · Ingress',  detail: 'A customer initiates a transaction from mobile, web or POS — the entry point of the real-time flow.', x: 2,    y: 12,   w: 11.5, h: 32 },
+  { id: 'txapi',     name: 'Transaction API · Cloud Run',   tag: '2 · Compute',  detail: 'Cloud Run service that validates and enriches every incoming transaction. Scales to zero; built from source.', x: 15,   y: 12,   w: 12,   h: 32 },
+  { id: 'pubsub',    name: 'Pub/Sub · Events Stream',       tag: '3 · Events',   detail: 'Event backbone — the transaction stream that wakes the router (event-driven autonomous routing).', x: 28,   y: 12,   w: 10.5, h: 32 },
+  { id: 'router',    name: 'Router · Cloud Run (Fast Path)', tag: '4 · Fast Path', detail: 'Millisecond fast path: rules + a Gemini Flash pre-filter decide Approve / Step-up / Decline, and escalate high-risk cases async.', x: 39,   y: 12,   w: 14,   h: 32 },
+  { id: 'vertex',    name: 'Vertex AI · Gemini 3.5',        tag: '5 · Deep Path', detail: 'The async deep path — six specialist agents (Card Status, Investigator, Network, Intel, Compliance, Critic) reason over the evidence on Gemini 3.5.', x: 56,   y: 12,   w: 26.5, h: 39 },
+  { id: 'firestore', name: 'Firestore · Memory',           tag: 'Memory',       detail: 'Customer memory (confirmed-legit, tier), cases, agent steps, intermediate findings and the live audit trail streamed to the console.', x: 57,   y: 36,   w: 24,   h: 15 },
+  { id: 'decision',  name: 'Adaptive Decision',            tag: '6 · Policy',   detail: 'Orchestrator output — Approve / Step-up / Hold / Block, with reason codes, a confidence score and an evidence summary.', x: 83.5, y: 12,   w: 14,   h: 39 },
+  { id: 'firebase',  name: 'Firebase Authentication',      tag: 'Auth',         detail: 'Sign-in / sign-up (email-password + Google), security rules and App Check protecting the backend; guest mode needs no account.', x: 2,    y: 53,   w: 15,   h: 29 },
+  { id: 'stepup',    name: 'Step-Up · Mobile / Email OTP',  tag: '7 · Verify',   detail: 'Auto-pay disabled → Mobile or Email OTP → verify or block. Verify the customer instead of declining them.', x: 29,   y: 51.5, w: 22.5, h: 20.5 },
+  { id: 'rm',        name: 'RM Alert + Investigation',     tag: 'Analyst',      detail: 'AI explanation for the relationship manager: real-time notification, risk score & reasons, and case creation when required.', x: 60.5, y: 54,   w: 21,   h: 16 },
+  { id: 'outcome',   name: 'Final Outcome',               tag: '8 · Result',   detail: 'Approve / Step-up Verified / Hold / Block — the resolved decision with reason codes.', x: 29,   y: 73,   w: 22.5, h: 13.5 },
+  { id: 'frontend',  name: 'Frontend · Cloud Run (NGINX)', tag: '9 · Console',  detail: 'Analyst console + executive demo — live cases & dashboard, real-time agent step trace and the step-up demo via Firestore / SSE.', x: 71,   y: 70.5, w: 27,   h: 17 },
 ];
 
 export default function ArchitectureExplorer() {
@@ -35,7 +38,7 @@ export default function ArchitectureExplorer() {
       </div>
 
       <div style={{ position: 'relative', width: '100%', aspectRatio: '1536 / 1024', borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(90,130,170,.25)', background: '#0a1526' }}>
-        <img src="/architecture-diagram.png" alt="Aegis architecture" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', transformOrigin: origin, transform: `scale(${zoom})`, transition: anim }} />
+        <img src="/Aegis-ARC.png" alt="Aegis architecture" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', transformOrigin: origin, transform: `scale(${zoom})`, transition: anim }} />
         <div style={{ position: 'absolute', inset: 0, transformOrigin: origin, transform: `scale(${zoom})`, transition: anim, pointerEvents: 'none' }}>
           {SERVICES.map((s) => {
             const on = active === s.id || hover === s.id;
