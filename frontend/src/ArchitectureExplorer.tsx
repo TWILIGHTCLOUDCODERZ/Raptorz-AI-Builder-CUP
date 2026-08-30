@@ -33,6 +33,11 @@ export default function ArchitectureExplorer() {
   const origin = focus ? `${focus.x + focus.w / 2}% ${focus.y + focus.h / 2}%` : '50% 50%';
   const anim = 'transform .5s cubic-bezier(.2,.8,.2,1)';
 
+  // place the popup in the opposite quadrant from the focused box, so the
+  // zoomed-in service (and its name) stays visible instead of being covered
+  const popTop = sel ? sel.y + sel.h / 2 >= 48 : false;
+  const popLeft = sel ? sel.x + sel.w / 2 >= 50 : true;
+
   // auto-dismiss the popup after 10s of no action; hovering the popup pauses it
   useEffect(() => {
     if (!active || paused) return;
@@ -71,7 +76,7 @@ export default function ArchitectureExplorer() {
           <div
             onMouseEnter={() => setPaused(true)}
             onMouseLeave={() => setPaused(false)}
-            style={{ position: 'absolute', left: 14, bottom: 14, width: 'min(360px, 62%)', zIndex: 5,
+            style={{ position: 'absolute', [popTop ? 'top' : 'bottom']: 14, [popLeft ? 'left' : 'right']: 14, width: 'min(340px, 56%)', zIndex: 5,
               padding: 1.5, borderRadius: 14, animation: 'aegisPopIn .28s cubic-bezier(.2,.8,.2,1)',
               background: 'linear-gradient(135deg, rgba(66,133,244,.9), rgba(167,139,250,.7) 52%, rgba(66,133,244,.15))',
               boxShadow: '0 24px 60px rgba(0,0,0,.6), 0 0 34px rgba(66,133,244,.28)' }}>
