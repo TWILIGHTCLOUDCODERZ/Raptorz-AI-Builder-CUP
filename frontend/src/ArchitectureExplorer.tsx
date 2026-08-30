@@ -21,6 +21,19 @@ const SERVICES: Svc[] = [
 ];
 
 const AUTO_CLOSE_MS = 10000;
+const ZOOM = 1.9;
+
+// Pick the zoom focal point (transform-origin) on one axis so the box stays in
+// frame after scaling — clamped to keep its edges (and its title) visible rather
+// than centering, which would push a tall box's header off the top edge.
+function axisOrigin(start: number, len: number, z: number, margin = 5): number {
+  const oMax = (z * start - margin) / (z - 1);              // keeps the start edge visible
+  const oMin = (z * (start + len) - (100 - margin)) / (z - 1); // keeps the end edge visible
+  const center = start + len / 2;
+  // if the box fits, center it within the allowed range; if it's larger than the
+  // viewport, favour the start edge (top / left) where the title sits
+  return oMin <= oMax ? Math.min(Math.max(center, oMin), oMax) : oMax;
+}
 
 export default function ArchitectureExplorer() {
   const [active, setActive] = useState<string | null>(null);
@@ -29,8 +42,8 @@ export default function ArchitectureExplorer() {
 
   const sel = SERVICES.find((s) => s.id === active) || null;
   const focus = SERVICES.find((s) => s.id === (active ?? hover)) || null;
-  const zoom = active ? 1.9 : 1;
-  const origin = focus ? `${focus.x + focus.w / 2}% ${focus.y + focus.h / 2}%` : '50% 50%';
+  const zoom = active ? ZOOM : 1;
+  const origin = focus ? `${axisOrigin(focus.x, focus.w, ZOOM)}% ${axisOrigin(focus.y, focus.h, ZOOM)}%` : '50% 50%';
   const anim = 'transform .5s cubic-bezier(.2,.8,.2,1)';
 
   // place the popup in the opposite quadrant from the focused box, so the
