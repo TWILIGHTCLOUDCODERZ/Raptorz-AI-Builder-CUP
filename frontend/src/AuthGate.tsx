@@ -4,6 +4,7 @@ import {
 } from 'firebase/auth';
 import { Activity, ArrowRight, BrainCircuit, Fingerprint, Github, Globe2, Loader2, Lock, Mail, ShieldCheck, User } from 'lucide-react';
 import { auth, googleProvider } from './firebase';
+import ArchitectureExplorer from './ArchitectureExplorer';
 
 const NAVY = '#081727';
 
@@ -84,7 +85,7 @@ export default function AuthGate({ onGuest }: { onGuest: (name: string) => void 
                 <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#28c840', display: 'inline-block' }} />
                 <span style={{ marginLeft: 10, fontSize: 10.5, color: '#6d87a0', fontFamily: "'Space Mono', monospace" }}>aegis · ai fraud intelligence</span>
               </div>
-              <img src="/Aegis-ARC.png" alt="Aegis ARC" style={{ width: '100%', maxHeight: 360, objectFit: 'contain', display: 'block', background: '#0a1526' }} />
+              <div style={{ padding: 12 }}><ArchitectureExplorer /></div>
             </div>
           </div>
         </div>

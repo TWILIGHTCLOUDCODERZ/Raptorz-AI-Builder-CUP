@@ -2,20 +2,19 @@ import { useState } from 'react';
 
 type Svc = { id: string; name: string; tag: string; detail: string; x: number; y: number; w: number; h: number };
 
-// Hotspot rects are % of the 1536×1024 diagram, positioned over the bottom
-// "Google Cloud services used" row. Nudge x/y/w/h if they don't line up with
-// your exact PNG — the chips below drive the same zoom/highlight regardless.
+// Hotspot rects are % of the 1536×1024 diagram, positioned over each service's
+// box in the numbered flow. Estimated — nudge x/y/w/h to match your exact PNG;
+// the chips below drive the same zoom/highlight regardless of exact alignment.
 const SERVICES: Svc[] = [
-  { id: 'vertex', name: 'Vertex AI · Gemini 3.5', tag: 'AI', detail: 'Reasoning for the specialist agents and the investigation / RM summaries. Served from the global endpoint.', x: 1.0, y: 85, w: 10.2, h: 13 },
-  { id: 'genai', name: 'Google GenAI SDK', tag: 'Agent framework', detail: 'The orchestrator + specialist agents and the structured decision output.', x: 11.9, y: 85, w: 10.2, h: 13 },
-  { id: 'run', name: 'Cloud Run', tag: 'Compute', detail: 'Hosts the backend agent service and the static frontend. Scales to zero; built from source via Cloud Build.', x: 22.8, y: 85, w: 10.2, h: 13 },
-  { id: 'pubsub', name: 'Pub/Sub', tag: 'Events', detail: 'Event backbone — transactions stream in and wake the router (event-driven autonomous routing).', x: 33.7, y: 85, w: 10.2, h: 13 },
-  { id: 'firestore', name: 'Firestore', tag: 'State + memory', detail: 'Customer memory (confirmed-legit, tier), cases, and live agent-step streaming to the console.', x: 44.6, y: 85, w: 10.2, h: 13 },
-  { id: 'build', name: 'Cloud Build + Artifact Registry', tag: 'CI', detail: 'Builds and stores the container images on every deploy.', x: 55.5, y: 85, w: 10.2, h: 13 },
-  { id: 'secret', name: 'Secret Manager', tag: 'Secrets', detail: 'Holds the frontend build config (Firebase web keys) as the single source of truth — no keys in code.', x: 66.4, y: 85, w: 10.2, h: 13 },
-  { id: 'armor', name: 'Model Armor', tag: 'AI security', detail: 'Prompt-injection / PII guardrails wrapped around the Gemini calls.', x: 77.3, y: 85, w: 10.2, h: 13 },
-  { id: 'storage', name: 'Cloud Storage', tag: 'Objects', detail: 'Receipt / evidence uploads for multimodal verification.', x: 88.2, y: 85, w: 10.2, h: 13 },
-  { id: 'firebase', name: 'Firebase Authentication', tag: 'Auth', detail: 'Sign-in / sign-up (email-password + Google) for the analyst console; a guest mode needs no account.', x: 22.8, y: 85, w: 10.2, h: 13 },
+  { id: 'run', name: 'Cloud Run', tag: 'Compute', detail: 'Hosts the transaction API, the multi-agent backend and the static frontend. Scales to zero; built from source.', x: 20, y: 33, w: 10, h: 14 },
+  { id: 'pubsub', name: 'Pub/Sub', tag: 'Events', detail: 'Event backbone — transactions stream in and wake the router (event-driven autonomous routing).', x: 30.5, y: 33, w: 9, h: 14 },
+  { id: 'vertex', name: 'Vertex AI · Gemini 3.5', tag: 'AI', detail: 'The deep-path multi-agent investigation — seven specialist agents reason over the evidence on Gemini 3.5.', x: 52, y: 27, w: 21, h: 18 },
+  { id: 'firestore', name: 'Firestore', tag: 'Memory', detail: 'Customer memory (confirmed-legit, tier), cases, agent steps and live streaming to the console.', x: 52, y: 47, w: 21, h: 11 },
+  { id: 'decision', name: 'Adaptive Decision', tag: 'Policy', detail: 'Orchestrator output: Approve / Step-up / Hold / Block — with reason codes, confidence and an evidence summary.', x: 82, y: 29, w: 15, h: 24 },
+  { id: 'firebase', name: 'Firebase Authentication', tag: 'Auth', detail: 'Sign-in / sign-up (email-password + Google) and security rules; a guest mode needs no account.', x: 7, y: 58, w: 15, h: 20 },
+  { id: 'stepup', name: 'Step-Up · Mobile / Email OTP', tag: 'Verify', detail: 'Auto-pay disabled → Mobile/Email OTP → verify or block. Verify the customer instead of declining them.', x: 31, y: 58, w: 21, h: 18 },
+  { id: 'rm', name: 'RM Alert + Investigation', tag: 'Analyst', detail: 'AI-generated explanation for the relationship manager: risk, evidence highlights and an auto-drafted case.', x: 54, y: 60, w: 19, h: 16 },
+  { id: 'frontend', name: 'Frontend · Cloud Run', tag: 'Console', detail: 'Analyst console + executive demo — live cases, agent step trace and dashboards via Firestore / SSE.', x: 62, y: 74, w: 21, h: 18 },
 ];
 
 export default function ArchitectureExplorer() {
@@ -38,7 +37,7 @@ export default function ArchitectureExplorer() {
       <div style={{ position: 'relative', width: '100%', aspectRatio: '1536 / 1024', borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(90,130,170,.25)', background: '#0a1526' }}>
         <img src="/architecture-diagram.png" alt="Aegis architecture" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', transformOrigin: origin, transform: `scale(${zoom})`, transition: anim }} />
         <div style={{ position: 'absolute', inset: 0, transformOrigin: origin, transform: `scale(${zoom})`, transition: anim, pointerEvents: 'none' }}>
-          {SERVICES.filter((s) => s.id !== 'firebase').map((s) => {
+          {SERVICES.map((s) => {
             const on = active === s.id || hover === s.id;
             return (
               <button key={s.id} title={s.name}
