@@ -185,11 +185,19 @@ logging.googleapis.com             # Cloud Logging
 
 > Cost so far is negligible (single-digit **RM** on the billing report) — the fast-path pre-filter means Gemini/Vertex AI only runs on the small fraction of transactions that need deep analysis, and Cloud Run scales to zero.
 
-<!-- Console screenshots: save PNGs to docs/screenshots/ and reference them here, e.g.
-![Cloud Run services](docs/screenshots/cloud-run.png)
-![Billing — services this month](docs/screenshots/billing.png)
-![Cloud Shell verification](docs/screenshots/cloudshell.png)
--->
+### Console screenshots — proof of deployment
+
+**Cloud Run — `aegis-backend` + `aegis-frontend` serving in `us-central1`:**
+
+![Cloud Run services on Google Cloud](docs/cloud-run.png)
+
+**Cloud Shell — live verification of Cloud Run, Pub/Sub, Firestore, Secret Manager & enabled APIs:**
+
+![Cloud Shell verification of deployed services](docs/cloudshell.png)
+
+**Billing — active Google Cloud services this month (Vertex AI, Cloud Run, Cloud Build, Artifact Registry, Secret Manager, Cloud Storage, Cloud Logging):**
+
+![Google Cloud billing — services this month](docs/billing.png)
 
 ---
 
