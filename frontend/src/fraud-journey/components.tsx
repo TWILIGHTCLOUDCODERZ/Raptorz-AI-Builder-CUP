@@ -330,21 +330,21 @@ export function OtpScreen({ channel, target, secondsLeft, attempts, maxAttempts,
 }
 
 // ---------- result ----------
-export function ResultCard({ approved, critical, amount, score, channelLabel, onInvestigate }: {
-  approved: boolean; critical?: boolean; amount: number; score: number; channelLabel: string; onInvestigate: () => void;
+export function ResultCard({ approved, critical, autoApproved, amount, score, channelLabel, onInvestigate }: {
+  approved: boolean; critical?: boolean; autoApproved?: boolean; amount: number; score: number; channelLabel: string; onInvestigate: () => void;
 }) {
   return (
     <div className={`rounded-2xl p-6 text-white shadow-lg ${approved ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-emerald-200' : 'bg-gradient-to-br from-rose-500 to-rose-600 shadow-rose-200'}`}>
       <div className="grid place-items-center h-14 w-14 rounded-full bg-white/20 mb-4">{approved ? <Check size={30} /> : <X size={30} />}</div>
-      <h3 className="text-2xl font-extrabold">{approved ? 'Identity Verified' : critical ? 'Card Reported Stolen' : 'Verification Failed'}</h3>
+      <h3 className="text-2xl font-extrabold">{approved ? (autoApproved ? 'Payment Auto-Approved' : 'Identity Verified') : critical ? 'Card Reported Stolen' : 'Verification Failed'}</h3>
       <p className="text-white/90 font-medium">{approved ? 'Transaction Approved' : 'Transaction Blocked'}</p>
       <div className="grid grid-cols-2 gap-3 mt-5">
         <Stat k="Transaction" v={`$${amount.toFixed(2)}`} />
         <Stat k="Risk Score" v={`${score}/100`} />
-        <Stat k={approved ? 'Verification' : 'Reason'} v={approved ? channelLabel : critical ? 'Stolen card' : '3 / 3 attempts'} />
+        <Stat k={approved ? 'Verification' : 'Reason'} v={approved ? (autoApproved ? 'No OTP needed' : channelLabel) : critical ? 'Stolen card' : '3 / 3 attempts'} />
         <Stat k="Status" v={approved ? 'APPROVED' : 'BLOCKED'} />
       </div>
-      <p className="text-sm text-white/90 mt-4">{approved ? 'Customer successfully verified their identity — payment continues.' : critical ? 'A stolen-card status cannot be overridden by OTP — routed to fraud investigation.' : 'Incorrect OTP — routed to fraud investigation.'}</p>
+      <p className="text-sm text-white/90 mt-4">{approved ? (autoApproved ? 'Trusted Dubai pattern with ~5 months of history — approved instantly, no step-up needed.' : 'Customer successfully verified their identity — payment continues.') : critical ? 'A stolen-card status cannot be overridden by OTP — routed to fraud investigation.' : 'Incorrect OTP — routed to fraud investigation.'}</p>
       <button onClick={onInvestigate} className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold bg-white/15 hover:bg-white/25 rounded-xl px-4 py-2.5 transition">{approved ? 'View Investigation' : 'Send to Fraud Investigation'} <ArrowRight size={15} /></button>
     </div>
   );
@@ -514,18 +514,48 @@ export function DemoControls({ onStart, onRisk, onChannel, onApprove, onBlock }:
   const Btn = ({ children, onClick, tone = 'ghost' }: { children: React.ReactNode; onClick: () => void; tone?: string }) => (
     <button onClick={onClick} className={`text-xs font-semibold rounded-lg px-3 py-2 transition whitespace-nowrap ${tone === 'primary' ? 'bg-indigo-600 text-white hover:bg-indigo-700' : tone === 'green' ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 hover:bg-emerald-100' : tone === 'red' ? 'bg-rose-50 text-rose-700 ring-1 ring-rose-200 hover:bg-rose-100' : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50'}`}>{children}</button>
   );
+  void onStart;
   return (
-    <div className="rounded-2xl bg-white/70 backdrop-blur ring-1 ring-slate-200 p-3 flex flex-wrap items-center gap-2">
-      <span className="text-[11px] font-bold tracking-widest text-slate-400 mr-1 flex items-center gap-1.5"><Sparkles size={13} className="text-indigo-500" /> DEMO CONTROLS</span>
-      <Btn onClick={onStart} tone="primary">▶ Start (Tyson · Italy)</Btn>
-      <Btn onClick={() => onRisk('low')}>Low Risk</Btn>
-      <Btn onClick={() => onRisk('medium')}>Medium Risk</Btn>
-      <Btn onClick={() => onRisk('high')}>High Risk</Btn>
-      <Btn onClick={() => onRisk('critical')} tone="red">Critical · Stolen</Btn>
-      <Btn onClick={() => onChannel('mobile')}>Send Mobile OTP</Btn>
-      <Btn onClick={() => onChannel('email')}>Send Email OTP</Btn>
-      <Btn onClick={onApprove} tone="green">Approve</Btn>
-      <Btn onClick={onBlock} tone="red">Block</Btn>
+    <div className="rounded-2xl bg-white/70 backdrop-blur ring-1 ring-slate-200 p-4">
+      <div className="flex items-center gap-2 mb-3">
+        <span className="grid place-items-center h-6 w-6 rounded-md bg-violet-100 text-violet-700 text-[13px] leading-none">★</span>
+        <span className="text-[12px] font-bold tracking-widest text-slate-600">TYSON · VIP MEMBER</span>
+        <span className="text-[11px] text-slate-400 ml-1">pick a scenario</span>
+      </div>
+
+      <div className="grid sm:grid-cols-2 gap-3">
+        {/* Section 1 — normal Dubai payment (auto-approve, no OTP) */}
+        <button onClick={() => onRisk('low')} className="text-left rounded-xl ring-1 ring-emerald-200 bg-emerald-50/60 hover:bg-emerald-50 hover:ring-emerald-300 p-4 transition group">
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="text-[10px] font-bold tracking-wider text-emerald-800 bg-emerald-100 rounded-full px-2 py-0.5">1 · NORMAL</span>
+            <span className="text-[11px] font-semibold text-emerald-700 ml-auto flex items-center gap-1"><Check size={12} /> Auto-approve · no OTP</span>
+          </div>
+          <div className="font-bold text-slate-900 text-[15px]">Everyday payment · Dubai</div>
+          <p className="text-[12px] text-slate-500 mt-1 leading-relaxed">Where Tyson lives. Same city, known device, ~5 months of regular history — approved instantly, no step-up.</p>
+          <span className="inline-flex items-center gap-1.5 mt-2.5 text-[12.5px] font-semibold text-emerald-700 group-hover:gap-2 transition-all">▶ Run normal payment <ArrowRight size={14} /></span>
+        </button>
+
+        {/* Section 2 — suspicious Italy payment (full step-up flow) */}
+        <button onClick={() => onRisk('high')} className="text-left rounded-xl ring-1 ring-rose-200 bg-rose-50/60 hover:bg-rose-50 hover:ring-rose-300 p-4 transition group">
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="text-[10px] font-bold tracking-wider text-rose-800 bg-rose-100 rounded-full px-2 py-0.5">2 · SUSPICIOUS</span>
+            <span className="text-[11px] font-semibold text-rose-700 ml-auto flex items-center gap-1"><ShieldAlert size={12} /> Step-up OTP → approve / block</span>
+          </div>
+          <div className="font-bold text-slate-900 text-[15px]">VIP card in Italy · 2h later</div>
+          <p className="text-[12px] text-slate-500 mt-1 leading-relaxed">Same day, same card — used in Italy 2 hours after Dubai. Impossible travel, so auto-pay is suspended and Aegis runs the full check.</p>
+          <span className="inline-flex items-center gap-1.5 mt-2.5 text-[12.5px] font-semibold text-rose-700 group-hover:gap-2 transition-all">▶ Run suspicious payment <ArrowRight size={14} /></span>
+        </button>
+      </div>
+
+      {/* manual / advanced controls */}
+      <div className="flex flex-wrap items-center gap-2 mt-3 pt-3 border-t border-slate-100">
+        <span className="text-[10px] font-bold tracking-widest text-slate-400 mr-0.5">MANUAL</span>
+        <Btn onClick={() => onChannel('mobile')}>Send Mobile OTP</Btn>
+        <Btn onClick={() => onChannel('email')}>Send Email OTP</Btn>
+        <Btn onClick={onApprove} tone="green">Approve</Btn>
+        <Btn onClick={onBlock} tone="red">Block</Btn>
+        <Btn onClick={() => onRisk('critical')} tone="red">Critical · Stolen</Btn>
+      </div>
     </div>
   );
 }

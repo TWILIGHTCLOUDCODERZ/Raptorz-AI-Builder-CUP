@@ -68,7 +68,7 @@ export default function FraudJourney({ embedded = false }: { embedded?: boolean 
   const block = () => { runId.current++; setBlockReason('manual'); setLevel((l) => l ?? 'critical'); setPhase('blocked'); };
   const reset = () => { runId.current++; setPhase('idle'); setLevel(null); setChannel(null); setAttempts(0); setOtpError(''); setShowInv(false); setBlockReason(null); };
 
-  const channelLabel = channel === 'mobile' ? 'Mobile OTP' : 'Email OTP';
+  const channelLabel = channel === 'mobile' ? 'Mobile OTP' : channel === 'email' ? 'Email OTP' : 'No OTP · auto-approved';
   const outcome: 'pending' | 'approved' | 'blocked' = phase === 'approved' ? 'approved' : phase === 'blocked' ? 'blocked' : 'pending';
   const investigation = level === 'critical' ? CRITICAL_INVESTIGATION : INVESTIGATION;
 
@@ -201,7 +201,7 @@ export default function FraudJourney({ embedded = false }: { embedded?: boolean 
             )}
 
             {(phase === 'approved' || phase === 'blocked') && scenario && (
-              <ResultCard approved={phase === 'approved'} critical={level === 'critical'} amount={mainTx.amount}
+              <ResultCard approved={phase === 'approved'} critical={level === 'critical'} autoApproved={level === 'low'} amount={mainTx.amount}
                 score={scenario.score} channelLabel={channelLabel} onInvestigate={() => setShowInv(true)} />
             )}
 

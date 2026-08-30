@@ -119,11 +119,12 @@ const LOW_SIGNALS: AISignal[] = [
   { label: 'Transaction History', status: 'TYPICAL', level: 'info', icon: 'CreditCard' },
 ];
 const LOW_FACTORS: RiskFactor[] = [
-  { label: 'Known device', positive: true },
-  { label: 'Known location (Dubai)', positive: true },
+  { label: 'Trusted 5-month history in Dubai', positive: true },
+  { label: 'Known device & network', positive: true },
+  { label: 'Home location (Dubai)', positive: true },
   { label: 'Normal transaction amount', positive: true },
   { label: 'Known merchant', positive: true },
-  { label: 'Normal customer behaviour', positive: true },
+  { label: 'Consistent customer behaviour', positive: true },
 ];
 
 export const SCENARIOS: Record<RiskLevel, Scenario> = {
