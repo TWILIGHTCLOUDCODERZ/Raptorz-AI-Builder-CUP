@@ -1,9 +1,12 @@
 """Aegis multi-agent investigation pipeline.
 
-Built on the Google GenAI SDK (an accepted hackathon agent framework) with
-Gemini 3.5. The pipeline mirrors the UI: an Orchestrator routes to a card-status
-gate and five specialists (Investigator, Network Analyst, Intel, Compliance,
-Critic), then a memory- and tier-aware adaptive decision.
+Built on Google's agent stack: each specialist and the adaptive-decision step runs
+as a Google ADK (Agent Development Kit) ``LlmAgent`` on Gemini 3.5 (see
+``agents/adk_agents.py``). If ADK is unavailable it falls back to the Google GenAI
+SDK, and offline (``AEGIS_OFFLINE``) to deterministic reasoning — so the demo never
+breaks. The pipeline mirrors the UI: an Orchestrator routes to a card-status gate
+and five specialists (Investigator, Network Analyst, Intel, Compliance, Critic),
+then a memory- and tier-aware adaptive decision.
 
 VIP handling: a reported-stolen/lost/frozen card is a HARD block regardless of
 tier (anti-exploit). For VIP/premium clients that are NOT compromised, a false
@@ -23,6 +26,7 @@ from typing import Iterator, Union
 from models import AgentStep, Case, DecisionResult, Transaction
 from memory.store import MemoryStore
 from tools import investigation_tools as T
+from agents import adk_agents as adk
 
 PROJECT = os.getenv("GOOGLE_CLOUD_PROJECT")
 LOCATION = os.getenv("GOOGLE_CLOUD_LOCATION", "us-central1")
@@ -32,6 +36,8 @@ MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 _OFFLINE = os.getenv("AEGIS_OFFLINE", "").lower() == "true" or os.getenv("AEGIS_MOCK", "").lower() == "true"
 MOCK = _OFFLINE or (not PROJECT and not GEMINI_API_KEY)
+# Prefer Google ADK for the reasoning agents when it's installed (set AEGIS_USE_ADK=false to force the SDK path).
+USE_ADK = os.getenv("AEGIS_USE_ADK", "true").lower() != "false" and adk.ADK_AVAILABLE
 
 _COMPROMISED = ("reported_stolen", "lost", "frozen")
 
@@ -92,6 +98,15 @@ def _normalize_decision(value: str) -> str:
 def _specialist(name: str, payload: dict, evidence: list[str]) -> AgentStep:
     if MOCK:
         return AgentStep(agent=name, thought=_mock_thought(name, payload), evidence=evidence)
+    # Primary: Google ADK LlmAgent on Gemini 3.5.
+    if USE_ADK:
+        try:
+            text = adk.run_agent(name, _SPECIALISTS[name], payload)
+            if text:
+                return AgentStep(agent=name, thought=text, evidence=evidence + ["engine=adk"])
+        except Exception:  # noqa: BLE001 — fall through to the Gemini SDK path
+            pass
+    # Fallback: Google GenAI SDK.
     try:
         from google.genai import types
 
@@ -104,7 +119,7 @@ def _specialist(name: str, payload: dict, evidence: list[str]) -> AgentStep:
                 max_output_tokens=1024,
             ),
         )
-        return AgentStep(agent=name, thought=(resp.text or "").strip(), evidence=evidence)
+        return AgentStep(agent=name, thought=(resp.text or "").strip(), evidence=evidence + ["engine=genai-sdk"])
     except Exception as exc:  # noqa: BLE001
         return AgentStep(
             agent=name,
@@ -149,16 +164,26 @@ def _decide(txn: Transaction, findings: list[dict], memory: list[str], card_stat
         )
     if MOCK:
         return _mock_decision(txn, memory, card_status, tier)
+    prompt = {
+        "transaction": txn.model_dump(),
+        "customer_tier": tier,
+        "card_status": card_status,
+        "findings": findings,
+        "confirmed_legit_memory": memory,
+    }
+    # Primary: Google ADK decision agent with a structured (DecisionResult) output schema.
+    if USE_ADK:
+        try:
+            raw = adk.run_agent("Decision", _DECISION_SYSTEM, prompt, output_schema=DecisionResult)
+            result = DecisionResult(**json.loads(raw))
+            result.decision = _normalize_decision(result.decision)
+            return result
+        except Exception:  # noqa: BLE001 — fall through to the Gemini SDK path
+            pass
+    # Fallback: Google GenAI SDK with a response schema.
     try:
         from google.genai import types
 
-        prompt = {
-            "transaction": txn.model_dump(),
-            "customer_tier": tier,
-            "card_status": card_status,
-            "findings": findings,
-            "confirmed_legit_memory": memory,
-        }
         resp = _get_client().models.generate_content(
             model=MODEL,
             contents=json.dumps(prompt, default=str),
