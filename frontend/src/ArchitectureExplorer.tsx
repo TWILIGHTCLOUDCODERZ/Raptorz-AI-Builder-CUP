@@ -2,22 +2,22 @@ import { useState, useEffect } from 'react';
 
 type Svc = { id: string; name: string; tag: string; detail: string; x: number; y: number; w: number; h: number };
 
-// Hotspot rects are % of the 1536×1024 "Aegis ARC" diagram, positioned over each
-// numbered box. Estimated from the artwork — nudge x/y/w/h to fine-tune; the chips
-// below drive the same zoom/highlight regardless of exact pixel alignment.
+// Hotspot rects are % of the 1536×1024 Raptorz Banking Earth architecture diagram,
+// positioned over each box (generated in sync with the SVG). The chips below drive
+// the same zoom/highlight regardless of exact pixel alignment.
 const SERVICES: Svc[] = [
-  { id: 'client',    name: 'Client · Mobile / Web / POS',   tag: '1 · Ingress',  detail: 'A customer initiates a transaction from mobile, web or POS — the entry point of the real-time flow.', x: 2,    y: 12,   w: 11.5, h: 32 },
-  { id: 'txapi',     name: 'Transaction API · Cloud Run',   tag: '2 · Compute',  detail: 'Cloud Run service that validates and enriches every incoming transaction. Scales to zero; built from source.', x: 15,   y: 12,   w: 12,   h: 32 },
-  { id: 'pubsub',    name: 'Pub/Sub · Events Stream',       tag: '3 · Events',   detail: 'Event backbone — the transaction stream that wakes the router (event-driven autonomous routing).', x: 28,   y: 12,   w: 10.5, h: 32 },
-  { id: 'router',    name: 'Router · Cloud Run (Fast Path)', tag: '4 · Fast Path', detail: 'Millisecond fast path: rules + a Gemini Flash pre-filter decide Approve / Step-up / Decline, and escalate high-risk cases async.', x: 39,   y: 12,   w: 14,   h: 32 },
-  { id: 'vertex',    name: 'Vertex AI · Gemini 3.5',        tag: '5 · Deep Path', detail: 'The async deep path — six specialist agents (Card Status, Investigator, Network, Intel, Compliance, Critic) reason over the evidence on Gemini 3.5.', x: 56,   y: 12,   w: 26.5, h: 39 },
-  { id: 'firestore', name: 'Firestore · Memory',           tag: 'Memory',       detail: 'Customer memory (confirmed-legit, tier), cases, agent steps, intermediate findings and the live audit trail streamed to the console.', x: 57,   y: 36,   w: 24,   h: 15 },
-  { id: 'decision',  name: 'Adaptive Decision',            tag: '6 · Policy',   detail: 'Orchestrator output — Approve / Step-up / Hold / Block, with reason codes, a confidence score and an evidence summary.', x: 83.5, y: 12,   w: 14,   h: 39 },
-  { id: 'firebase',  name: 'Firebase Authentication',      tag: 'Auth',         detail: 'Sign-in / sign-up (email-password + Google), security rules and App Check protecting the backend; guest mode needs no account.', x: 2,    y: 53,   w: 15,   h: 29 },
-  { id: 'stepup',    name: 'Step-Up · Mobile / Email OTP',  tag: '7 · Verify',   detail: 'Auto-pay disabled → Mobile or Email OTP → verify or block. Verify the customer instead of declining them.', x: 29,   y: 51.5, w: 22.5, h: 20.5 },
-  { id: 'rm',        name: 'RM Alert + Investigation',     tag: 'Analyst',      detail: 'AI explanation for the relationship manager: real-time notification, risk score & reasons, and case creation when required.', x: 60.5, y: 54,   w: 21,   h: 16 },
-  { id: 'outcome',   name: 'Final Outcome',               tag: '8 · Result',   detail: 'Approve / Step-up Verified / Hold / Block — the resolved decision with reason codes.', x: 29,   y: 73,   w: 22.5, h: 13.5 },
-  { id: 'frontend',  name: 'Frontend · Cloud Run (NGINX)', tag: '9 · Console',  detail: 'Analyst console + executive demo — live cases & dashboard, real-time agent step trace and the step-up demo via Firestore / SSE.', x: 71,   y: 70.5, w: 27,   h: 17 },
+  { id: 'ingress',   name: 'Client · Earth Mart',          tag: '1 · Ingress',  detail: 'Payments from mobile, web and POS — and from the Earth Mart online merchant — enter the real-time flow here.', x: 2.6,  y: 15.6, w: 16.3, h: 19.5 },
+  { id: 'txapi',     name: 'Transaction API · Cloud Run',  tag: '2 · Compute',  detail: 'Cloud Run service that validates and enriches every incoming transaction. Scales to zero; built from source.', x: 20.2, y: 15.6, w: 15,   h: 19.5 },
+  { id: 'pubsub',    name: 'Pub/Sub · Event Stream',       tag: '3 · Events',   detail: 'Event backbone — the transaction stream that wakes the router (event-driven autonomous routing).', x: 36.5, y: 15.6, w: 10.4, h: 19.5 },
+  { id: 'fastpath',  name: 'Fast Path · Router (Cloud Run)', tag: '4 · Fast Path', detail: 'Millisecond fast path: rules + a Gemini Flash pre-filter decide Allow / Step-up / Decline, and escalate high-risk cases async.', x: 48.2, y: 15.6, w: 20.8, h: 19.5 },
+  { id: 'deeppath',  name: 'Deep Path · Google ADK + Gemini 3.5', tag: '5 · Agents', detail: 'The async multi-agent investigation on Google ADK + Gemini 3.5 — Orchestrator, Card Status, Step-Up, Investigator, Network, Intel, Compliance and Critic agents reason over the evidence.', x: 20.2, y: 38.1, w: 48.8, h: 25.4 },
+  { id: 'firestore', name: 'Firestore · Memory',           tag: 'Memory',       detail: 'Customer memory (confirmed-legit, tier), cases, agent steps and the live audit trail streamed to the console.', x: 21.6, y: 57.5, w: 46,   h: 5 },
+  { id: 'decision',  name: 'Adaptive Decision',            tag: '6 · Policy',   detail: 'Orchestrator output — Approve / Step-up / Hold / Block. Enforces the home-country geo gate (impossible travel), stolen-card hard block and auto-pay/OTP step-up, with reason codes, confidence and evidence.', x: 71,   y: 15.6, w: 26.4, h: 47.9 },
+  { id: 'firebase',  name: 'Firebase Authentication',      tag: 'Auth',         detail: 'Sign-in / sign-up (email-password + Google), security rules and guest mode.', x: 2.6,  y: 38.1, w: 16.3, h: 24.4 },
+  { id: 'stepup',    name: 'Step-Up · Mobile / Email OTP',  tag: '7 · Verify',   detail: 'Auto-pay disabled → Mobile or Email OTP → verify or block. Verify the customer instead of declining them.', x: 20.2, y: 66.4, w: 16.3, h: 19.5 },
+  { id: 'rm',        name: 'RM Alert + Investigation',     tag: 'Analyst',      detail: 'AI explanation for the relationship manager: risk, reasons and an auto-created fraud case.', x: 37.8, y: 66.4, w: 16.3, h: 19.5 },
+  { id: 'bigquery',  name: 'BigQuery · Analytics',         tag: 'Analytics',    detail: 'Every decision is streamed to BigQuery; GET /analytics/summary powers the risk/fraud dashboard.', x: 55.3, y: 66.4, w: 13.7, h: 19.5 },
+  { id: 'frontend',  name: 'Frontend Console · Cloud Run', tag: '9 · Console',  detail: 'Analyst console with the live Investigations feed, agent step trace and dashboards via Firestore / SSE.', x: 71,   y: 66.4, w: 26.4, h: 19.5 },
 ];
 
 const AUTO_CLOSE_MS = 10000;
