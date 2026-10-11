@@ -122,9 +122,12 @@
 
 <script>
   const CATALOG = {
-    MY: { symbol:"RM", amount:450, item:"Aurora Wireless Headphones", desc:"Active noise-cancelling · 40h battery · 2-year warranty.", thumb:"🎧", flag:"🇲🇾", region:"Malaysia · Kuala Lumpur" },
-    AU: { symbol:"A$", amount:1799, item:'Apple MacBook Air 13"', desc:"Apple M3 chip · 16GB · 512GB SSD · 1-year warranty.", thumb:"💻", flag:"🇦🇺", region:"Australia · Sydney" },
+    MY: { symbol:"RM", amount:450, currency:"MYR", item:"Aurora Wireless Headphones", desc:"Active noise-cancelling · 40h battery · 2-year warranty.", thumb:"🎧", flag:"🇲🇾", region:"Malaysia · Kuala Lumpur", country:"MY", city:"Kuala Lumpur, Malaysia", risk:18, merchant:"Earth Mart Malaysia" },
+    AU: { symbol:"A$", amount:1799, currency:"AUD", item:'Apple MacBook Air 13"', desc:"Apple M3 chip · 16GB · 512GB SSD · 1-year warranty.", thumb:"💻", flag:"🇦🇺", region:"Australia · Sydney", country:"AU", city:"Sydney, Australia", risk:82, merchant:"Earth Mart Australia" },
   };
+  // Fallback backend for when this page is opened as a static file (no /pay server).
+  const BACKEND = "https://aegis-backend-282323062361.us-central1.run.app";
+  const SERVED = location.protocol === "http:" || location.protocol === "https:";
   let mode = "MY";
   const fmt = (c) => c.symbol + " " + c.amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const $ = (id) => document.getElementById(id);
@@ -159,8 +162,19 @@
     btn.disabled = true; btn.textContent = "Contacting Raptorz Banking Earth…";
     result.className = "result";
     try {
-      const r = await fetch("/pay", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ mode }) });
-      const d = await r.json();
+      let d;
+      if (SERVED) {
+        const r = await fetch("/pay", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ mode }) });
+        d = await r.json();
+      } else {
+        // static preview (file:// or data:) — call the Raptorz backend directly (toggle only)
+        const c = CATALOG[mode];
+        const txn = { id: "ORD-" + Math.random().toString(36).slice(2, 8).toUpperCase(), customer: "Deepan", card: "1234", amount: c.amount, currency: c.currency || "USD", merchant: c.merchant, city: c.city, country: c.country, channel: "Web", risk: c.risk, auto_pay: false, otp_verified: null };
+        const r = await fetch(BACKEND + "/investigate", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(txn) });
+        const data = await r.json();
+        const res = data.result || {};
+        d = { decision: res.decision, reason_codes: res.reason_codes, rationale: res.rationale, detected_country: (data.transaction || {}).country };
+      }
       const approved = d.decision === "Approved";
       result.classList.add("show", approved ? "ok" : "block");
       result.innerHTML =
