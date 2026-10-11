@@ -70,13 +70,29 @@ class MemoryStore:
         return self._mem["customers"].get(customer, {}).get("confirmed_legit", [])
 
     def list_cases(self, limit: int = 500) -> list[dict]:
-        """All stored cases (for analytics). Firestore when available, else in-memory."""
+        """Recent cases, newest first. Firestore when available, else in-memory."""
         if self._db:
             try:
-                return [d.to_dict() for d in self._db.collection("cases").limit(limit).stream()]
+                from google.cloud import firestore
+
+                q = self._db.collection("cases").order_by("created_at", direction=firestore.Query.DESCENDING).limit(limit)
+                return [d.to_dict() for d in q.stream()]
             except Exception as exc:  # noqa: BLE001
                 print(f"[memory] cases list error: {exc}")
-        return list(self._mem["cases"].values())
+        cases = list(self._mem["cases"].values())
+        cases.sort(key=lambda c: c.get("created_at", ""), reverse=True)
+        return cases[:limit]
+
+    def get_case(self, case_id: str):
+        """A single case by id, or None."""
+        if self._db:
+            try:
+                doc = self._db.collection("cases").document(case_id).get()
+                if doc.exists:
+                    return doc.to_dict()
+            except Exception as exc:  # noqa: BLE001
+                print(f"[memory] case read error: {exc}")
+        return self._mem["cases"].get(case_id)
 
     def get_customer_home(self, customer: str):
         """The customer's home country (ISO-2), or None if unknown. Drives the geo gate."""

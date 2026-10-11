@@ -12,7 +12,7 @@ import base64
 import json
 import os
 
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 
@@ -61,6 +61,40 @@ def analytics_summary() -> dict:
         counts[decision] = counts.get(decision, 0) + 1
     by_decision = [{"decision": k, "n": v} for k, v in sorted(counts.items(), key=lambda kv: -kv[1])]
     return {"source": "store", "total": len(cases), "by_decision": by_decision, "bigquery_enabled": bq.enabled()}
+
+
+@app.get("/cases")
+def list_cases(limit: int = 20) -> list[dict]:
+    """Recent investigation cases (newest first) for the analyst console feed."""
+    out = []
+    for c in store.list_cases(limit=limit):
+        t = c.get("transaction") or {}
+        r = c.get("result") or {}
+        out.append({
+            "id": c.get("id"),
+            "created_at": c.get("created_at"),
+            "customer": t.get("customer"),
+            "merchant": t.get("merchant"),
+            "amount": t.get("amount"),
+            "currency": t.get("currency"),
+            "city": t.get("city"),
+            "country": t.get("country"),
+            "channel": t.get("channel"),
+            "risk": t.get("risk"),
+            "decision": r.get("decision"),
+            "confidence": r.get("confidence"),
+            "steps": len(c.get("steps") or []),
+        })
+    return out
+
+
+@app.get("/cases/{case_id}")
+def get_case(case_id: str) -> dict:
+    """Full case with its multi-agent reasoning steps and decision."""
+    case = store.get_case(case_id)
+    if not case:
+        raise HTTPException(status_code=404, detail="case not found")
+    return case
 
 
 @app.post("/investigate")

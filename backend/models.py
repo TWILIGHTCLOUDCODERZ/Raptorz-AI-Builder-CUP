@@ -1,8 +1,13 @@
 """Shared data models for the Aegis backend."""
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from typing import Literal, Optional
 from pydantic import BaseModel, Field
+
+
+def _now_iso() -> str:
+    return datetime.now(timezone.utc).isoformat()
 
 DecisionValue = Literal["Approved", "Step-up", "Held", "Blocked"]
 
@@ -39,6 +44,7 @@ class DecisionResult(BaseModel):
 
 class Case(BaseModel):
     id: str
+    created_at: str = Field(default_factory=_now_iso)
     transaction: Transaction
     steps: list[AgentStep] = Field(default_factory=list)
     memory_hits: list[str] = Field(default_factory=list)

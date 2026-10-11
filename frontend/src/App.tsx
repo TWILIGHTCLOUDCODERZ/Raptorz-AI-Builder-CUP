@@ -92,7 +92,7 @@ function App({ user, onSignOut }: { user: { name: string; email: string }; onSig
       <main className="main-content">
         <header className="topbar"><button className="mobile-menu" onClick={() => setSidebarOpen(true)}><Menu size={20} /></button><div className="breadcrumb"><span>Workspace</span><ChevronRight size={14} /><strong>{activeNav}</strong></div><div className="top-actions"><div className="search-box"><Search size={16} /><input placeholder="Search transactions, customers..." /></div><div className="live-status"><span className="live-dot" /> LIVE <span className="throughput">1,284 txns/s</span></div><span className="demo-badge">DEMO</span><button className="icon-button" onClick={() => setShowNotifications(!showNotifications)}><Bell size={18} /><i /></button><div className="top-avatar" title={user.email}>{initials}</div></div>{showNotifications && <div className="notification-pop"><div className="pop-title">Notifications <span>3 new</span></div><p><ShieldAlert size={15} /> High-risk wire transfer blocked</p><p><BrainCircuit size={15} /> Memory recall resolved false positive</p><p><Activity size={15} /> Stream health is nominal</p></div>}</header>
         <div className="page-wrap">
-          {activeNav === 'Command Center' ? <CommandCenter transactions={transactions} blocked={blocked} selected={selected} onSelect={setSelected} onInvestigate={(t) => { setSelected(t); setActiveNav('Investigations'); }} onNavigate={setActiveNav} streaming={streaming} onToggle={() => setStreaming(!streaming)} /> : activeNav === 'Architecture' ? <ArchitecturePage /> : activeNav === 'Customer App' ? <FraudJourney embedded /> : activeNav === 'Customer 360' ? <Customer360 /> : activeNav === 'Compliance / SAR' ? <ComplianceSAR /> : activeNav === 'Network Graph' ? <NetworkGraph /> : <PlaceholderPage activeNav={activeNav} transactions={transactions} selected={selected} onSelect={setSelected} onNavigate={setActiveNav} />}
+          {activeNav === 'Command Center' ? <CommandCenter transactions={transactions} blocked={blocked} selected={selected} onSelect={setSelected} onInvestigate={(t) => { setSelected(t); setActiveNav('Investigations'); }} onNavigate={setActiveNav} streaming={streaming} onToggle={() => setStreaming(!streaming)} /> : activeNav === 'Architecture' ? <ArchitecturePage /> : activeNav === 'Customer App' ? <FraudJourney embedded /> : activeNav === 'Customer 360' ? <Customer360 /> : activeNav === 'Compliance / SAR' ? <ComplianceSAR /> : activeNav === 'Network Graph' ? <NetworkGraph /> : activeNav === 'Investigations' ? <LiveInvestigations onNavigate={setActiveNav} /> : <PlaceholderPage activeNav={activeNav} transactions={transactions} selected={selected} onSelect={setSelected} onNavigate={setActiveNav} />}
         </div>
       </main>
     </div>
@@ -253,6 +253,143 @@ function InvestigationPanel({ transaction, onNavigate }: { transaction: Transact
 
       {status === 'done' && <div className="analyst-actions"><button className="action-primary" onClick={() => setActionMsg('✓ Approved by analyst — decision recorded in the case.')}><Check size={16} /> Approve</button><button onClick={() => setActionMsg('Decision overridden — routed for secondary review.')}><ShieldAlert size={16} /> Override</button><button onClick={() => setActionMsg('Escalated to the fraud investigation team.')}><ArrowUpRight size={16} /> Escalate</button><button onClick={() => onNavigate('Customer 360')}><BrainCircuit size={16} /> Add to memory</button></div>}
       {actionMsg && <div className="action-msg">{actionMsg}</div>}
+    </div>
+  );
+}
+
+// ---------- Live investigations feed (connected to the real agent backend) ----------
+type CaseSummary = { id: string; created_at: string; customer: string; merchant: string; amount: number; currency?: string; city: string; country?: string; channel: string; risk: number; decision?: string; confidence?: number; steps: number };
+type FullCase = { id: string; created_at: string; transaction: { customer: string; merchant: string; amount: number; currency?: string; city: string; country?: string; channel: string; risk: number }; steps: LiveStep[]; memory_hits: string[]; result: LiveResult | null };
+
+const money = (amount: number, currency?: string) => {
+  try { return new Intl.NumberFormat('en-US', { style: 'currency', currency: currency || 'USD', maximumFractionDigits: amount < 100 ? 2 : 0 }).format(amount); }
+  catch { return `${currency || ''} ${amount}`; }
+};
+const ago = (iso: string) => {
+  const s = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
+  return s < 60 ? `${Math.floor(s)}s ago` : s < 3600 ? `${Math.floor(s / 60)}m ago` : `${Math.floor(s / 3600)}h ago`;
+};
+const decClass = (d?: string) => (d === 'Blocked' ? 'critical' : d === 'Step-up' || d === 'Held' ? 'high' : 'low');
+const decColor = (d?: string) => (d === 'Blocked' ? '#ff8a93' : d === 'Approved' ? '#7ee6a3' : '#ffcf7a');
+
+function LiveInvestigations({ onNavigate }: { onNavigate: (page: string) => void }) {
+  const [cases, setCases] = useState<CaseSummary[]>([]);
+  const [selId, setSelId] = useState<string | null>(null);
+  const [detail, setDetail] = useState<FullCase | null>(null);
+  const [err, setErr] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let alive = true;
+    async function poll() {
+      try {
+        const r = await fetch(`${API_BASE}/cases?limit=20`);
+        if (!r.ok) throw new Error(`backend ${r.status}`);
+        const data: CaseSummary[] = await r.json();
+        if (!alive) return;
+        setErr(''); setLoading(false); setCases(data);
+        setSelId((prev) => (prev && data.some((c) => c.id === prev) ? prev : data[0]?.id ?? null));
+      } catch (e) { if (alive) { setErr(e instanceof Error ? e.message : String(e)); setLoading(false); } }
+    }
+    poll();
+    const t = setInterval(poll, 4000);
+    return () => { alive = false; clearInterval(t); };
+  }, []);
+
+  useEffect(() => {
+    if (!selId) { setDetail(null); return; }
+    let alive = true;
+    fetch(`${API_BASE}/cases/${selId}`).then((r) => r.json()).then((d) => { if (alive) setDetail(d); }).catch(() => {});
+    return () => { alive = false; };
+  }, [selId]);
+
+  return (
+    <section className="placeholder-page">
+      <div className="page-heading">
+        <div>
+          <div className="eyebrow"><span className="pulse-small" /> LIVE · CONNECTED TO RAPTORZ AGENTS</div>
+          <h1>Investigations</h1>
+          <p>Every payment runs a multi-agent investigation on Gemini 3.5 — cases stream in here in real time.</p>
+        </div>
+        <button className="stream-button on"><Activity size={16} /> {cases.length} cases</button>
+      </div>
+
+      {err && <div className="inv-error">Live feed unavailable: {err}. Confirm the backend ({API_BASE}) is reachable.</div>}
+
+      <div className="investigation-layout">
+        <div className="case-list panel">
+          <div className="panel-heading"><div><div className="section-kicker red-kicker"><span className="red-dot" /> LIVE CASE FEED</div><h2>Investigation queue</h2></div><span className="count-pill">{cases.length}</span></div>
+          {loading && cases.length === 0 && <p style={{ color: '#7f99b3', fontSize: 13, padding: '10px 4px' }}>Connecting to the agent backend…</p>}
+          {!loading && cases.length === 0 && <p style={{ color: '#7f99b3', fontSize: 13, padding: '10px 4px' }}>No cases yet — make a payment at the Earth Mart merchant to trigger one.</p>}
+          {cases.map((c) => (
+            <button className={`case-item ${selId === c.id ? 'selected' : ''}`} key={c.id} onClick={() => setSelId(c.id)}>
+              <div className={`risk-score ${decClass(c.decision)}`}>{c.risk}</div>
+              <div>
+                <strong>{c.customer} <span style={{ fontWeight: 400, color: '#7f99b3', fontSize: 11 }}>· {ago(c.created_at)}</span></strong>
+                <span>{c.merchant} · {money(c.amount, c.currency)}</span>
+                <small>{c.city || c.country} · <b style={{ color: decColor(c.decision) }}>{c.decision || '…'}</b></small>
+              </div>
+              <ChevronRight size={15} />
+            </button>
+          ))}
+        </div>
+        {detail ? <CaseDetail c={detail} onNavigate={onNavigate} /> : <div className="investigation-panel panel"><p style={{ color: '#7f99b3', padding: 20 }}>Select a case to view the agent reasoning.</p></div>}
+      </div>
+    </section>
+  );
+}
+
+function CaseDetail({ c, onNavigate }: { c: FullCase; onNavigate: (page: string) => void }) {
+  const t = c.transaction;
+  const result = c.result;
+  const risk = t.risk || 0;
+  const tier: 'low' | 'medium' | 'high' | 'critical' = risk <= 30 ? 'low' : risk <= 70 ? 'medium' : risk <= 90 ? 'high' : 'critical';
+  const isBlocked = result?.decision === 'Blocked';
+  const decisionClass = result ? (result.decision === 'Blocked' ? 'blocked' : result.decision === 'Step-up' ? 'stepup' : result.decision === 'Held' ? 'held' : '') : '';
+  const decisionHead = result ? (result.decision === 'Approved' ? 'Approve with confidence' : result.decision === 'Blocked' ? 'Block — protect customer' : result.decision === 'Step-up' ? 'Step-up verification' : 'Hold for review') : '';
+  const steps = c.steps || [];
+  return (
+    <div className="investigation-panel panel">
+      <div className="investigation-top">
+        <div>
+          <div className="section-kicker blue-kicker"><span className="blue-dot" /> INVESTIGATION · {c.id}</div>
+          <h2 style={{ cursor: 'pointer' }} onClick={() => onNavigate('Customer 360')} title="View Customer 360">{t.customer}</h2>
+          <span className="case-reference">{t.merchant} · {t.channel}</span>
+        </div>
+        <div className="risk-gauge">
+          <div className={`gauge-ring gauge-${tier}`} style={{ '--risk': `${risk * 3.6}deg` } as React.CSSProperties}><strong>{risk}</strong></div>
+          <span>risk score</span>
+        </div>
+      </div>
+
+      <div className="transaction-detail">
+        <div><span>Amount</span><strong>{money(t.amount, t.currency)}</strong></div>
+        <div><span>Merchant</span><strong>{t.merchant}</strong></div>
+        <div><span>Location</span><strong><MapPin size={14} /> {t.city || t.country}</strong></div>
+        <div><span>Channel</span><strong>{t.channel}</strong></div>
+      </div>
+
+      {c.memory_hits && c.memory_hits.length > 0 && <div className="memory-callout"><BrainCircuit size={20} /><div><span>MEMORY RECALL</span>{c.memory_hits.map((m, i) => <p key={i}>{m}</p>)}</div><Check size={18} /></div>}
+
+      {steps.length > 0 && <div className="agent-track">
+        <div className="track-head">MULTI-AGENT INVESTIGATION <span>{steps.length} agents · Gemini 3.5</span></div>
+        <div className="agent-timeline">
+          {steps.map((step, index) => { const Icon = AGENT_ICON[step.agent] || Bot; return (
+            <div className="agent-step" key={`${step.agent}-${index}`}>
+              <div className="agent-icon"><Icon size={16} /></div>
+              <div className="agent-content">
+                <div><strong><b className="agent-num">{index + 1}</b> {step.agent}</strong><span>done</span></div>
+                <p>{step.thought}</p>
+                {step.evidence && step.evidence.length > 0 && <div className="evidence-list">{step.evidence.map((e, i) => <span key={i}><Check size={10} /> {e}</span>)}</div>}
+              </div>
+            </div>
+          ); })}
+        </div>
+      </div>}
+
+      {isBlocked && <div className="block-banner"><Lock size={22} /><div><strong>CARD BLOCKED</strong><span>Customer protected · fraud case opened</span></div></div>}
+
+      {result && <div className={`decision-box ${decisionClass}`}><div><span className="section-kicker green-kicker">RAPTORZ DECISION</span><h3>{decisionHead}</h3><p>Reason codes: {result.reason_codes.map((rc, i) => <strong key={i}>{rc}{i < result.reason_codes.length - 1 ? ' · ' : ''}</strong>)}</p><p className="decision-rationale">{result.rationale}</p></div><div className="confidence">{Math.round((result.confidence || 0) * 100)}%<span>confidence</span></div></div>}
     </div>
   );
 }
