@@ -147,8 +147,8 @@ export default function ArchitecturePage() {
         {/* F · RM + investigation */}
         <Zone title="RM ALERT + FRAUD INVESTIGATION" sub="AI explanation for the relationship manager" tone={T.violet}>
           <div className="grid sm:grid-cols-2 gap-2">
-            <Box icon={Bell} title="Alert to RM — Tessa" lines={['Customer: Tyson · Risk 96/100', 'Action: Blocked · Auto-pay disabled · no OTP']} tone={T.violet} />
-            <Box icon={Sparkles} title="AI Generated Explanation" lines={['Card used in Italy 2h after Dubai from a new', 'device/network — high probability of compromise']} tone={T.violet} />
+            <Box icon={Bell} title="Alert to RM — Tessa" lines={['Customer: Deepan · Risk 96/100', 'Action: Blocked · Auto-pay disabled · no OTP']} tone={T.violet} />
+            <Box icon={Sparkles} title="AI Generated Explanation" lines={['Card used in Sydney 2h after Kuala Lumpur from a new', 'device/network — high probability of compromise']} tone={T.violet} />
           </div>
           <div style={{ ...SUB, padding: '10px 12px', marginTop: 8 }}>
             <div style={{ display: 'flex', gap: 6, alignItems: 'center', color: '#dce9f4', fontSize: 12, fontWeight: 700 }}><FolderOpen size={14} style={{ color: '#b79cf7' }} /> Fraud Investigation Case Created</div>

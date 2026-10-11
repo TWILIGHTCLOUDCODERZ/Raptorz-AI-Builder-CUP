@@ -69,7 +69,7 @@ export function AutoApprovalStatus({ disabled }: { disabled: boolean }) {
   );
 }
 
-// ---------- transaction context (Dubai txn 1) ----------
+// ---------- transaction context (Kuala Lumpur txn 1) ----------
 export function TxContextCard({ tx, approved }: { tx: TransactionInfo; approved: boolean }) {
   return (
     <div className="rounded-2xl bg-white ring-1 ring-slate-200/70 shadow-sm p-4 flex items-center gap-4">
@@ -344,7 +344,7 @@ export function ResultCard({ approved, critical, autoApproved, amount, score, ch
         <Stat k={approved ? 'Verification' : 'Reason'} v={approved ? (autoApproved ? 'No OTP needed' : channelLabel) : critical ? 'Stolen card' : '3 / 3 attempts'} />
         <Stat k="Status" v={approved ? 'APPROVED' : 'BLOCKED'} />
       </div>
-      <p className="text-sm text-white/90 mt-4">{approved ? (autoApproved ? 'Trusted Dubai pattern with ~5 months of history — approved instantly, no step-up needed.' : 'Customer successfully verified their identity — payment continues.') : critical ? 'A stolen-card status cannot be overridden by OTP — routed to fraud investigation.' : 'Incorrect OTP — routed to fraud investigation.'}</p>
+      <p className="text-sm text-white/90 mt-4">{approved ? (autoApproved ? 'Trusted Kuala Lumpur pattern with ~5 months of history — approved instantly, no step-up needed.' : 'Customer successfully verified their identity — payment continues.') : critical ? 'A stolen-card status cannot be overridden by OTP — routed to fraud investigation.' : 'Incorrect OTP — routed to fraud investigation.'}</p>
       <button onClick={onInvestigate} className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold bg-white/15 hover:bg-white/25 rounded-xl px-4 py-2.5 transition">{approved ? 'View Investigation' : 'Send to Fraud Investigation'} <ArrowRight size={15} /></button>
     </div>
   );
@@ -371,7 +371,7 @@ export function RmAlertCard({ rmName, level, score, amount, location, previous, 
         <span className="grid place-items-center h-8 w-8 rounded-lg bg-amber-100 text-amber-600"><Bell size={16} /></span>
         <div className="flex-1">
           <div className="text-[11px] font-semibold tracking-widest text-amber-600">FRAUD RISK ALERT → RM {rmName.toUpperCase()}</div>
-          <div className="text-sm font-semibold text-slate-900">Customer: Tyson · Risk {level.toUpperCase()} · {score}/100</div>
+          <div className="text-sm font-semibold text-slate-900">Customer: Deepan · Risk {level.toUpperCase()} · {score}/100</div>
         </div>
       </div>
       <div className="p-5">
@@ -519,30 +519,30 @@ export function DemoControls({ onStart, onRisk, onChannel, onApprove, onBlock }:
     <div className="rounded-2xl bg-white/70 backdrop-blur ring-1 ring-slate-200 p-4">
       <div className="flex items-center gap-2 mb-3">
         <span className="grid place-items-center h-6 w-6 rounded-md bg-violet-100 text-violet-700 text-[13px] leading-none">★</span>
-        <span className="text-[12px] font-bold tracking-widest text-slate-600">TYSON · VIP MEMBER</span>
+        <span className="text-[12px] font-bold tracking-widest text-slate-600">DEEPAN · VIP MEMBER</span>
         <span className="text-[11px] text-slate-400 ml-1">pick a scenario</span>
       </div>
 
       <div className="grid sm:grid-cols-2 gap-3">
-        {/* Section 1 — normal Dubai payment (auto-approve, no OTP) */}
+        {/* Section 1 — normal Kuala Lumpur payment (auto-approve, no OTP) */}
         <button onClick={() => onRisk('low')} className="text-left rounded-xl ring-1 ring-emerald-200 bg-emerald-50/60 hover:bg-emerald-50 hover:ring-emerald-300 p-4 transition group">
           <div className="flex items-center gap-2 mb-1.5">
             <span className="text-[10px] font-bold tracking-wider text-emerald-800 bg-emerald-100 rounded-full px-2 py-0.5">1 · NORMAL</span>
             <span className="text-[11px] font-semibold text-emerald-700 ml-auto flex items-center gap-1"><Check size={12} /> Auto-approve · no OTP</span>
           </div>
-          <div className="font-bold text-slate-900 text-[15px]">Everyday payment · Dubai</div>
-          <p className="text-[12px] text-slate-500 mt-1 leading-relaxed">Where Tyson lives. Same city, known device, ~5 months of regular history — approved instantly, no step-up.</p>
+          <div className="font-bold text-slate-900 text-[15px]">Everyday payment · Kuala Lumpur</div>
+          <p className="text-[12px] text-slate-500 mt-1 leading-relaxed">Where Deepan lives. Same city, known device, ~5 months of regular history — approved instantly, no step-up.</p>
           <span className="inline-flex items-center gap-1.5 mt-2.5 text-[12.5px] font-semibold text-emerald-700 group-hover:gap-2 transition-all">▶ Run normal payment <ArrowRight size={14} /></span>
         </button>
 
-        {/* Section 2 — suspicious Italy payment (full step-up flow) */}
+        {/* Section 2 — suspicious Sydney payment (full step-up flow) */}
         <button onClick={() => onRisk('high')} className="text-left rounded-xl ring-1 ring-rose-200 bg-rose-50/60 hover:bg-rose-50 hover:ring-rose-300 p-4 transition group">
           <div className="flex items-center gap-2 mb-1.5">
             <span className="text-[10px] font-bold tracking-wider text-rose-800 bg-rose-100 rounded-full px-2 py-0.5">2 · SUSPICIOUS</span>
             <span className="text-[11px] font-semibold text-rose-700 ml-auto flex items-center gap-1"><ShieldAlert size={12} /> Step-up OTP → approve / block</span>
           </div>
-          <div className="font-bold text-slate-900 text-[15px]">VIP card in Italy · 2h later</div>
-          <p className="text-[12px] text-slate-500 mt-1 leading-relaxed">Same day, same card — used in Italy 2 hours after Dubai. Impossible travel, so auto-pay is suspended and Aegis runs the full check.</p>
+          <div className="font-bold text-slate-900 text-[15px]">VIP card in Sydney · same day</div>
+          <p className="text-[12px] text-slate-500 mt-1 leading-relaxed">Same day, same card — used in Sydney 2 hours after Kuala Lumpur. Impossible travel, so auto-pay is suspended and Raptorz runs the full check.</p>
           <span className="inline-flex items-center gap-1.5 mt-2.5 text-[12.5px] font-semibold text-rose-700 group-hover:gap-2 transition-all">▶ Run suspicious payment <ArrowRight size={14} /></span>
         </button>
       </div>

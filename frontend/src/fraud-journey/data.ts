@@ -1,4 +1,4 @@
-// Mock data for the Tyson demo. No real card numbers or contact details.
+// Mock data for the Deepan demo. No real card numbers or contact details.
 import type {
   AISignal, Customer, FraudInvestigation, RiskBreakdownItem, RiskFactor, RiskMatrixRow,
   RuleCheck, Scenario, TransactionInfo,
@@ -8,27 +8,27 @@ export const DEMO_OTP = '482913';
 export const OTP_SECONDS = 120;
 
 export const CUSTOMER: Customer = {
-  name: 'Tyson',
+  name: 'Deepan',
   cardMasked: '**** **** **** 1234',
   cardTier: 'VIP',
   autoPay: true,
   mobileMasked: '+60 ******935',
-  emailMasked: 't******@email.com',
-  normalLocation: 'Dubai, UAE',
+  emailMasked: 'd******@email.com',
+  normalLocation: 'Kuala Lumpur, Malaysia',
 };
 
 export const RM = { name: 'Tessa', role: 'Relationship Manager' };
 
-// Transaction 1 — the benign Dubai purchase (context, auto-approved).
+// Transaction 1 — the benign Kuala Lumpur purchase (context, auto-approved).
 export const TX_DUBAI: TransactionInfo = {
-  id: 'TXN-1', time: '10:00 AM', amount: 250, merchant: 'Trusted Merchant',
-  channel: 'Online', location: 'Dubai, UAE', device: 'Known', network: 'Known',
+  id: 'TXN-1', time: '10:00 AM', amount: 250, merchant: 'Shopee Malaysia',
+  channel: 'Online', location: 'Kuala Lumpur, Malaysia', device: 'Known', network: 'Known',
 };
 
-// Transaction 2 — the anomalous Italy purchase (the one under investigation).
+// Transaction 2 — the anomalous Sydney purchase (the one under investigation).
 export const TX_ITALY: TransactionInfo = {
-  id: 'TXN-2', time: '12:00 PM', amount: 480, merchant: 'Italy Online Store',
-  channel: 'Online', location: 'Italy', device: 'New', network: 'New',
+  id: 'TXN-2', time: '12:00 PM', amount: 480, merchant: 'Sydney Online Store',
+  channel: 'Online', location: 'Sydney, Australia', device: 'New', network: 'New',
 };
 
 export const RULE_CHECKS: RuleCheck[] = [
@@ -40,7 +40,7 @@ export const RULE_CHECKS: RuleCheck[] = [
 ];
 
 const ITALY_SIGNALS: AISignal[] = [
-  { label: 'Location / Geo-Velocity', status: 'DUBAI → ITALY IN 2H', level: 'high', icon: 'MapPin' },
+  { label: 'Location / Geo-Velocity', status: 'KUALA LUMPUR → SYDNEY IN 2H', level: 'high', icon: 'MapPin' },
   { label: 'Device Intelligence', status: 'NEW DEVICE', level: 'high', icon: 'Smartphone' },
   { label: 'Network Signal', status: 'NEW NETWORK', level: 'warn', icon: 'Wifi' },
   { label: 'Merchant', status: 'NEW MERCHANT', level: 'warn', icon: 'Store' },
@@ -58,7 +58,7 @@ const ITALY_BREAKDOWN: RiskBreakdownItem[] = [
 ];
 
 const ITALY_FACTORS: RiskFactor[] = [
-  { label: 'New country (Italy vs. Dubai)', positive: false },
+  { label: 'New country (Australia vs. Malaysia)', positive: false },
   { label: 'New device', positive: false },
   { label: 'New network / IP', positive: false },
   { label: 'New merchant', positive: false },
@@ -119,9 +119,9 @@ const LOW_SIGNALS: AISignal[] = [
   { label: 'Transaction History', status: 'TYPICAL', level: 'info', icon: 'CreditCard' },
 ];
 const LOW_FACTORS: RiskFactor[] = [
-  { label: 'Trusted 5-month history in Dubai', positive: true },
+  { label: 'Trusted 5-month history in Kuala Lumpur', positive: true },
   { label: 'Known device & network', positive: true },
-  { label: 'Home location (Dubai)', positive: true },
+  { label: 'Home location (Kuala Lumpur)', positive: true },
   { label: 'Normal transaction amount', positive: true },
   { label: 'Known merchant', positive: true },
   { label: 'Consistent customer behaviour', positive: true },
@@ -160,10 +160,10 @@ export const RISK_MATRIX: RiskMatrixRow[] = [
 
 export const INVESTIGATION: FraudInvestigation = {
   summary:
-    "Tyson's card was used for an online purchase in Italy two hours after an online purchase in Dubai. The transaction originated from a new device and network and differs from the customer's historical behaviour.",
+    "Deepan's card was used for an online purchase in Sydney, Australia two hours after an online purchase in Kuala Lumpur. The transaction originated from a new device and network and differs from the customer's historical behaviour.",
   evidence: [
-    'Online purchase in Dubai at 10:00 AM (risk 18 — auto-approved)',
-    'Same card used in Italy at 12:00 PM — a 2-hour gap',
+    'Online purchase in Kuala Lumpur at 10:00 AM (risk 18 — auto-approved)',
+    'Same card used in Sydney at 12:00 PM — a 2-hour gap',
     'New device not previously seen on this account',
     'Unfamiliar network / IP address',
     'New merchant, outside normal purchasing pattern',
@@ -179,7 +179,7 @@ export const CRITICAL_INVESTIGATION: FraudInvestigation = {
     'The card was previously reported stolen by the customer. A new-country, new-device transaction on a stolen card is treated as confirmed fraud — OTP cannot override a stolen-card status.',
   evidence: [
     'Card status: REPORTED STOLEN by the customer',
-    'Transaction from a new country (Italy)',
+    'Transaction from a new country (Australia)',
     'New device and unfamiliar network',
     'Purchase pattern inconsistent with the customer',
     'Step-up authentication intentionally NOT offered on a stolen card',

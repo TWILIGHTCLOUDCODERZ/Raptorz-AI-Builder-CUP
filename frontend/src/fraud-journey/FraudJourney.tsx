@@ -44,7 +44,7 @@ export default function FraudJourney({ embedded = false }: { embedded?: boolean 
   }
 
   // OTP countdown — if the customer does not share the code within 2 minutes,
-  // Aegis blocks the transaction (verify the customer, otherwise protect them).
+  // Raptorz blocks the transaction (verify the customer, otherwise protect them).
   useEffect(() => {
     if (phase !== 'otp') return;
     if (secondsLeft <= 0) { runId.current++; setBlockReason('otp_timeout'); setPhase('blocked'); return; }
@@ -76,12 +76,12 @@ export default function FraudJourney({ embedded = false }: { embedded?: boolean 
     <div className="fj-dark" style={{ minHeight: embedded ? undefined : '100vh', background: embedded ? 'transparent' : '#081727' }}>
       {!embedded && <header className="sticky top-0 z-20 backdrop-blur bg-white/70 border-b border-slate-200/70">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-4">
-          <button onClick={() => { location.hash = ''; }} className="text-sm text-slate-500 hover:text-indigo-600 flex items-center gap-1.5"><ArrowLeft size={15} /> Aegis</button>
+          <button onClick={() => { location.hash = ''; }} className="text-sm text-slate-500 hover:text-indigo-600 flex items-center gap-1.5"><ArrowLeft size={15} /> Raptorz</button>
           <div className="h-5 w-px bg-slate-200" />
           <div className="flex items-center gap-2">
             <span className="grid place-items-center h-8 w-8 rounded-lg bg-indigo-600 text-white"><ShieldCheck size={17} /></span>
             <div className="leading-tight">
-              <div className="font-bold text-slate-900 text-[15px]">AI Fraud Detection</div>
+              <div className="font-bold text-slate-900 text-[15px]">Raptorz Banking Earth</div>
               <div className="text-[11px] text-slate-500">AI spots what rules can't.</div>
             </div>
           </div>
@@ -100,7 +100,7 @@ export default function FraudJourney({ embedded = false }: { embedded?: boolean 
         {crossCountry && phase !== 'idle' && (
           <div className="rounded-2xl bg-white ring-1 ring-slate-200/70 shadow-sm p-4 sm:p-5">
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-              <LocationChip city="Dubai, UAE" sub="Online purchase" time={TX_DUBAI.time} tone="ok" />
+              <LocationChip city="Kuala Lumpur, UAE" sub="Online purchase" time={TX_DUBAI.time} tone="ok" />
               <div className="flex-1 flex items-center gap-2 px-2">
                 <div className="flex-1 border-t-2 border-dashed border-rose-300 relative"><Plane size={18} className="text-rose-500 absolute -top-2.5 left-1/2 -translate-x-1/2 rotate-45" /></div>
                 <span className="text-xs font-bold text-rose-600 bg-rose-50 ring-1 ring-rose-200 rounded-full px-2.5 py-1 whitespace-nowrap">2 hours · cross-country</span>
@@ -129,7 +129,7 @@ export default function FraudJourney({ embedded = false }: { embedded?: boolean 
                 <Row label="Location" value={mainTx.location} danger={crossCountry} />
                 <Row label="Device" value={mainTx.device} danger={mainTx.device === 'New'} />
                 <Row label="Network" value={mainTx.network} danger={mainTx.network === 'New'} />
-                {crossCountry && <Row label="Previous / gap" value="Dubai · 2 hours" danger />}
+                {crossCountry && <Row label="Previous / gap" value="Kuala Lumpur · 2 hours" danger />}
               </div>
             </SectionCard>
 
@@ -145,8 +145,8 @@ export default function FraudJourney({ embedded = false }: { embedded?: boolean 
             {phase === 'idle' && (
               <div className="rounded-2xl border-2 border-dashed border-slate-200 bg-white/50 p-10 text-center">
                 <span className="grid place-items-center h-12 w-12 rounded-2xl bg-indigo-50 text-indigo-600 mx-auto mb-3"><CreditCard size={22} /></span>
-                <div className="font-semibold text-slate-800">Tyson · VIP card · auto-pay enabled</div>
-                <p className="text-sm text-slate-500 mt-1 max-w-md mx-auto">His normal <b>Dubai</b> purchase <b>auto-approves</b> on the VIP card. Two hours later the same card is used in <b>Italy</b> — <b>Dubai → Italy in 2h</b> is impossible travel, so auto-pay is suspended and Aegis asks for an OTP: <b>share it → approved</b>; <b>not shared in 2 min → blocked</b>.</p>
+                <div className="font-semibold text-slate-800">Deepan · VIP card · auto-pay enabled</div>
+                <p className="text-sm text-slate-500 mt-1 max-w-md mx-auto">His normal <b>Kuala Lumpur</b> purchase <b>auto-approves</b> on the VIP card. The same day the card is used in <b>Sydney, Australia</b> — <b>KL → Sydney in 2h</b> is impossible travel, so auto-pay is suspended and Raptorz asks for an OTP: <b>share it → approved</b>; <b>not shared in 2 min → blocked</b>.</p>
                 <button onClick={() => startTransaction('high')} className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl px-5 py-2.5">▶ Start Transaction <ArrowRight size={15} /></button>
               </div>
             )}
@@ -171,7 +171,7 @@ export default function FraudJourney({ embedded = false }: { embedded?: boolean 
 
             {scenario?.notifyRm && reached('score') && (
               <RmAlertCard rmName={RM.name} level={scenario.level} score={scenario.score} amount={mainTx.amount}
-                location={mainTx.location} previous="Dubai, UAE" timeGap="2 hours" channel={mainTx.channel}
+                location={mainTx.location} previous="Kuala Lumpur, UAE" timeGap="2 hours" channel={mainTx.channel}
                 explanation={investigation.summary} outcome={outcome} />
             )}
 
@@ -193,7 +193,7 @@ export default function FraudJourney({ embedded = false }: { embedded?: boolean 
               <div className="rounded-xl bg-rose-50 ring-1 ring-rose-200 px-4 py-3 text-[13px] text-rose-700 flex items-start gap-2">
                 <ShieldCheck size={16} className="mt-0.5 shrink-0 text-rose-600" />
                 <span><b>Transaction blocked.</b> {blockReason === 'otp_timeout'
-                  ? 'The one-time passcode was not shared within 2 minutes, so Aegis blocked the payment and protected the customer.'
+                  ? 'The one-time passcode was not shared within 2 minutes, so Raptorz blocked the payment and protected the customer.'
                   : blockReason === 'otp_failed'
                   ? 'The one-time passcode could not be verified, so the payment was blocked.'
                   : 'Step-up verification was not completed.'}</span>

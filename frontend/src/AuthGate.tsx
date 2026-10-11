@@ -65,10 +65,10 @@ export default function AuthGate({ onGuest }: { onGuest: (name: string) => void 
         <div className="absolute -top-24 -left-24 h-72 w-72 rounded-full blur-3xl pointer-events-none" style={{ background: 'rgba(66,133,244,.18)' }} />
         <div className="relative">
           <div className="flex items-center gap-3.5">
-            <img src="/Aegis_Logo.png" alt="Aegis" className="h-14 w-14 rounded-2xl" style={{ objectFit: 'cover', filter: 'drop-shadow(0 0 20px rgba(130,211,255,.4))' }} />
+            <img src="/Raptorz_Logo.png" alt="Raptorz Banking Earth" className="h-14 w-auto" style={{ objectFit: 'contain', filter: 'drop-shadow(0 0 20px rgba(130,211,255,.4))' }} />
             <div>
-              <div className="font-extrabold tracking-[.22em] text-[22px]" style={{ background: 'linear-gradient(90deg,#eaf2fb,#7fb0ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>AEGIS</div>
-              <div className="text-[11px] text-[#7591ae] tracking-[.2em]">AI INTELLIGENCE</div>
+              <div className="font-extrabold tracking-[.22em] text-[22px]" style={{ background: 'linear-gradient(90deg,#eaf2fb,#7fb0ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>RAPTORZ</div>
+              <div className="text-[11px] text-[#7591ae] tracking-[.2em]">BANKING EARTH</div>
             </div>
           </div>
           <h1 className="mt-6 sm:mt-7 text-2xl sm:text-3xl lg:text-[34px] font-extrabold leading-tight tracking-tight">Autonomous defense<br className="hidden sm:block" /> for every transaction.</h1>
@@ -83,7 +83,7 @@ export default function AuthGate({ onGuest }: { onGuest: (name: string) => void 
                 <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#ff5f57', display: 'inline-block' }} />
                 <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#febc2e', display: 'inline-block' }} />
                 <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#28c840', display: 'inline-block' }} />
-                <span style={{ marginLeft: 10, fontSize: 10.5, color: '#6d87a0', fontFamily: "'Space Mono', monospace" }}>aegis · ai fraud intelligence</span>
+                <span style={{ marginLeft: 10, fontSize: 10.5, color: '#6d87a0', fontFamily: "'Space Mono', monospace" }}>raptorz banking earth · fraud intelligence</span>
               </div>
               <div style={{ padding: 12 }}><ArchitectureExplorer /></div>
             </div>
@@ -100,7 +100,7 @@ export default function AuthGate({ onGuest }: { onGuest: (name: string) => void 
         <div className="w-full max-w-[420px]">
           <div className="rounded-2xl p-7 sm:p-8" style={{ background: 'linear-gradient(150deg, rgba(20,48,79,.75), rgba(13,34,58,.85))', border: '1px solid rgba(90,130,170,.22)', boxShadow: '0 20px 60px rgba(0,0,0,.35)' }}>
             <h2 className="text-xl font-bold">{mode === 'signin' ? 'Welcome back' : mode === 'signup' ? 'Create your account' : 'Meet the creator'}</h2>
-            <p className="text-[12px] text-[#7f99b3] mt-1">{mode === 'signin' ? 'Sign in to the Aegis analyst console.' : mode === 'signup' ? 'Set up access to the Aegis console.' : 'The mind behind Aegis.'}</p>
+            <p className="text-[12px] text-[#7f99b3] mt-1">{mode === 'signin' ? 'Sign in to the Raptorz Banking Earth console.' : mode === 'signup' ? 'Set up access to the Raptorz Banking Earth console.' : 'The mind behind Raptorz Banking Earth.'}</p>
 
             <div className="mt-5 grid grid-cols-3 gap-1 p-1 rounded-xl" style={{ background: 'rgba(3,14,28,.4)' }}>
               {(['signin', 'signup', 'creator'] as const).map((m) => (
@@ -167,10 +167,10 @@ function CreatorPanel() {
           <div className="text-[12px] text-[#7fb0ff] tracking-wide">Cloud Architect</div>
         </div>
       </div>
-      <p className="mt-4 text-[13px] text-[#a9c0d6] leading-relaxed">Creator of <b className="text-[#dbe9f8]">Aegis</b> — an autonomous, real-time fraud &amp; financial-crime defense platform built on Gemini and Google Cloud.</p>
+      <p className="mt-4 text-[13px] text-[#a9c0d6] leading-relaxed">Creator of <b className="text-[#dbe9f8]">Raptorz</b> — an autonomous, real-time fraud &amp; financial-crime defense platform built on Gemini and Google Cloud.</p>
       <div className="mt-4 grid gap-2">
         <a href="https://deepantechnoids.github.io/" target="_blank" rel="noreferrer" className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-[13px] transition hover:brightness-125" style={{ background: 'rgba(20,49,80,.4)', border: '1px solid rgba(104,142,180,.25)', color: '#cfe0ef' }}><Globe2 size={15} className="text-[#5da0ff]" /> deepantechnoids.github.io</a>
-        <a href="https://github.com/TWILIGHTCLOUDCODERZ/Aegis-Agentic-Google-Hackathon" target="_blank" rel="noreferrer" className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-[13px] transition hover:brightness-125" style={{ background: 'rgba(20,49,80,.4)', border: '1px solid rgba(104,142,180,.25)', color: '#cfe0ef' }}><Github size={15} className="text-[#5da0ff]" /> Aegis on GitHub</a>
+        <a href="https://github.com/TWILIGHTCLOUDCODERZ/Raptorz-Agentic-Google-Hackathon" target="_blank" rel="noreferrer" className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-[13px] transition hover:brightness-125" style={{ background: 'rgba(20,49,80,.4)', border: '1px solid rgba(104,142,180,.25)', color: '#cfe0ef' }}><Github size={15} className="text-[#5da0ff]" /> Raptorz on GitHub</a>
       </div>
       <div className="mt-4 flex flex-wrap gap-1.5">
         {['Gemini 3.5', 'Google Cloud', 'Cloud Run', 'Firestore', 'Multi-agent AI'].map((t) => (

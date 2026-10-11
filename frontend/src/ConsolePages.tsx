@@ -17,7 +17,7 @@ export function Customer360() {
   ];
   return (
     <section className="placeholder-page">
-      <div className="page-heading"><div><div className="eyebrow"><span className="pulse-small" /> RELATIONSHIP</div><h1>Customer 360</h1><p>Everything Aegis knows and remembers about this customer.</p></div></div>
+      <div className="page-heading"><div><div className="eyebrow"><span className="pulse-small" /> RELATIONSHIP</div><h1>Customer 360</h1><p>Everything Raptorz knows and remembers about this customer.</p></div></div>
 
       <div className="panel" style={{ padding: 22 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
@@ -49,7 +49,7 @@ export function Customer360() {
         </div>
 
         <div className="panel" style={{ padding: 20 }}>
-          {kick('AEGIS MEMORY')}
+          {kick('RAPTORZ MEMORY')}
           <h2 style={{ color: '#e1edf8', fontSize: 14, margin: '0 0 12px' }}>Confirmed-legit</h2>
           {['Confirmed annual travel to Monaco each May', 'Recurring luxury watch & boutique purchases confirmed legit', 'Reported card **** 8899 stolen (Mar 2026)'].map((m) => (
             <div key={m} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', marginBottom: 8, color: '#b6cae0', fontSize: 12 }}><BrainCircuit size={14} style={{ color: '#6ba9ff', flex: '0 0 auto', marginTop: 1 }} /> {m}</div>
@@ -86,15 +86,15 @@ export function ComplianceSAR() {
 
       <div className="dashboard-grid">
         <div className="panel" style={{ padding: 22 }}>
-          {kick('SAR NARRATIVE · AEGIS-2026-00421')}
+          {kick('SAR NARRATIVE · RAPTORZ-2026-00421')}
           <h2 style={{ color: '#e1edf8', fontSize: 15, margin: '0 0 12px' }}>Suspicious Activity Report</h2>
           <div style={{ ...card, padding: 16 }}>
             <p style={{ color: '#b6cae0', fontSize: 12.5, lineHeight: 1.7, margin: 0 }}>
-              On 2026-03-12, customer <b style={{ color: '#dce9f4' }}>Tyson</b> (card **** 1234) executed a $480 online purchase in <b style={{ color: '#dce9f4' }}>Italy</b> two hours after a $250 purchase in <b style={{ color: '#dce9f4' }}>Dubai</b>. The Italy transaction originated from a new device and network and deviated materially from the customer's historical behaviour. Auto-approval was disabled and step-up authentication requested; no OTP verification was received and the transaction was blocked. The pattern is consistent with potential card compromise. A fraud investigation case has been opened and the relationship manager notified.
+              On 2026-03-12, customer <b style={{ color: '#dce9f4' }}>Deepan</b> (card **** 1234) executed a $480 online purchase in <b style={{ color: '#dce9f4' }}>Sydney</b> two hours after a $250 purchase in <b style={{ color: '#dce9f4' }}>Kuala Lumpur</b>. The Sydney transaction originated from a new device and network and deviated materially from the customer's historical behaviour. Auto-approval was disabled and step-up authentication requested; no OTP verification was received and the transaction was blocked. The pattern is consistent with potential card compromise. A fraud investigation case has been opened and the relationship manager notified.
             </p>
           </div>
           <div style={{ marginTop: 16 }}>{kick('EVIDENCE CHAIN')}</div>
-          {['Card used in Dubai 10:00 (risk 18, auto-approved)', 'Same card in Italy 12:00 — 2-hour gap', 'New device + unfamiliar network', 'Behaviour mismatch vs. 90-day baseline', 'Auto-pay disabled · OTP not received · blocked'].map((e, i) => (
+          {['Card used in Kuala Lumpur 10:00 (risk 18, auto-approved)', 'Same card in Sydney 12:00 — 2-hour gap', 'New device + unfamiliar network', 'Behaviour mismatch vs. 90-day baseline', 'Auto-pay disabled · OTP not received · blocked'].map((e, i) => (
             <div key={e} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: 12, color: '#a9c0d6', padding: '6px 0' }}><span style={{ width: 18, height: 18, borderRadius: '50%', background: 'rgba(90,130,170,.16)', color: '#8ba3bb', display: 'grid', placeItems: 'center', font: "10px 'Space Mono'", flex: '0 0 auto' }}>{i + 1}</span>{e}</div>
           ))}
           <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
@@ -106,7 +106,7 @@ export function ComplianceSAR() {
         <aside className="panel" style={{ padding: 20 }}>
           {kick('FILING')}
           <h2 style={{ color: '#e1edf8', fontSize: 14, margin: '0 0 12px' }}>Case details</h2>
-          {[['Case ID', 'AEGIS-2026-00421'], ['Subject', 'Tyson'], ['Risk score', '96 / 100'], ['Priority', 'Critical'], ['Status', 'Draft — pending sign-off'], ['Regulator', 'FIU (auto-format)'], ['Assigned', 'Tessa (RM)']].map(([k, v]) => (
+          {[['Case ID', 'RAPTORZ-2026-00421'], ['Subject', 'Tyson'], ['Risk score', '96 / 100'], ['Priority', 'Critical'], ['Status', 'Draft — pending sign-off'], ['Regulator', 'FIU (auto-format)'], ['Assigned', 'Tessa (RM)']].map(([k, v]) => (
             <div key={k} style={{ display: 'flex', justifyContent: 'space-between', padding: '9px 0', borderTop: '1px solid rgba(90,130,170,.1)', fontSize: 12 }}><span style={{ color: '#7f99b3' }}>{k}</span><span style={{ color: '#dce9f4', fontWeight: 600 }}>{v}</span></div>
           ))}
           <div style={{ ...card, padding: 12, marginTop: 14, display: 'flex', gap: 8, alignItems: 'flex-start' }}>
