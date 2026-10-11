@@ -8,7 +8,7 @@
 
 Aegis doesn't just detect fraud — it *investigates*, *verifies the customer*, and blocks only when it must.
 
-`Gemini 3.5` · `Google GenAI SDK` · `Cloud Run` · `Pub/Sub` · `Firestore` · `Secret Manager` · `Firebase Auth` · `React + TypeScript`
+`Gemini 3.5` · `Google ADK` · `Cloud Run` · `Pub/Sub` · `Firestore` · `Secret Manager` · `Firebase Auth` · `React + TypeScript`
 
 **[▶ Live demo](https://aegis-frontend-gehlmzbhuq-uc.a.run.app/#)**  ·  **[▶ Demo video (YouTube)](https://youtu.be/lzjEZpbEk8Y)**  ·  **[◆ GitHub repo](https://github.com/TWILIGHTCLOUDCODERZ/Aegis-Agentic-Google-Hackathon)**
 
@@ -24,17 +24,17 @@ Traditional rule engines ask *"is this transaction suspicious?"* — Aegis asks 
 
 A **multi-agent system on Gemini 3.5** runs the investigation: an Orchestrator delegates to specialist agents (Card Status, Step-Up Control, Investigator, Network, Intel, Compliance, Critic), each reasoning over evidence, then a memory- and policy-aware adaptive decision — with a relationship-manager alert and an AI-drafted case for high/critical risk.
 
-### Agent orchestration — a custom multi-agent layer on the Google GenAI SDK
+### Agent orchestration — built on Google's agent stack (ADK + Gemini 3.5)
 
-Aegis does **not** use a turnkey agent framework — it implements its **own lightweight multi-agent orchestration directly on the Google GenAI SDK** (`google-genai`), so every step is transparent and fully under the app's control:
+Aegis runs its reasoning agents on the **Google Agent Development Kit (ADK)** with Gemini 3.5 — Google's open-source agent framework — orchestrated by a transparent pipeline that keeps bank policy in code:
 
 - An **Orchestrator** receives the transaction and fans out to purpose-built specialist agents.
-- Each **specialist** is its own Gemini 3.5 call with a dedicated role, prompt and **structured (JSON) output** — Card Status, Step-Up Control, Investigator, Network Analyst, Intel, Compliance.
+- Each **specialist** is a Google ADK **`LlmAgent`** on Gemini 3.5 with a dedicated role and prompt — Investigator, Network Analyst, Intel, Compliance, Critic — and the **adaptive-decision** agent emits **structured (JSON) output** (`output_schema=DecisionResult`).
 - A **Critic** agent reviews and challenges the draft verdict before it is finalised.
-- The Orchestrator **merges the evidence**, applies deterministic **policy gates** (stolen-card hard block, auto-pay + OTP step-up, VIP handling) and **customer memory**, and returns one adaptive decision with reason codes, a confidence score and an evidence summary.
-- Every agent step **streams live** to the analyst console over Server-Sent Events (SSE).
+- Deterministic **policy gates** (stolen-card hard block, auto-pay + OTP step-up, VIP handling) and **customer memory** stay in code — ADK does the reasoning; policy is enforced, never delegated to the model.
+- Every agent step **streams live** to the analyst console over Server-Sent Events (SSE), tagged with the engine that produced it (`engine=adk`).
 
-The full pipeline is in [`backend/agents/pipeline.py`](backend/agents/pipeline.py). Because the orchestration is our own code on the GenAI SDK, it also runs in a deterministic **offline mode** (`AEGIS_OFFLINE=true`) with no cloud calls — useful for demos, tests and the eval benchmark.
+The full pipeline is in [`backend/agents/pipeline.py`](backend/agents/pipeline.py) and the ADK layer in [`backend/agents/adk_agents.py`](backend/agents/adk_agents.py). It degrades gracefully: if ADK is unavailable it falls back to the **Google GenAI SDK** (`google-genai`), and a deterministic **offline mode** (`AEGIS_OFFLINE=true`) runs with no cloud calls — useful for demos, tests and the eval benchmark. (Set `AEGIS_USE_ADK=false` to force the SDK path.)
 
 ## Scope
 
@@ -108,7 +108,7 @@ Reproduce: `python backend/eval/evaluate.py`. Illustrative on synthetic data; pr
 ```
 project/
 ├── frontend/     # React + TypeScript + Tailwind — analyst console + executive walkthrough
-├── backend/      # FastAPI + Google GenAI SDK + Gemini 3.5 — multi-agent investigation
+├── backend/      # FastAPI + Google ADK + Gemini 3.5 — multi-agent investigation
 ├── infra/        # GCP setup + Cloud Run deploy scripts + Secret Manager
 ├── simulator/    # Pub/Sub transaction publisher
 └── AEGIS-ROADMAP.md
@@ -119,10 +119,12 @@ project/
 | Service | Role |
 |---|---|
 | **Vertex AI — Gemini 3.5** | Reasoning for the specialist agents + investigation/RM summaries (global endpoint) |
-| **Google GenAI SDK** | Foundation for the **custom multi-agent orchestration** — orchestrator + specialist agents with structured decision output |
+| **Google ADK (Agent Development Kit)** | Agent framework — each specialist + the adaptive-decision step runs as an ADK `LlmAgent` on Gemini 3.5 |
+| **Google GenAI SDK** | Fallback engine when ADK is unavailable; structured decision output |
 | **Cloud Run** | Hosts the backend agent service and the static frontend (scales to zero) |
 | **Pub/Sub** | Event backbone — transactions stream in and wake the router |
 | **Firestore** | Customer memory (confirmed-legit, tier), cases, live agent-step streaming |
+| **BigQuery** | Decision analytics warehouse — every case is streamed to `aegis.decisions`; `GET /analytics/summary` queries it (fraud/risk breakdown by outcome) |
 | **Secret Manager** | Firebase web config **and the Gemini API key** — single source of truth, injected at build/runtime |
 | **Cloud Build + Artifact Registry** | Builds and stores container images on every deploy |
 | **Model Armor** | Prompt-injection / PII guardrails around the Gemini calls |
@@ -259,6 +261,11 @@ All scripts build **from source via Cloud Build** — no local Docker needed. Ru
 ```bash
 export PROJECT_ID=<your-project-id>
 bash infra/setup.sh
+```
+
+**Step 1b — provision BigQuery analytics.** Creates the `aegis.decisions` dataset/table and grants the runtime service account access. Aegis then streams every decision there, and `GET /analytics/summary` queries it:
+```bash
+PROJECT_ID=$PROJECT_ID bash infra/setup-bigquery.sh
 ```
 
 **Step 2 — store the Gemini API key in Secret Manager.** Skip this to use Vertex AI via the runtime service account (no key). To use a Gemini API key instead — stored in Secret Manager and mounted to Cloud Run at runtime:

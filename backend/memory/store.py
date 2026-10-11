@@ -66,6 +66,15 @@ class MemoryStore:
                 print(f"[memory] read error: {exc}")
         return self._mem["customers"].get(customer, {}).get("confirmed_legit", [])
 
+    def list_cases(self, limit: int = 500) -> list[dict]:
+        """All stored cases (for analytics). Firestore when available, else in-memory."""
+        if self._db:
+            try:
+                return [d.to_dict() for d in self._db.collection("cases").limit(limit).stream()]
+            except Exception as exc:  # noqa: BLE001
+                print(f"[memory] cases list error: {exc}")
+        return list(self._mem["cases"].values())
+
     def get_customer_tier(self, customer: str) -> str:
         """standard | premium | vip — drives friction/handling in the decision."""
         if self._db:

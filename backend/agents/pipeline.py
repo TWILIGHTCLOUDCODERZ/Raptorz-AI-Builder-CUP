@@ -321,6 +321,12 @@ def investigate_stream(txn: Transaction, store: MemoryStore) -> Iterator[Union[A
 
     case = Case(id=case_id, transaction=txn, steps=steps, memory_hits=memory, result=result)
     store.save_case(case)
+    try:  # stream the decision to BigQuery analytics (no-op if disabled)
+        from analytics import bq
+
+        bq.log_decision(case)
+    except Exception:  # noqa: BLE001
+        pass
     yield case
 
 
