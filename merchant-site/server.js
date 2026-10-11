@@ -12,6 +12,10 @@ app.use(express.static(path.join(__dirname, "public")));
 
 const RAPTORZ_API = process.env.RAPTORZ_API || "https://aegis-backend-282323062361.us-central1.run.app";
 const PORT = process.env.PORT || 8080;
+// On the VM, set DETECT_LOCATION=true: the real (VPN) egress IP decides the country,
+// so turning on a VPN to Australia makes Raptorz block. On Cloud Run leave it off and
+// the storefront toggle (Malaysia / Sydney) drives the decision.
+const DETECT = String(process.env.DETECT_LOCATION || "").toLowerCase() === "true";
 
 // Per-location catalog: product, price and currency differ by storefront region.
 const CATALOG = {
@@ -19,7 +23,8 @@ const CATALOG = {
   AU: { country: "AU", city: "Sydney, Australia", risk: 82, amount: 1799, currency: "AUD", symbol: "A$", item: "Apple MacBook Air", merchant: "Earth Mart Australia" },
 };
 
-app.get("/healthz", (_req, res) => res.json({ status: "ok", api: RAPTORZ_API }));
+app.get("/healthz", (_req, res) => res.json({ status: "ok", api: RAPTORZ_API, detect: DETECT }));
+app.get("/config", (_req, res) => res.json({ detect: DETECT }));
 
 app.post("/pay", async (req, res) => {
   const mode = String((req.body && req.body.mode) || "MY").toUpperCase();
@@ -32,8 +37,9 @@ app.post("/pay", async (req, res) => {
     amount: c.amount,
     currency: c.currency,
     merchant: c.merchant,
-    city: c.city,
-    country: c.country,
+    // In detect mode the backend geolocates the real (VPN) egress IP; otherwise use the toggle.
+    city: DETECT ? "" : c.city,
+    country: DETECT ? "AUTO" : c.country,
     channel: "Web",
     risk: c.risk,
     auto_pay: false,

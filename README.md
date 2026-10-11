@@ -305,7 +305,11 @@ Deploy it as a **separate Cloud Run service** (points at the Raptorz backend aut
 PROJECT_ID=$PROJECT_ID bash infra/deploy-merchant.sh
 ```
 
-How it works: the merchant server calls the backend **server-side**; the geo gate in `backend/agents/pipeline.py` blocks any payment outside the customer's home country unless an OTP step-up is completed.
+**Real location via a VM + VPN.** Run the same site in a Compute Engine VM in *detect mode*: there the real egress IP decides the country, so turning on a **VPN to Australia** makes Raptorz detect `AU` and block (a VPN to Malaysia egresses as `MY` and approves). The storefront shows a "Live location detection" badge.
+```bash
+PROJECT_ID=$PROJECT_ID bash infra/setup-merchant-vm.sh   # creates the VM; prints the IP + VPN steps
+```
+How it works: the merchant server calls the backend **server-side**, so Raptorz sees the VM's (VPN) egress IP; `backend/geo.py` resolves it to a country, and the geo gate in `backend/agents/pipeline.py` blocks any payment outside the customer's home country (`MY`) unless an OTP step-up is completed. On Cloud Run leave detect mode off and use the hidden toggle.
 
 ---
 
