@@ -29,14 +29,9 @@
   .muted{color:var(--muted);font-size:13px;line-height:1.5}
   .price{font-size:26px;font-weight:800;margin-top:8px}
   .kicker{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
-  .loc{display:flex;flex-direction:column;gap:8px}
-  .opt{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;cursor:pointer;transition:.15s;background:rgba(255,255,255,.015)}
-  .opt:hover{border-color:rgba(130,160,200,.4)}
-  .opt.sel{border-color:var(--blue);background:rgba(47,107,255,.12);box-shadow:0 0 0 1px var(--blue) inset}
-  .opt .flag{font-size:22px}
-  .opt .t{font-weight:700;font-size:14px}
-  .opt .s{font-size:11.5px;color:var(--muted)}
-  .opt .tag{margin-left:auto;font-size:10px;padding:3px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+  .ship{display:flex;align-items:center;gap:8px;margin-top:4px;font-size:12.5px;color:var(--muted)}
+  .sumrow{display:flex;justify-content:space-between;font-size:14px;padding:7px 0}
+  .sumrow.total{border-top:1px solid var(--line);margin-top:6px;padding-top:12px;font-weight:800;font-size:16px}
   button.pay{margin-top:16px;width:100%;padding:14px;border:0;border-radius:12px;font-size:15px;font-weight:800;color:#fff;
     background:linear-gradient(135deg,var(--blue),#1b4fd6);cursor:pointer;transition:.15s}
   button.pay:hover{filter:brightness(1.08)}
@@ -51,7 +46,26 @@
   .result .rb{font-size:13px;color:var(--muted);margin-top:8px;line-height:1.5}
   .codes{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
   .codes span{font-family:ui-monospace,monospace;font-size:10.5px;color:#9fc0ff;border:1px solid var(--line);border-radius:6px;padding:2px 7px}
-  .foot{max-width:960px;margin:0 auto 30px;padding:0 18px;color:var(--muted);font-size:11.5px;text-align:center}
+  .foot{max-width:960px;margin:0 auto 60px;padding:0 18px;color:var(--muted);font-size:11.5px;text-align:center}
+
+  /* hidden location switch — a small trigger in the bottom-left corner */
+  .loc-launch{position:fixed;left:16px;bottom:16px;z-index:50;width:40px;height:40px;border-radius:50%;
+    border:1px solid var(--line);background:rgba(18,26,48,.85);color:var(--muted);font-size:18px;cursor:pointer;
+    display:grid;place-items:center;backdrop-filter:blur(6px);opacity:.35;transition:.2s}
+  .loc-launch:hover{opacity:1;color:var(--ink)}
+  .loc-panel{position:fixed;left:16px;bottom:66px;z-index:50;width:290px;display:none;
+    background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:14px;padding:12px;
+    box-shadow:0 24px 60px rgba(0,0,0,.55)}
+  .loc-panel.show{display:block;animation:pop .2s ease}
+  .loc-panel .pk{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:2px 2px 8px}
+  .opt{display:flex;align-items:center;gap:11px;padding:11px 12px;border:1px solid var(--line);border-radius:11px;cursor:pointer;transition:.15s;margin-bottom:8px}
+  .opt:last-child{margin-bottom:0}
+  .opt:hover{border-color:rgba(130,160,200,.4)}
+  .opt.sel{border-color:var(--blue);background:rgba(47,107,255,.12);box-shadow:0 0 0 1px var(--blue) inset}
+  .opt .flag{font-size:20px}
+  .opt .t{font-weight:700;font-size:13.5px}
+  .opt .s{font-size:11px;color:var(--muted)}
+  .opt .tag{margin-left:auto;font-size:9.5px;padding:3px 7px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
 </style>
 </head>
 <body>
@@ -64,65 +78,90 @@
     <div class="card">
       <div class="kicker">Your order</div>
       <div class="product">
-        <div class="thumb">🎧</div>
+        <div class="thumb" id="thumb">🎧</div>
         <div>
-          <h1>Aurora Wireless Headphones</h1>
-          <div class="muted">Active noise-cancelling · 40h battery · 2-year warranty.<br/>Sold by Earth Mart Electronics.</div>
-          <div class="price">$480.00</div>
+          <h1 id="item">Aurora Wireless Headphones</h1>
+          <div class="muted" id="desc">Active noise-cancelling · 40h battery · 2-year warranty.</div>
+          <div class="price" id="price">RM 450.00</div>
+          <div class="ship"><span id="shipFlag">🇲🇾</span> Ships to <span id="shipRegion">Malaysia · Kuala Lumpur</span></div>
         </div>
       </div>
     </div>
 
     <div class="card">
-      <div class="kicker">Where are you paying from?</div>
-      <div class="loc" id="loc">
-        <div class="opt sel" data-mode="MY">
-          <span class="flag">🇲🇾</span>
-          <div><div class="t">Malaysia · Kuala Lumpur</div><div class="s">Deepan's home — online commerce</div></div>
-          <span class="tag">home</span>
-        </div>
-        <div class="opt" data-mode="AU">
-          <span class="flag">🇦🇺</span>
-          <div><div class="t">Australia · Sydney</div><div class="s">Any online shop — away from home</div></div>
-          <span class="tag">away</span>
-        </div>
-        <div class="opt" data-mode="AUTO">
-          <span class="flag">🛰️</span>
-          <div><div class="t">Auto-detect (my real location)</div><div class="s">Uses this server's IP — flips with a VPN</div></div>
-          <span class="tag">VPN</span>
-        </div>
-      </div>
-
-      <button class="pay" id="payBtn">Pay $480.00 with Raptorz</button>
+      <div class="kicker">Order summary</div>
+      <div class="sumrow"><span id="sumItem">Aurora Wireless Headphones</span><span id="sumPrice">RM 450.00</span></div>
+      <div class="sumrow"><span class="muted">Shipping</span><span class="muted">Free</span></div>
+      <div class="sumrow total"><span>Total</span><span id="sumTotal">RM 450.00</span></div>
+      <button class="pay" id="payBtn">Pay RM 450.00</button>
       <div class="result" id="result"></div>
     </div>
   </div>
 
   <div class="foot">Demo / POC · simulated checkout &amp; fraud decisioning · no real payment is taken. Card on file: Deepan (home: Malaysia).</div>
 
+  <!-- hidden location switch -->
+  <button class="loc-launch" id="locLaunch" title="Store location" aria-label="Store location">📍</button>
+  <div class="loc-panel" id="locPanel">
+    <div class="pk">Store location</div>
+    <div class="opt sel" data-mode="MY">
+      <span class="flag">🇲🇾</span>
+      <div><div class="t">Malaysia · Kuala Lumpur</div><div class="s">Deepan's home region</div></div>
+      <span class="tag">home</span>
+    </div>
+    <div class="opt" data-mode="AU">
+      <span class="flag">🇦🇺</span>
+      <div><div class="t">Australia · Sydney</div><div class="s">Away from home</div></div>
+      <span class="tag">away</span>
+    </div>
+  </div>
+
 <script>
+  const CATALOG = {
+    MY: { symbol:"RM", amount:450, item:"Aurora Wireless Headphones", desc:"Active noise-cancelling · 40h battery · 2-year warranty.", thumb:"🎧", flag:"🇲🇾", region:"Malaysia · Kuala Lumpur" },
+    AU: { symbol:"A$", amount:1799, item:'Apple MacBook Air 13"', desc:"Apple M3 chip · 16GB · 512GB SSD · 1-year warranty.", thumb:"💻", flag:"🇦🇺", region:"Australia · Sydney" },
+  };
   let mode = "MY";
-  const loc = document.getElementById("loc");
-  loc.addEventListener("click", (e) => {
+  const fmt = (c) => c.symbol + " " + c.amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const $ = (id) => document.getElementById(id);
+
+  function render() {
+    const c = CATALOG[mode];
+    $("thumb").textContent = c.thumb;
+    $("item").textContent = c.item;
+    $("desc").textContent = c.desc;
+    $("price").textContent = fmt(c);
+    $("shipFlag").textContent = c.flag;
+    $("shipRegion").textContent = c.region;
+    $("sumItem").textContent = c.item;
+    $("sumPrice").textContent = fmt(c);
+    $("sumTotal").textContent = fmt(c);
+    $("payBtn").textContent = "Pay " + fmt(c);
+    $("result").className = "result";
+  }
+
+  // hidden launcher -> reveal/hide the location panel
+  const panel = $("locPanel");
+  $("locLaunch").addEventListener("click", (e) => { e.stopPropagation(); panel.classList.toggle("show"); });
+  document.addEventListener("click", (e) => { if (!panel.contains(e.target) && e.target !== $("locLaunch")) panel.classList.remove("show"); });
+  panel.addEventListener("click", (e) => {
     const opt = e.target.closest(".opt"); if (!opt) return;
-    [...loc.children].forEach(o => o.classList.remove("sel"));
-    opt.classList.add("sel"); mode = opt.dataset.mode;
+    [...panel.querySelectorAll(".opt")].forEach(o => o.classList.remove("sel"));
+    opt.classList.add("sel"); mode = opt.dataset.mode; render(); panel.classList.remove("show");
   });
 
-  const btn = document.getElementById("payBtn");
-  const result = document.getElementById("result");
+  const btn = $("payBtn"), result = $("result");
   btn.addEventListener("click", async () => {
     btn.disabled = true; btn.textContent = "Contacting Raptorz Banking Earth…";
     result.className = "result";
     try {
-      const r = await fetch("/pay", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ mode, amount: 480 }) });
+      const r = await fetch("/pay", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ mode }) });
       const d = await r.json();
       const approved = d.decision === "Approved";
       result.classList.add("show", approved ? "ok" : "block");
-      const where = d.detected_country ? ` (detected: ${d.detected_country})` : "";
       result.innerHTML =
         '<div class="rh">' + (approved ? "✓ Payment approved" : "✕ Payment blocked") + "</div>" +
-        '<div class="rb">' + (d.rationale || "") + where +
+        '<div class="rb">' + (d.rationale || "") +
         (approved ? "" : "<br/><b>Step-up required</b> — verify this payment in your Raptorz Banking Earth app (one-time passcode).") +
         "</div>" +
         '<div class="codes">' + (d.reason_codes || []).map(c => "<span>" + c + "</span>").join("") + "</div>";
@@ -130,9 +169,11 @@
       result.classList.add("show", "block");
       result.innerHTML = '<div class="rh">✕ Checkout error</div><div class="rb">' + err.message + "</div>";
     } finally {
-      btn.disabled = false; btn.textContent = "Pay $480.00 with Raptorz";
+      btn.disabled = false; btn.textContent = "Pay " + fmt(CATALOG[mode]);
     }
   });
+
+  render();
 </script>
 </body>
 </html>
