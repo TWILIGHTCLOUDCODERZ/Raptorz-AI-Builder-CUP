@@ -16,12 +16,21 @@ from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 
+import geo
 from agents.pipeline import investigate, investigate_stream, prefilter
 from memory.store import MemoryStore
 from models import Case, Transaction
 
-app = FastAPI(title="Aegis Backend", version="0.1.0")
+app = FastAPI(title="Raptorz Banking Earth — Fraud Intelligence", version="0.2.0")
 store = MemoryStore()
+
+
+def _resolve_geo(txn: Transaction, request: Request) -> Transaction:
+    """If country is empty/AUTO, geolocate the caller IP (VPN/VM demo)."""
+    if (txn.country or "").upper() in ("", "AUTO"):
+        ip = geo.client_ip(request.headers, request.client.host if request.client else None)
+        txn.country = geo.country_from_ip(ip) or ""
+    return txn
 
 _origins = os.getenv("ALLOWED_ORIGINS", "*").split(",")
 app.add_middleware(
@@ -55,12 +64,14 @@ def analytics_summary() -> dict:
 
 
 @app.post("/investigate")
-def do_investigate(txn: Transaction) -> dict:
-    return investigate(txn, store).model_dump()
+def do_investigate(txn: Transaction, request: Request) -> dict:
+    return investigate(_resolve_geo(txn, request), store).model_dump()
 
 
 @app.post("/investigate/stream")
-def do_investigate_stream(txn: Transaction) -> StreamingResponse:
+def do_investigate_stream(txn: Transaction, request: Request) -> StreamingResponse:
+    _resolve_geo(txn, request)
+
     def gen():
         for item in investigate_stream(txn, store):
             kind = "case" if isinstance(item, Case) else "step"

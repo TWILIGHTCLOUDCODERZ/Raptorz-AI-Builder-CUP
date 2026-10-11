@@ -94,6 +94,14 @@ def _normalize_decision(value: str) -> str:
     return "Approved"
 
 
+def _memory_explains(txn: Transaction, memory: list[str]) -> bool:
+    """True when confirmed-legit memory explains this activity (same city / confirmed legit)."""
+    return any(
+        (txn.city and txn.city.split(",")[0] in m) or "confirmed legit" in m.lower()
+        for m in memory
+    )
+
+
 # ---------------- LLM helpers (with mock fallback) ----------------
 def _specialist(name: str, payload: dict, evidence: list[str]) -> AgentStep:
     if MOCK:
@@ -144,7 +152,7 @@ def _hard_block(txn: Transaction, card_status: str, tier: str) -> DecisionResult
     )
 
 
-def _decide(txn: Transaction, findings: list[dict], memory: list[str], card_status: str = "active", tier: str = "standard") -> DecisionResult:
+def _decide(txn: Transaction, findings: list[dict], memory: list[str], card_status: str = "active", tier: str = "standard", home_country: str | None = None) -> DecisionResult:
     # Hard gate first — a compromised card never depends on the LLM.
     if card_status in _COMPROMISED:
         return _hard_block(txn, card_status, tier)
@@ -161,6 +169,20 @@ def _decide(txn: Transaction, findings: list[dict], memory: list[str], card_stat
             decision="Blocked", confidence=0.95,
             reason_codes=["auto_pay_disabled", "step_up_required", "otp_not_received"],
             rationale="Auto-approval was disabled and step-up authentication required; no OTP verification was received, so the transaction is blocked.",
+        )
+    # Geo gate (deterministic policy): a payment outside the customer's home country is
+    # impossible-travel. Approve only if the customer verified via OTP; otherwise block.
+    if home_country and txn.country and txn.country != home_country and not _memory_explains(txn, memory):
+        if txn.otp_verified is True:
+            return DecisionResult(
+                decision="Approved", confidence=0.96,
+                reason_codes=["geo_step_up_completed", "otp_verified"],
+                rationale=f"Payment was outside the customer's home country ({txn.country} vs {home_country}); the customer verified via OTP, so it is approved.",
+            )
+        return DecisionResult(
+            decision="Blocked", confidence=0.94,
+            reason_codes=["geo_location_mismatch", f"home_country_{home_country.lower()}", "step_up_required", "otp_not_received"],
+            rationale=f"Payment originated outside the customer's home country ({txn.country} vs {home_country}) — impossible travel. Auto-pay suspended and step-up required; no OTP received, so the transaction is blocked.",
         )
     if MOCK:
         return _mock_decision(txn, memory, card_status, tier)
@@ -268,6 +290,7 @@ def investigate_stream(txn: Transaction, store: MemoryStore) -> Iterator[Union[A
     case_id = f"CASE-{uuid.uuid4().hex[:8].upper()}"
     memory = store.get_customer_memory(txn.customer)
     tier = store.get_customer_tier(txn.customer)
+    home = store.get_customer_home(txn.customer)
     card = T.check_card_status(txn)
     steps: list[AgentStep] = []
 
@@ -314,7 +337,7 @@ def investigate_stream(txn: Transaction, store: MemoryStore) -> Iterator[Union[A
     merch = T.check_merchant_reputation(txn)
     yield emit(_specialist("Intel", {"sanctions": intel, "merchant": merch}, [intel["summary"], merch["summary"]]))
 
-    result = _decide(txn, [s.model_dump() for s in steps], memory, card["card_status"], tier)
+    result = _decide(txn, [s.model_dump() for s in steps], memory, card["card_status"], tier, home)
 
     yield emit(_specialist("Compliance", {"decision": result.model_dump(), "transaction": txn.model_dump(), "customer_tier": tier}, [f"decision={result.decision}"]))
     yield emit(_specialist("Critic", {"decision": result.model_dump(), "steps": [s.thought for s in steps]}, ["review complete"]))

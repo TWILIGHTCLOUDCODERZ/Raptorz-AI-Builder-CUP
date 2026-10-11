@@ -294,6 +294,25 @@ It prints the live URL: the analyst console at `/` and the executive walkthrough
 
 ---
 
+## Merchant demo — Earth Mart (Malaysia vs Sydney)
+
+`merchant-site/` is a standalone online shop ("Earth Mart") that checks out through Raptorz. It demonstrates the **home-country geo gate**: the cardholder **Deepan** lives in **Kuala Lumpur, Malaysia**, so a Malaysia payment **approves**, while the same card used in **Sydney, Australia** is **blocked** (impossible travel → step-up OTP).
+
+Deploy it as a **separate Cloud Run service** (points at the Raptorz backend automatically):
+```bash
+PROJECT_ID=$PROJECT_ID bash infra/deploy-merchant.sh
+```
+
+The storefront toggle has three modes:
+- **Malaysia** → approved · **Sydney** → blocked (reliable for a live demo)
+- **Auto-detect** → the backend geolocates the caller's IP. Run the site in a VM and turn on a **VPN to Australia** and the detected country flips to `AU`, so the payment blocks for real:
+```bash
+PROJECT_ID=$PROJECT_ID bash infra/setup-merchant-vm.sh   # creates a VM running the shop; prints VPN steps
+```
+How it works: the merchant server calls the backend **server-side**, so Raptorz sees the VM's egress IP; `backend/geo.py` resolves it to a country, and the geo gate in `backend/agents/pipeline.py` blocks anything outside the customer's home country unless an OTP step-up is completed.
+
+---
+
 ## Details stored in Secret Manager
 
 Sensitive config is held in **Secret Manager** as the single source of truth — never hardcoded in committed source.

@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Earth Mart · Checkout</title>
+<style>
+  :root{
+    --bg:#0b1020; --panel:#121a30; --panel2:#0e1627; --line:rgba(130,160,200,.16);
+    --ink:#eaf1fb; --muted:#9fb2cc; --blue:#2f6bff; --gold:#f5b53d; --green:#2fbf71; --red:#ef4e5b;
+    --font:"Segoe UI",system-ui,-apple-system,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:var(--font);background:
+    radial-gradient(900px 500px at 85% -10%, rgba(47,107,255,.18), transparent 60%),
+    radial-gradient(700px 500px at 0% 110%, rgba(245,181,61,.10), transparent 55%), var(--bg);
+    color:var(--ink);min-height:100vh}
+  header{display:flex;align-items:center;gap:12px;padding:16px 22px;border-bottom:1px solid var(--line)}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.5px;font-size:19px}
+  .logo .dot{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--gold),#b9822a);display:grid;place-items:center;color:#1a1200;font-weight:900}
+  .pay-by{margin-left:auto;font-size:12px;color:var(--muted)}
+  .pay-by b{color:#9fc0ff}
+  .wrap{max-width:960px;margin:28px auto;padding:0 18px;display:grid;grid-template-columns:1.3fr 1fr;gap:20px}
+  @media(max-width:780px){.wrap{grid-template-columns:1fr}}
+  .card{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:16px;padding:20px}
+  .product{display:flex;gap:16px}
+  .thumb{width:118px;height:118px;border-radius:12px;background:linear-gradient(135deg,#1c2b4d,#0f1830);display:grid;place-items:center;font-size:48px;flex:none}
+  h1{font-size:19px;margin:2px 0 6px}
+  .muted{color:var(--muted);font-size:13px;line-height:1.5}
+  .price{font-size:26px;font-weight:800;margin-top:8px}
+  .kicker{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+  .loc{display:flex;flex-direction:column;gap:8px}
+  .opt{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;cursor:pointer;transition:.15s;background:rgba(255,255,255,.015)}
+  .opt:hover{border-color:rgba(130,160,200,.4)}
+  .opt.sel{border-color:var(--blue);background:rgba(47,107,255,.12);box-shadow:0 0 0 1px var(--blue) inset}
+  .opt .flag{font-size:22px}
+  .opt .t{font-weight:700;font-size:14px}
+  .opt .s{font-size:11.5px;color:var(--muted)}
+  .opt .tag{margin-left:auto;font-size:10px;padding:3px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+  button.pay{margin-top:16px;width:100%;padding:14px;border:0;border-radius:12px;font-size:15px;font-weight:800;color:#fff;
+    background:linear-gradient(135deg,var(--blue),#1b4fd6);cursor:pointer;transition:.15s}
+  button.pay:hover{filter:brightness(1.08)}
+  button.pay:disabled{opacity:.6;cursor:wait}
+  .result{margin-top:16px;border-radius:12px;padding:16px;display:none}
+  .result.show{display:block;animation:pop .25s ease}
+  @keyframes pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .result.ok{background:rgba(47,191,113,.12);border:1px solid rgba(47,191,113,.4)}
+  .result.block{background:rgba(239,78,91,.12);border:1px solid rgba(239,78,91,.4)}
+  .result .rh{display:flex;align-items:center;gap:10px;font-weight:800;font-size:17px}
+  .result.ok .rh{color:#7ee6a3}.result.block .rh{color:#ff8a93}
+  .result .rb{font-size:13px;color:var(--muted);margin-top:8px;line-height:1.5}
+  .codes{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .codes span{font-family:ui-monospace,monospace;font-size:10.5px;color:#9fc0ff;border:1px solid var(--line);border-radius:6px;padding:2px 7px}
+  .foot{max-width:960px;margin:0 auto 30px;padding:0 18px;color:var(--muted);font-size:11.5px;text-align:center}
+</style>
+</head>
+<body>
+  <header>
+    <div class="logo"><span class="dot">E</span> EARTH MART</div>
+    <div class="pay-by">Secure checkout by <b>Raptorz Banking Earth</b></div>
+  </header>
+
+  <div class="wrap">
+    <div class="card">
+      <div class="kicker">Your order</div>
+      <div class="product">
+        <div class="thumb">🎧</div>
+        <div>
+          <h1>Aurora Wireless Headphones</h1>
+          <div class="muted">Active noise-cancelling · 40h battery · 2-year warranty.<br/>Sold by Earth Mart Electronics.</div>
+          <div class="price">$480.00</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="kicker">Where are you paying from?</div>
+      <div class="loc" id="loc">
+        <div class="opt sel" data-mode="MY">
+          <span class="flag">🇲🇾</span>
+          <div><div class="t">Malaysia · Kuala Lumpur</div><div class="s">Deepan's home — online commerce</div></div>
+          <span class="tag">home</span>
+        </div>
+        <div class="opt" data-mode="AU">
+          <span class="flag">🇦🇺</span>
+          <div><div class="t">Australia · Sydney</div><div class="s">Any online shop — away from home</div></div>
+          <span class="tag">away</span>
+        </div>
+        <div class="opt" data-mode="AUTO">
+          <span class="flag">🛰️</span>
+          <div><div class="t">Auto-detect (my real location)</div><div class="s">Uses this server's IP — flips with a VPN</div></div>
+          <span class="tag">VPN</span>
+        </div>
+      </div>
+
+      <button class="pay" id="payBtn">Pay $480.00 with Raptorz</button>
+      <div class="result" id="result"></div>
+    </div>
+  </div>
+
+  <div class="foot">Demo / POC · simulated checkout &amp; fraud decisioning · no real payment is taken. Card on file: Deepan (home: Malaysia).</div>
+
+<script>
+  let mode = "MY";
+  const loc = document.getElementById("loc");
+  loc.addEventListener("click", (e) => {
+    const opt = e.target.closest(".opt"); if (!opt) return;
+    [...loc.children].forEach(o => o.classList.remove("sel"));
+    opt.classList.add("sel"); mode = opt.dataset.mode;
+  });
+
+  const btn = document.getElementById("payBtn");
+  const result = document.getElementById("result");
+  btn.addEventListener("click", async () => {
+    btn.disabled = true; btn.textContent = "Contacting Raptorz Banking Earth…";
+    result.className = "result";
+    try {
+      const r = await fetch("/pay", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ mode, amount: 480 }) });
+      const d = await r.json();
+      const approved = d.decision === "Approved";
+      result.classList.add("show", approved ? "ok" : "block");
+      const where = d.detected_country ? ` (detected: ${d.detected_country})` : "";
+      result.innerHTML =
+        '<div class="rh">' + (approved ? "✓ Payment approved" : "✕ Payment blocked") + "</div>" +
+        '<div class="rb">' + (d.rationale || "") + where +
+        (approved ? "" : "<br/><b>Step-up required</b> — verify this payment in your Raptorz Banking Earth app (one-time passcode).") +
+        "</div>" +
+        '<div class="codes">' + (d.reason_codes || []).map(c => "<span>" + c + "</span>").join("") + "</div>";
+    } catch (err) {
+      result.classList.add("show", "block");
+      result.innerHTML = '<div class="rh">✕ Checkout error</div><div class="rb">' + err.message + "</div>";
+    } finally {
+      btn.disabled = false; btn.textContent = "Pay $480.00 with Raptorz";
+    }
+  });
+</script>
+</body>
+</html>

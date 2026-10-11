@@ -12,6 +12,7 @@ from models import AgentStep, Case, Transaction
 _SEED_CUSTOMERS = {
     "Maya Patel": {
         "tier": "premium",
+        "home_country": "AE",
         "confirmed_legit": [
             "Confirmed Dubai travel on Mar 3 — recurring each March",
             "Recurring $840 electronics purchase confirmed legit",
@@ -19,15 +20,17 @@ _SEED_CUSTOMERS = {
     },
     "Eleanor Whitfield": {
         "tier": "vip",
+        "home_country": "GB",
         "confirmed_legit": [
             "Confirmed annual travel to Monaco each May",
             "Recurring luxury watch & boutique purchases confirmed legit",
         ],
     },
-    "Tyson": {
-        "tier": "premium",
+    "Deepan": {
+        "tier": "vip",
+        "home_country": "MY",
         "confirmed_legit": [
-            "Usual card activity is in Dubai, UAE",
+            "Resident in Kuala Lumpur, Malaysia — usual card activity is in Kuala Lumpur",
         ],
     },
 }
@@ -74,6 +77,17 @@ class MemoryStore:
             except Exception as exc:  # noqa: BLE001
                 print(f"[memory] cases list error: {exc}")
         return list(self._mem["cases"].values())
+
+    def get_customer_home(self, customer: str):
+        """The customer's home country (ISO-2), or None if unknown. Drives the geo gate."""
+        if self._db:
+            try:
+                doc = self._db.collection("customers").document(customer).get()
+                if doc.exists:
+                    return doc.to_dict().get("home_country")
+            except Exception as exc:  # noqa: BLE001
+                print(f"[memory] home read error: {exc}")
+        return self._mem["customers"].get(customer, {}).get("home_country")
 
     def get_customer_tier(self, customer: str) -> str:
         """standard | premium | vip — drives friction/handling in the decision."""
