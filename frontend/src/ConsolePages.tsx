@@ -8,12 +8,12 @@ const kick = (t: string) => <div className="section-kicker" style={{ marginBotto
 
 // ---------------- Customer 360 ----------------
 export function Customer360() {
-  const merchants = [['Maison Watches', 88], ['Emirates', 62], ['Harrods', 47], ['Apple', 31]];
+  const merchants = [['Shopee Malaysia', 46], ['Lazada', 29], ['Grab', 16], ['Apple', 9]];
   const txns = [
-    ['TX-9F24A8', 'TechWorld · Dubai', '$840', 'Approved', '#69c382'],
-    ['TX-77F1C2', 'Emirates · Online', '$2,150', 'Approved', '#69c382'],
-    ['TX-VIP-STLN', 'Genève Horlogerie · Geneva', '$15,200', 'Blocked', '#f27b70'],
-    ['TX-3B0A11', 'Harrods · London', '$4,900', 'Step-up', '#f2c34e'],
+    ['TX-KL-4471', 'Shopee · Kuala Lumpur', 'RM 450', 'Approved', '#69c382'],
+    ['TX-SYD-8822', 'Earth Mart · Sydney', 'A$ 1,799', 'Blocked', '#f27b70'],
+    ['TX-KL-4409', 'Grab · Kuala Lumpur', 'RM 65', 'Approved', '#69c382'],
+    ['TX-SG-7730', 'Changi · Singapore', 'S$ 320', 'Step-up', '#f2c34e'],
   ];
   return (
     <section className="placeholder-page">
@@ -21,13 +21,13 @@ export function Customer360() {
 
       <div className="panel" style={{ padding: 22 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
-          <div style={{ width: 56, height: 56, borderRadius: 16, display: 'grid', placeItems: 'center', background: '#265a9a', color: '#cfe5ff', font: "700 18px 'Space Mono'" }}>EW</div>
+          <div style={{ width: 56, height: 56, borderRadius: 16, display: 'grid', placeItems: 'center', background: '#265a9a', color: '#cfe5ff', font: "700 18px 'Space Mono'" }}>DP</div>
           <div style={{ flex: 1, minWidth: 200 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}><h2 style={{ color: '#eaf2fb', fontSize: 20, margin: 0 }}>Eleanor Whitfield</h2><span style={{ font: "9px 'Space Mono'", color: '#f2c34e', border: '1px solid rgba(251,188,5,.4)', borderRadius: 6, padding: '3px 7px' }}>VIP · PRIVATE BANK</span></div>
-            <div style={{ color: '#8ba3bb', fontSize: 12, marginTop: 4 }}>Customer since 2016 · Home: Dubai, UAE · **** 8891</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}><h2 style={{ color: '#eaf2fb', fontSize: 20, margin: 0 }}>Deepan</h2><span style={{ font: "9px 'Space Mono'", color: '#f2c34e', border: '1px solid rgba(251,188,5,.4)', borderRadius: 6, padding: '3px 7px' }}>VIP · PRIVATE BANK</span></div>
+            <div style={{ color: '#8ba3bb', fontSize: 12, marginTop: 4 }}>Customer since 2021 · Home: Kuala Lumpur, Malaysia · **** 1234</div>
           </div>
           <div style={{ display: 'flex', gap: 10 }}>
-            {[['Lifetime value', '$4.2M'], ['Avg ticket', '$2,480'], ['Risk profile', 'Low']].map(([k, v]) => <div key={k} style={{ ...card, padding: '10px 14px', textAlign: 'center' }}><div style={{ color: '#7f99b3', fontSize: 10 }}>{k}</div><div style={{ color: '#e1edf8', font: "700 15px 'Space Mono'" }}>{v}</div></div>)}
+            {[['Lifetime value', 'RM 1.8M'], ['Avg ticket', 'RM 620'], ['Risk profile', 'Low']].map(([k, v]) => <div key={k} style={{ ...card, padding: '10px 14px', textAlign: 'center' }}><div style={{ color: '#7f99b3', fontSize: 10 }}>{k}</div><div style={{ color: '#e1edf8', font: "700 15px 'Space Mono'" }}>{v}</div></div>)}
           </div>
         </div>
       </div>
@@ -43,15 +43,15 @@ export function Customer360() {
             </div>
           ))}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 14 }}>
-            <div style={{ ...card, padding: '10px 12px' }}><div style={{ color: '#7f99b3', fontSize: 10 }}><MapPin size={11} /> Typical geo</div><div style={{ color: '#dce9f4', fontSize: 12, marginTop: 3 }}>Dubai · London · Monaco</div></div>
-            <div style={{ ...card, padding: '10px 12px' }}><div style={{ color: '#7f99b3', fontSize: 10 }}>Active hours</div><div style={{ color: '#dce9f4', fontSize: 12, marginTop: 3 }}>08:00–23:00 GST</div></div>
+            <div style={{ ...card, padding: '10px 12px' }}><div style={{ color: '#7f99b3', fontSize: 10 }}><MapPin size={11} /> Typical geo</div><div style={{ color: '#dce9f4', fontSize: 12, marginTop: 3 }}>Kuala Lumpur · Penang · Singapore</div></div>
+            <div style={{ ...card, padding: '10px 12px' }}><div style={{ color: '#7f99b3', fontSize: 10 }}>Active hours</div><div style={{ color: '#dce9f4', fontSize: 12, marginTop: 3 }}>08:00–23:00 MYT</div></div>
           </div>
         </div>
 
         <div className="panel" style={{ padding: 20 }}>
           {kick('RAPTORZ MEMORY')}
           <h2 style={{ color: '#e1edf8', fontSize: 14, margin: '0 0 12px' }}>Confirmed-legit</h2>
-          {['Confirmed annual travel to Monaco each May', 'Recurring luxury watch & boutique purchases confirmed legit', 'Reported card **** 8899 stolen (Mar 2026)'].map((m) => (
+          {['Resident in Kuala Lumpur — usual card activity is local', 'Recurring electronics & grocery purchases confirmed legit', 'Occasional travel to Singapore confirmed'].map((m) => (
             <div key={m} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', marginBottom: 8, color: '#b6cae0', fontSize: 12 }}><BrainCircuit size={14} style={{ color: '#6ba9ff', flex: '0 0 auto', marginTop: 1 }} /> {m}</div>
           ))}
           <div style={{ marginTop: 14 }}>{kick('DEVICES')}</div>
@@ -106,7 +106,7 @@ export function ComplianceSAR() {
         <aside className="panel" style={{ padding: 20 }}>
           {kick('FILING')}
           <h2 style={{ color: '#e1edf8', fontSize: 14, margin: '0 0 12px' }}>Case details</h2>
-          {[['Case ID', 'RAPTORZ-2026-00421'], ['Subject', 'Tyson'], ['Risk score', '96 / 100'], ['Priority', 'Critical'], ['Status', 'Draft — pending sign-off'], ['Regulator', 'FIU (auto-format)'], ['Assigned', 'Tessa (RM)']].map(([k, v]) => (
+          {[['Case ID', 'RAPTORZ-2026-00421'], ['Subject', 'Deepan'], ['Risk score', '82 / 100'], ['Priority', 'High'], ['Status', 'Draft — pending sign-off'], ['Regulator', 'FIU (auto-format)'], ['Assigned', 'Tessa (RM)']].map(([k, v]) => (
             <div key={k} style={{ display: 'flex', justifyContent: 'space-between', padding: '9px 0', borderTop: '1px solid rgba(90,130,170,.1)', fontSize: 12 }}><span style={{ color: '#7f99b3' }}>{k}</span><span style={{ color: '#dce9f4', fontWeight: 600 }}>{v}</span></div>
           ))}
           <div style={{ ...card, padding: 12, marginTop: 14, display: 'flex', gap: 8, alignItems: 'flex-start' }}>

@@ -6,7 +6,6 @@ import {
   ShieldAlert, Sparkles, Target, UserRound, Users, X, Zap, Layers, LogOut, Lock, RefreshCw,
 } from 'lucide-react';
 import ArchitecturePage from './ArchitecturePage';
-import FraudJourney from './fraud-journey/FraudJourney';
 import { Customer360, ComplianceSAR, NetworkGraph } from './ConsolePages';
 
 type Decision = 'Approved' | 'Step-up' | 'Held' | 'Blocked';
@@ -27,7 +26,6 @@ const navItems: NavItem[] = [
   { label: 'Command Center', icon: LayoutDashboard }, { label: 'Investigations', icon: FileSearch },
   { label: 'Network Graph', icon: Network }, { label: 'Customer 360', icon: UserRound },
   { label: 'Compliance / SAR', icon: BriefcaseBusiness }, { label: 'Architecture', icon: Layers },
-  { label: 'Customer App', icon: CreditCard },
 ];
 
 const initialTransactions: Transaction[] = [
@@ -92,7 +90,7 @@ function App({ user, onSignOut }: { user: { name: string; email: string }; onSig
       <main className="main-content">
         <header className="topbar"><button className="mobile-menu" onClick={() => setSidebarOpen(true)}><Menu size={20} /></button><div className="breadcrumb"><span>Workspace</span><ChevronRight size={14} /><strong>{activeNav}</strong></div><div className="top-actions"><div className="search-box"><Search size={16} /><input placeholder="Search transactions, customers..." /></div><div className="live-status"><span className="live-dot" /> LIVE <span className="throughput">1,284 txns/s</span></div><span className="demo-badge">DEMO</span><button className="icon-button" onClick={() => setShowNotifications(!showNotifications)}><Bell size={18} /><i /></button><div className="top-avatar" title={user.email}>{initials}</div></div>{showNotifications && <div className="notification-pop"><div className="pop-title">Notifications <span>3 new</span></div><p><ShieldAlert size={15} /> High-risk wire transfer blocked</p><p><BrainCircuit size={15} /> Memory recall resolved false positive</p><p><Activity size={15} /> Stream health is nominal</p></div>}</header>
         <div className="page-wrap">
-          {activeNav === 'Command Center' ? <CommandCenter transactions={transactions} blocked={blocked} selected={selected} onSelect={setSelected} onInvestigate={(t) => { setSelected(t); setActiveNav('Investigations'); }} onNavigate={setActiveNav} streaming={streaming} onToggle={() => setStreaming(!streaming)} /> : activeNav === 'Architecture' ? <ArchitecturePage /> : activeNav === 'Customer App' ? <FraudJourney embedded /> : activeNav === 'Customer 360' ? <Customer360 /> : activeNav === 'Compliance / SAR' ? <ComplianceSAR /> : activeNav === 'Network Graph' ? <NetworkGraph /> : activeNav === 'Investigations' ? <LiveInvestigations onNavigate={setActiveNav} /> : <PlaceholderPage activeNav={activeNav} transactions={transactions} selected={selected} onSelect={setSelected} onNavigate={setActiveNav} />}
+          {activeNav === 'Command Center' ? <CommandCenter transactions={transactions} blocked={blocked} selected={selected} onSelect={setSelected} onInvestigate={(t) => { setSelected(t); setActiveNav('Investigations'); }} onNavigate={setActiveNav} streaming={streaming} onToggle={() => setStreaming(!streaming)} /> : activeNav === 'Architecture' ? <ArchitecturePage /> : activeNav === 'Customer 360' ? <Customer360 /> : activeNav === 'Compliance / SAR' ? <ComplianceSAR /> : activeNav === 'Network Graph' ? <NetworkGraph /> : activeNav === 'Investigations' ? <LiveInvestigations onNavigate={setActiveNav} /> : <PlaceholderPage activeNav={activeNav} transactions={transactions} selected={selected} onSelect={setSelected} onNavigate={setActiveNav} />}
         </div>
       </main>
     </div>
@@ -272,12 +270,47 @@ const ago = (iso: string) => {
 const decClass = (d?: string) => (d === 'Blocked' ? 'critical' : d === 'Step-up' || d === 'Held' ? 'high' : 'low');
 const decColor = (d?: string) => (d === 'Blocked' ? '#ff8a93' : d === 'Approved' ? '#7ee6a3' : '#ffcf7a');
 
+// Seed examples so the queue always shows an Approved and a Blocked case (two names),
+// even before any live payment. Real backend cases from /cases take precedence.
+const EXAMPLE_CASES: FullCase[] = [
+  {
+    id: 'EX-SYD-8822', created_at: new Date(Date.now() - 120000).toISOString(),
+    transaction: { customer: 'Deepan', merchant: 'Earth Mart Australia', amount: 1799, currency: 'AUD', city: 'Sydney, Australia', country: 'AU', channel: 'Web', risk: 82 },
+    memory_hits: ['Resident in Kuala Lumpur, Malaysia — usual card activity is in Kuala Lumpur'],
+    steps: [
+      { agent: 'Orchestrator', thought: 'Routing ORD-8822: AUD 1799 at Earth Mart Australia, Sydney. Customer tier: VIP. Dispatching specialists.', evidence: ['inbound_risk=82', 'channel=Web', 'tier=vip'], status: 'done' },
+      { agent: 'Card Status', thought: 'Card is active — no stolen / lost / frozen flag.', evidence: ['card_status=active'], status: 'done' },
+      { agent: 'Step-Up Control', thought: 'Payment is outside the home country (AU vs MY) with no OTP — step-up required.', evidence: ['home_country=MY', 'otp_verified=False'], status: 'done' },
+      { agent: 'Investigator', thought: 'Impossible travel: Kuala Lumpur → Sydney within hours, on a new device and network.', evidence: ['geo_velocity=impossible', 'device=new'], status: 'done' },
+      { agent: 'Network Analyst', thought: 'No mule-ring linkage detected on this account.', evidence: ['network=clean'], status: 'done' },
+      { agent: 'Intel', thought: 'No sanctions, PEP or adverse-media matches; merchant reputation acceptable.', evidence: ['sanctions=none'], status: 'done' },
+      { agent: 'Critic', thought: 'Reasoning is sound — the geo mismatch is not explained by memory; block is appropriate.', evidence: ['review complete'], status: 'done' },
+    ],
+    result: { decision: 'Blocked', confidence: 0.94, reason_codes: ['geo_location_mismatch', 'home_country_my', 'step_up_required', 'otp_not_received'], rationale: "Payment originated outside the customer's home country (AU vs MY) — impossible travel. Step-up required; no OTP received, so the transaction is blocked." },
+  },
+  {
+    id: 'EX-KL-4471', created_at: new Date(Date.now() - 300000).toISOString(),
+    transaction: { customer: 'Aisha Rahman', merchant: 'Shopee Malaysia', amount: 980, currency: 'MYR', city: 'Kuala Lumpur, Malaysia', country: 'MY', channel: 'Web', risk: 22 },
+    memory_hits: ['Confirmed-legit recurring online shopping in Kuala Lumpur'],
+    steps: [
+      { agent: 'Orchestrator', thought: 'Routing ORD-4471: MYR 980 at Shopee Malaysia, Kuala Lumpur. Customer tier: premium. Dispatching specialists.', evidence: ['inbound_risk=22', 'channel=Web', 'tier=premium'], status: 'done' },
+      { agent: 'Card Status', thought: 'Card is active and in good standing.', evidence: ['card_status=active'], status: 'done' },
+      { agent: 'Investigator', thought: 'Amount and merchant are consistent with the local baseline; known device and network.', evidence: ['device=known', 'geo=home'], status: 'done' },
+      { agent: 'Network Analyst', thought: 'No suspicious account linkage.', evidence: ['network=clean'], status: 'done' },
+      { agent: 'Intel', thought: 'No sanctions / PEP / adverse-media; merchant reputation good.', evidence: ['sanctions=none'], status: 'done' },
+      { agent: 'Compliance', thought: 'Controls satisfied; no filing obligation at this stage.', evidence: ['decision=Approved'], status: 'done' },
+      { agent: 'Critic', thought: 'Behaviour matches memory — approve without challenging the customer.', evidence: ['review complete'], status: 'done' },
+    ],
+    result: { decision: 'Approved', confidence: 0.97, reason_codes: ['confirmed_legit_memory', 'device_consistent', 'home_country_match'], rationale: 'Behaviour matches the confirmed-legit local pattern — approved without friction.' },
+  },
+];
+const exampleSummary = (c: FullCase): CaseSummary => ({ id: c.id, created_at: c.created_at, customer: c.transaction.customer, merchant: c.transaction.merchant, amount: c.transaction.amount, currency: c.transaction.currency, city: c.transaction.city, country: c.transaction.country, channel: c.transaction.channel, risk: c.transaction.risk, decision: c.result?.decision, confidence: c.result?.confidence, steps: c.steps.length });
+
 function LiveInvestigations({ onNavigate }: { onNavigate: (page: string) => void }) {
   const [cases, setCases] = useState<CaseSummary[]>([]);
   const [selId, setSelId] = useState<string | null>(null);
   const [detail, setDetail] = useState<FullCase | null>(null);
   const [err, setErr] = useState('');
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let alive = true;
@@ -287,17 +320,28 @@ function LiveInvestigations({ onNavigate }: { onNavigate: (page: string) => void
         if (!r.ok) throw new Error(`backend ${r.status}`);
         const data: CaseSummary[] = await r.json();
         if (!alive) return;
-        setErr(''); setLoading(false); setCases(data);
-        setSelId((prev) => (prev && data.some((c) => c.id === prev) ? prev : data[0]?.id ?? null));
-      } catch (e) { if (alive) { setErr(e instanceof Error ? e.message : String(e)); setLoading(false); } }
+        setErr(''); setCases(data);
+      } catch (e) { if (alive) { setErr(e instanceof Error ? e.message : String(e)); } }
     }
     poll();
     const t = setInterval(poll, 4000);
     return () => { alive = false; clearInterval(t); };
   }, []);
 
+  // real backend cases first, then the seed examples (deduped) so two named cases always show
+  const displayCases = useMemo(() => {
+    const ex = EXAMPLE_CASES.map(exampleSummary).filter((e) => !cases.some((c) => c.id === e.id));
+    return [...cases, ...ex];
+  }, [cases]);
+
+  useEffect(() => {
+    if ((!selId || !displayCases.some((c) => c.id === selId)) && displayCases.length) setSelId(displayCases[0].id);
+  }, [displayCases, selId]);
+
   useEffect(() => {
     if (!selId) { setDetail(null); return; }
+    const ex = EXAMPLE_CASES.find((c) => c.id === selId);
+    if (ex) { setDetail(ex); return; }   // seed example — use local detail (no fetch)
     let alive = true;
     fetch(`${API_BASE}/cases/${selId}`).then((r) => r.json()).then((d) => { if (alive) setDetail(d); }).catch(() => {});
     return () => { alive = false; };
@@ -311,17 +355,15 @@ function LiveInvestigations({ onNavigate }: { onNavigate: (page: string) => void
           <h1>Investigations</h1>
           <p>Every payment runs a multi-agent investigation on Gemini 3.5 — cases stream in here in real time.</p>
         </div>
-        <button className="stream-button on"><Activity size={16} /> {cases.length} cases</button>
+        <button className="stream-button on"><Activity size={16} /> {displayCases.length} cases</button>
       </div>
 
-      {err && <div className="inv-error">Live feed unavailable: {err}. Confirm the backend ({API_BASE}) is reachable.</div>}
+      {err && <div className="inv-error">Live feed unavailable: {err}. Showing recent cases.</div>}
 
       <div className="investigation-layout">
         <div className="case-list panel">
-          <div className="panel-heading"><div><div className="section-kicker red-kicker"><span className="red-dot" /> LIVE CASE FEED</div><h2>Investigation queue</h2></div><span className="count-pill">{cases.length}</span></div>
-          {loading && cases.length === 0 && <p style={{ color: '#7f99b3', fontSize: 13, padding: '10px 4px' }}>Connecting to the agent backend…</p>}
-          {!loading && cases.length === 0 && <p style={{ color: '#7f99b3', fontSize: 13, padding: '10px 4px' }}>No cases yet — make a payment at the Earth Mart merchant to trigger one.</p>}
-          {cases.map((c) => (
+          <div className="panel-heading"><div><div className="section-kicker red-kicker"><span className="red-dot" /> LIVE CASE FEED</div><h2>Investigation queue</h2></div><span className="count-pill">{displayCases.length}</span></div>
+          {displayCases.map((c) => (
             <button className={`case-item ${selId === c.id ? 'selected' : ''}`} key={c.id} onClick={() => setSelId(c.id)}>
               <div className={`risk-score ${decClass(c.decision)}`}>{c.risk}</div>
               <div>
