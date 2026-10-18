@@ -100,7 +100,7 @@ export default function FraudJourney({ embedded = false }: { embedded?: boolean 
         {crossCountry && phase !== 'idle' && (
           <div className="rounded-2xl bg-white ring-1 ring-slate-200/70 shadow-sm p-4 sm:p-5">
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-              <LocationChip city="Kuala Lumpur, UAE" sub="Online purchase" time={TX_DUBAI.time} tone="ok" />
+              <LocationChip city="Kuala Lumpur, MY" sub="Online purchase" time={TX_DUBAI.time} tone="ok" />
               <div className="flex-1 flex items-center gap-2 px-2">
                 <div className="flex-1 border-t-2 border-dashed border-rose-300 relative"><Plane size={18} className="text-rose-500 absolute -top-2.5 left-1/2 -translate-x-1/2 rotate-45" /></div>
                 <span className="text-xs font-bold text-rose-600 bg-rose-50 ring-1 ring-rose-200 rounded-full px-2.5 py-1 whitespace-nowrap">2 hours · cross-country</span>

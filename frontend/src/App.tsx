@@ -3,10 +3,10 @@ import {
   Activity, AlertCircle, ArrowDownRight, ArrowUpRight, Bell, Bot, BrainCircuit, BriefcaseBusiness,
   Check, ChevronRight, CircleHelp, Clock3, CreditCard, Database, FileSearch, Fingerprint, Globe2,
   LayoutDashboard, LineChart, ListFilter, MapPin, Menu, Network, PanelLeftClose, Search, Shield,
-  ShieldAlert, Sparkles, Target, UserRound, Users, X, Zap, Layers, LogOut, Lock, RefreshCw,
+  ShieldAlert, Sparkles, Target, UserRound, Users, X, Zap, Layers, LogOut, Lock, RefreshCw, PhoneCall,
 } from 'lucide-react';
 import ArchitecturePage from './ArchitecturePage';
-import { Customer360, ComplianceSAR, NetworkGraph } from './ConsolePages';
+import { Customer360, ComplianceSAR, NetworkGraph, RMWorkbench } from './ConsolePages';
 
 type Decision = 'Approved' | 'Step-up' | 'Held' | 'Blocked';
 type Transaction = { id: string; time: string; customer: string; card: string; amount: number; merchant: string; city: string; country: string; channel: string; risk: number; decision: Decision; reason: string; autoPay?: boolean; otpVerified?: boolean; };
@@ -25,15 +25,16 @@ const AGENT_ICON: Record<string, typeof Bot> = {
 const navItems: NavItem[] = [
   { label: 'Command Center', icon: LayoutDashboard }, { label: 'Investigations', icon: FileSearch },
   { label: 'Network Graph', icon: Network }, { label: 'Customer 360', icon: UserRound },
-  { label: 'Compliance / SAR', icon: BriefcaseBusiness }, { label: 'Architecture', icon: Layers },
+  { label: 'Compliance / SAR', icon: BriefcaseBusiness }, { label: 'RM Workbench', icon: PhoneCall },
+  { label: 'Architecture', icon: Layers },
 ];
 
 const initialTransactions: Transaction[] = [
   { id: 'TX-9F24A8', time: '14:32:08', customer: 'Maya Patel', card: '4821', amount: 840, merchant: 'TechWorld', city: 'Dubai, AE', country: 'AE', channel: 'Card', risk: 28, decision: 'Approved', reason: 'Confirmed travel memory' },
   { id: 'TX-VIP-STLN', time: '14:33:20', customer: 'Eleanor Whitfield', card: '8899', amount: 15200, merchant: 'Genève Horlogerie', city: 'Geneva, CH', country: 'CH', channel: 'Card', risk: 88, decision: 'Blocked', reason: 'VIP card reported stolen' },
   { id: 'TX-VIP-MC', time: '14:33:05', customer: 'Eleanor Whitfield', card: '8891', amount: 48000, merchant: 'Maison Watches', city: 'Monaco, MC', country: 'MC', channel: 'Card', risk: 74, decision: 'Approved', reason: 'VIP travel memory' },
-  { id: 'TX-TYSON-BLK', time: '12:00:00', customer: 'Deepan', card: '1234', amount: 480, merchant: 'Sydney Online Store', city: 'Sydney, AU', country: 'AU', channel: 'Web', risk: 82, decision: 'Blocked', reason: 'Auto-pay off · no OTP received', autoPay: true, otpVerified: false },
-  { id: 'TX-TYSON-OK', time: '12:04:00', customer: 'Deepan', card: '1234', amount: 480, merchant: 'Sydney Online Store', city: 'Sydney, AU', country: 'AU', channel: 'Web', risk: 82, decision: 'Approved', reason: 'OTP verified', autoPay: true, otpVerified: true },
+  { id: 'TX-DEEPAN-BLK', time: '12:00:00', customer: 'Deepan', card: '1234', amount: 2499, merchant: 'Mars Mart Singapore', city: 'Singapore, SG', country: 'SG', channel: 'Web', risk: 82, decision: 'Blocked', reason: 'Auto-pay off · no OTP received', autoPay: true, otpVerified: false },
+  { id: 'TX-DEEPAN-OK', time: '12:04:00', customer: 'Deepan', card: '1234', amount: 2499, merchant: 'Mars Mart Singapore', city: 'Singapore, SG', country: 'SG', channel: 'Web', risk: 82, decision: 'Approved', reason: 'OTP verified', autoPay: true, otpVerified: true },
   { id: 'TX-9F24A7', time: '14:31:54', customer: 'Ethan Brooks', card: '1190', amount: 12400, merchant: 'Wire Transfer', city: 'Austin, US', country: 'US', channel: 'Wire', risk: 94, decision: 'Blocked', reason: 'New device + new payee' },
   { id: 'TX-9F24A6', time: '14:31:41', customer: 'Sofia Andersson', card: '7734', amount: 64.28, merchant: 'Nordic Market', city: 'Stockholm, SE', country: 'SE', channel: 'Card', risk: 9, decision: 'Approved', reason: 'Known pattern' },
   { id: 'TX-9F24A5', time: '14:31:26', customer: 'Marcus Lee', card: '3402', amount: 2180, merchant: 'Luxe Electronics', city: 'San Francisco, US', country: 'US', channel: 'Card', risk: 67, decision: 'Step-up', reason: 'Velocity threshold' },
@@ -90,7 +91,7 @@ function App({ user, onSignOut }: { user: { name: string; email: string }; onSig
       <main className="main-content">
         <header className="topbar"><button className="mobile-menu" onClick={() => setSidebarOpen(true)}><Menu size={20} /></button><div className="breadcrumb"><span>Workspace</span><ChevronRight size={14} /><strong>{activeNav}</strong></div><div className="top-actions"><div className="search-box"><Search size={16} /><input placeholder="Search transactions, customers..." /></div><div className="live-status"><span className="live-dot" /> LIVE <span className="throughput">1,284 txns/s</span></div><span className="demo-badge">DEMO</span><button className="icon-button" onClick={() => setShowNotifications(!showNotifications)}><Bell size={18} /><i /></button><div className="top-avatar" title={user.email}>{initials}</div></div>{showNotifications && <div className="notification-pop"><div className="pop-title">Notifications <span>3 new</span></div><p><ShieldAlert size={15} /> High-risk wire transfer blocked</p><p><BrainCircuit size={15} /> Memory recall resolved false positive</p><p><Activity size={15} /> Stream health is nominal</p></div>}</header>
         <div className="page-wrap">
-          {activeNav === 'Command Center' ? <CommandCenter transactions={transactions} blocked={blocked} selected={selected} onSelect={setSelected} onInvestigate={(t) => { setSelected(t); setActiveNav('Investigations'); }} onNavigate={setActiveNav} streaming={streaming} onToggle={() => setStreaming(!streaming)} /> : activeNav === 'Architecture' ? <ArchitecturePage /> : activeNav === 'Customer 360' ? <Customer360 /> : activeNav === 'Compliance / SAR' ? <ComplianceSAR /> : activeNav === 'Network Graph' ? <NetworkGraph /> : activeNav === 'Investigations' ? <LiveInvestigations onNavigate={setActiveNav} /> : <PlaceholderPage activeNav={activeNav} transactions={transactions} selected={selected} onSelect={setSelected} onNavigate={setActiveNav} />}
+          {activeNav === 'Command Center' ? <CommandCenter transactions={transactions} blocked={blocked} selected={selected} onSelect={setSelected} onInvestigate={(t) => { setSelected(t); setActiveNav('Investigations'); }} onNavigate={setActiveNav} streaming={streaming} onToggle={() => setStreaming(!streaming)} /> : activeNav === 'Architecture' ? <ArchitecturePage /> : activeNav === 'Customer 360' ? <Customer360 /> : activeNav === 'Compliance / SAR' ? <ComplianceSAR /> : activeNav === 'RM Workbench' ? <RMWorkbench /> : activeNav === 'Network Graph' ? <NetworkGraph /> : activeNav === 'Investigations' ? <LiveInvestigations onNavigate={setActiveNav} /> : <PlaceholderPage activeNav={activeNav} transactions={transactions} selected={selected} onSelect={setSelected} onNavigate={setActiveNav} />}
         </div>
       </main>
     </div>
@@ -399,7 +400,7 @@ function CaseDetail({ c, onNavigate }: { c: FullCase; onNavigate: (page: string)
     const timer = setInterval(() => { i += 1; setShown(i); if (i >= steps.length) clearInterval(timer); }, 700);
     return () => clearInterval(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [c.id]);
+  }, [c.id, steps.length]);
   const running = shown < steps.length;
   const visible = steps.slice(0, shown);
   return (

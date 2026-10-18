@@ -325,6 +325,19 @@ def investigate_stream(txn: Transaction, store: MemoryStore) -> Iterator[Union[A
             thought=ap_note,
             evidence=["auto_pay=on", f"otp_verified={txn.otp_verified}", f"risk={txn.risk}"],
         ))
+    elif home and txn.country and txn.country != home and not _memory_explains(txn, memory):
+        # Auto-pay OFF + cross-border → OTP step-up (e.g. Mars Mart Singapore).
+        if txn.otp_verified is True:
+            su_note = f"Auto-pay is OFF and the payment is cross-border ({txn.country} vs home {home}). One-time OTP was sent to the customer's mobile → correct OTP entered in time → payment allowed."
+        elif txn.otp_verified is False:
+            su_note = f"Auto-pay is OFF and the payment is cross-border ({txn.country} vs home {home}). One-time OTP was sent to the customer's mobile → OTP was wrong / not entered within 60s → card blocked."
+        else:
+            su_note = f"Auto-pay is OFF and the payment is cross-border ({txn.country} vs home {home}). One-time OTP sent to the customer's mobile — awaiting verification (60s window)."
+        yield emit(AgentStep(
+            agent="Step-Up Control",
+            thought=su_note,
+            evidence=["auto_pay=off", f"home_country={home}", f"country={txn.country}", f"otp_verified={txn.otp_verified}"],
+        ))
 
     hist = T.get_transaction_history(txn)
     dev = T.check_device_and_geo(txn)
@@ -354,4 +367,88 @@ def investigate(txn: Transaction, store: MemoryStore) -> Case:
         if isinstance(item, Case):
             case = item
     assert case is not None
+    return case
+
+
+# ---------------- two-phase OTP step-up (Mars Mart flow) ----------------
+def initiate_stepup(txn: Transaction, store: MemoryStore) -> Case:
+    """Phase 1 of an OTP step-up. Opens a LIVE case in the analyst console showing the
+    agents have sent a one-time OTP and are waiting (up to 60s) for the customer to
+    verify. Decision is held at 'Step-up' until resolve_stepup() is called."""
+    case_id = f"CASE-{uuid.uuid4().hex[:8].upper()}"
+    tier = store.get_customer_tier(txn.customer)
+    home = store.get_customer_home(txn.customer)
+    card = T.check_card_status(txn)
+    steps: list[AgentStep] = []
+
+    steps.append(AgentStep(
+        agent="Orchestrator",
+        thought=f"Routing {txn.id}: {txn.currency} {txn.amount:.0f} at {txn.merchant}, {txn.city or 'n/a'}. Customer tier: {tier.upper()}. Auto-pay is OFF — step-up authentication required before this payment can proceed.",
+        evidence=[f"inbound_risk={txn.risk}", f"channel={txn.channel}", f"tier={tier}", "auto_pay=off"],
+    ))
+    steps.append(AgentStep(
+        agent="Card Status",
+        thought=f"{card['summary']}.",
+        evidence=[f"card_status={card['card_status']}", f"tier={tier}"],
+    ))
+    where = f"{txn.country} vs home {home}" if home and txn.country and txn.country != home else (txn.country or "n/a")
+    steps.append(AgentStep(
+        agent="Step-Up Control",
+        thought=f"Auto-pay is OFF and the payment is cross-border ({where}). A one-time OTP has been sent to the customer's registered mobile. Payment is ON HOLD — the agents are waiting up to 60 seconds for the customer to enter the correct OTP.",
+        evidence=["auto_pay=off", f"home_country={home}", f"country={txn.country}", "otp=sent", "status=awaiting_customer_otp"],
+        status="running",
+    ))
+
+    result = DecisionResult(
+        decision="Step-up", confidence=0.5,
+        reason_codes=["step_up_initiated", "otp_sent", "awaiting_customer_otp"],
+        rationale="One-time OTP sent to the customer's mobile — the agents are holding the payment and waiting up to 60 seconds for the customer to verify before deciding.",
+    )
+    case = Case(id=case_id, transaction=txn, steps=steps, memory_hits=store.get_customer_memory(txn.customer), result=result)
+    store.save_case(case)
+    return case
+
+
+def resolve_stepup(case_id: str, otp_verified: bool, store: MemoryStore) -> Case:
+    """Phase 2. The customer entered an OTP (or the 60s window lapsed). Finishes the
+    investigation on the SAME case: records the OTP outcome, runs the remaining
+    specialists, and sets the final decision — Approved if verified, Blocked if not."""
+    raw = store.get_case(case_id)
+    if not raw:
+        raise KeyError(case_id)
+    case = Case(**raw)
+    txn = case.transaction
+    txn.otp_verified = bool(otp_verified)
+    memory = store.get_customer_memory(txn.customer)
+    tier = store.get_customer_tier(txn.customer)
+    home = store.get_customer_home(txn.customer)
+    card = T.check_card_status(txn)
+
+    steps = list(case.steps)
+    for s in steps:  # the earlier "awaiting" step is no longer live
+        if s.agent == "Step-Up Control" and s.status == "running":
+            s.status = "done"
+
+    if txn.otp_verified:
+        su = "Customer entered the CORRECT OTP within the 60-second window → identity verified → the payment is allowed to proceed."
+    else:
+        su = "Customer did NOT enter a correct OTP within the 60-second window → step-up failed → the card is blocked and a fraud case is opened."
+    steps.append(AgentStep(agent="Step-Up Control", thought=su, evidence=[f"otp_verified={txn.otp_verified}", "status=resolved"]))
+
+    hist = T.get_transaction_history(txn)
+    dev = T.check_device_and_geo(txn)
+    steps.append(_specialist("Investigator", {"transaction": txn.model_dump(), "history": hist, "device_geo": dev, "memory": memory, "customer_tier": tier, "card_status": card["card_status"]}, [hist["summary"], dev["summary"]]))
+    net = T.check_network_graph(txn)
+    steps.append(_specialist("Network Analyst", {"transaction": txn.model_dump(), "network": net}, [net["summary"]]))
+    intel = T.screen_sanctions_and_adverse_media(txn)
+    merch = T.check_merchant_reputation(txn)
+    steps.append(_specialist("Intel", {"sanctions": intel, "merchant": merch}, [intel["summary"], merch["summary"]]))
+
+    result = _decide(txn, [s.model_dump() for s in steps], memory, card["card_status"], tier, home)
+    steps.append(_specialist("Compliance", {"decision": result.model_dump(), "transaction": txn.model_dump(), "customer_tier": tier}, [f"decision={result.decision}"]))
+    steps.append(_specialist("Critic", {"decision": result.model_dump(), "steps": [s.thought for s in steps]}, ["review complete"]))
+
+    case.steps = steps
+    case.result = result
+    store.save_case(case)
     return case

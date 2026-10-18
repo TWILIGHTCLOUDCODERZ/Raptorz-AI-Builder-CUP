@@ -2,13 +2,13 @@
 
 <img src="frontend/public/Raptorz_Logo.png" alt="Raptorz" width="96" />
 
-# Raptorz — AI Fraud Intelligence
+# Raptorz Banking Earth — AI Fraud Intelligence
 
 **Autonomous, real-time fraud & financial-crime defense on Gemini + Google Cloud.**
 
-Raptorz doesn't just detect fraud — it *investigates*, *verifies the customer*, and blocks only when it must.
+Raptorz Banking Earth doesn't just detect fraud — it *investigates*, *verifies the customer*, and blocks only when it must.
 
-`Gemini 3.5` · `Google ADK` · `Cloud Run` · `Pub/Sub` · `Firestore` · `Secret Manager` · `Firebase Auth` · `React + TypeScript`
+`Gemini 3.5` · `Google ADK` · `Vertex AI` · `Cloud Run` · `Pub/Sub` · `Firestore` · `Secret Manager` · `Twilio (Verify + Voice)` · `Firebase Auth` · `React + TypeScript`
 
 **[▶ Live demo](https://raptorz-bfsi-frontend-gehlmzbhuq-uc.a.run.app/#)**  ·  **[▶ Demo video (YouTube)](https://youtu.be/lzjEZpbEk8Y)**  ·  **[◆ GitHub repo](https://github.com/TWILIGHTCLOUDCODERZ/Raptorz-AI-Builder-CUP)**
 
@@ -40,9 +40,10 @@ The full pipeline is in [`backend/agents/pipeline.py`](backend/agents/pipeline.p
 
 - **Real-time transaction risk decisioning** across card, wire and online channels.
 - **Behavioural & contextual fraud detection** — device, network, geo-velocity, and history that rule thresholds miss.
-- **Adaptive step-up authentication** (Mobile / Email OTP) that verifies the customer instead of declining them.
+- **Adaptive step-up authentication** — a one-time passcode via **Twilio Verify (SMS)** that verifies the customer instead of declining them.
+- **RM voice recovery** — for a blocked card, an automated **Twilio voice call** lets the customer approve an unblock, validated before the card is re-enabled.
 - **Multi-agent investigation & explainability** on Gemini 3.5, with an auto-drafted case and a relationship-manager alert.
-- **Analyst console** (command center, live investigations, Customer 360, Compliance/SAR, Network Graph) and an **executive step-up walkthrough**.
+- **Analyst console** (command center, live investigations, Customer 360, Compliance/SAR, Network Graph, **RM Workbench**) and an **executive step-up walkthrough**.
 - **Boundaries:** this build is a proof-of-concept on synthetic data — no real payments, card data, messages or core-banking integrations. The risk *decision* is made by the policy/risk engine; generative AI produces explanations only.
 
 ## Solution
@@ -60,11 +61,26 @@ For high/critical risk it **disables auto-pay, requests OTP, and alerts the rela
 
 The **risk engine / policy makes the decision** — generative AI is used only for investigation summaries and explanations, never to authorize the payment.
 
-## The Tyson case flow
+## The Deepan case flow
 
-![Tyson case flow](frontend/public/tyson-flow.png)
+**Deepan** is a VIP cardholder who lives in **Kuala Lumpur, Malaysia** (home country `MY`) with auto-pay enabled. His everyday Kuala Lumpur spend auto-approves. Then the same card is used for a payment originating in **Singapore** — a cross-border anomaly → risk 82. Instead of cold-declining a VIP, Raptorz **disables auto-pay and steps up with a one-time passcode sent via Twilio Verify**. If Deepan enters the correct OTP the payment is approved; a wrong code or no response within the window **blocks the card**. For a blocked card, the **relationship manager places an automated Twilio voice call** — the AI agent explains the situation and unblocks the card **only after Deepan's validated voice approval** (AutoPay stays disabled). A reported-stolen card is a **hard block** regardless of tier — an OTP can never override it.
 
-A normal Dubai purchase auto-approves (risk 18). Two hours later the same card is used in Italy — new device, new network, behaviour mismatch → risk 82. Instead of blocking, Raptorz **disables auto-pay, requests OTP, and alerts RM Tessa**. Verify → approve; no OTP → block. A reported-stolen card in a new country → risk 97 → **hard block + fraud case** (OTP cannot override a stolen card).
+```mermaid
+flowchart TD
+    A["Deepan · VIP card · home = Kuala Lumpur, MY"] --> B{"Where is the payment?"}
+    B -->|"Kuala Lumpur, MY · risk 18"| C["Auto-approve<br/>behaviour matches home pattern"]
+    B -->|"Singapore · cross-border · risk 82"| D["Multi-agent investigation<br/>Gemini 3.5 + Google ADK"]
+    D --> E["Policy gate: disable auto-pay<br/>step-up required"]
+    E --> F["Twilio Verify → OTP SMS to Deepan's mobile"]
+    F -->|"Correct OTP in time"| G["Approved ✅<br/>AutoPay stays disabled"]
+    F -->|"Wrong / no OTP"| H["Card Blocked 🔒<br/>fraud case opened"]
+    H --> I["RM Workbench: automated Twilio voice call"]
+    I -->|"Customer says YES"| J["Card Unblocked 🔓<br/>AutoPay still disabled · OTP still required"]
+    I -->|"Says NO / no answer"| K["Stays Blocked<br/>outcome logged"]
+    A -.->|"Reported-stolen card · risk 97"| L["Hard block + fraud case<br/>OTP cannot override"]
+```
+
+Every step above streams live into the analyst console (**Investigations**), and the voice-call recovery is driven from the new **RM Workbench** page.
 
 ## Results — measured on a synthetic benchmark
 
@@ -97,10 +113,11 @@ Reproduce: `python backend/eval/evaluate.py`. Illustrative on synthetic data; pr
 - **Multi-agent investigation** on Gemini 3.5, streamed live into the analyst console
 - **Memory that stops false declines** — recalls confirmed-legit patterns so it never re-challenges the same activity
 - **Risk matrix policy** — Low → auto-approve · Medium → OTP · High → step-up + RM alert · Critical → block + investigation
-- **Step-up, not block** — auto-pay disabled → Mobile/Email OTP → verify or block
+- **Step-up, not block** — auto-pay disabled → **Twilio Verify OTP (SMS)** → verify or block
+- **RM voice workbench** — a blocked card is recovered via an automated **Twilio voice call**; the AI agent explains the situation and unblocks **only on validated customer approval**
 - **VIP handling** — a false decline costs more than the fraud, so VIPs are never cold-declined; a stolen card is blocked regardless of tier
 - **Interactive architecture explorer** — hover/click any Google Cloud service to zoom in and read what it does
-- **Analyst console** — command center, auto-launching investigations, Customer 360, Compliance/SAR, Network Graph, Architecture
+- **Analyst console** — command center, auto-launching investigations, Customer 360, Compliance/SAR, Network Graph, **RM Workbench** (voice-call card recovery), Architecture
 - **Executive step-up walkthrough** — a presentable, self-contained journey
 
 ## Monorepo layout
@@ -129,6 +146,7 @@ project/
 | **Model Armor** | Prompt-injection / PII guardrails around the Gemini calls |
 | **Cloud Storage** | Receipt / evidence uploads for multimodal verification |
 | **Firebase Authentication** | Sign-in / sign-up (email-password + Google); a guest mode needs no account |
+| **Twilio (Verify + Programmable Voice)** | Step-up **OTP by SMS** (Twilio Verify) and the **RM automated voice call** that recovers a blocked card on validated approval |
 
 ---
 
@@ -288,11 +306,11 @@ It prints the live URL: the analyst console at `/` and the executive walkthrough
 
 ---
 
-## Merchant demo — Earth Mart (Malaysia vs Sydney)
+## Merchant demo — Earth Mart (Malaysia) vs Mars Mart (Singapore)
 
-`merchant-site/` is a standalone online shop ("Earth Mart") that checks out through Raptorz. It demonstrates the **home-country geo gate**: the cardholder **Deepan** lives in **Kuala Lumpur, Malaysia**, so a Malaysia payment **approves**, while the same card used in **Sydney, Australia** is **blocked** (impossible travel → step-up OTP). The storefront even changes per region — **RM 450 headphones** in Malaysia, an **AUD MacBook** in Sydney.
+`merchant-site/` is a standalone online shop that checks out through Raptorz. It demonstrates the **home-country geo gate**: the cardholder **Deepan** lives in **Kuala Lumpur, Malaysia**, so a purchase at **Earth Mart Malaysia** (auto-pay on) **approves** with no friction, while the same card at **Mars Mart Singapore** (auto-pay off, cross-border) triggers a **Twilio Verify OTP** — enter the correct code to approve, or a wrong / missing code **blocks the card**. The storefront changes per region — **RM 450 headphones** at Earth Mart Malaysia, an **SGD MacBook** at Mars Mart Singapore — and the checkout offers **Card or UPI**.
 
-A **hidden store-location switch** lives behind a small trigger in the bottom-left corner (click it to reveal Malaysia / Sydney) — so on stage the shop looks ordinary until you flip the location.
+A **hidden store-location switch** lives behind a small trigger in the corner (click it to reveal Earth Mart Malaysia / Mars Mart Singapore) — so on stage the shop looks ordinary until you flip the location. The OTP step-up and any block appear live in the console **Investigations** feed as a multi-agent case.
 
 Deploy it as a **separate Cloud Run service** (points at the Raptorz backend automatically):
 ```bash

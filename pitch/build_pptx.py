@@ -212,17 +212,17 @@ for lbl,c in labels:
     chip(s, xx, 6.05, w, lbl, c); xx+=w+0.15
 text(s, xx+0.1, 6.05, 4.8, 0.42, [[("every verdict carries reason codes · confidence · evidence", 10.5, FAINT, MONO, False)]], anchor=MSO_ANCHOR.MIDDLE)
 
-# ============================================================ 6 · TYSON
+# ============================================================ 6 · DEEPAN
 s = slide()
-eyebrow(s, "05", "TYSON USER FLOW", "step-up in action")
+eyebrow(s, "05", "DEEPAN USER FLOW", "step-up in action")
 title(s, "The same payment. Two very different outcomes.", 30, w=12)
 # scene bar
 box(s, 0.9, 2.45, 11.5, 0.95, fill=PANEL, line=LINE, line_w=1.0, radius=0.12)
 dot(s, 1.12, 2.68, 0.5, BG2)
-text(s, 1.12, 2.68, 0.5, 0.5, [[("T", 20, BLUELT, DISPLAY, True)]], align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+text(s, 1.12, 2.68, 0.5, 0.5, [[("D", 20, BLUELT, DISPLAY, True)]], align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
 text(s, 1.8, 2.55, 10.4, 0.8, [
-    [("Tyson · large auto-pay charge", 15, INK, DISPLAY, True)],
-    [("A high-value payment fires. Raptorz checks card status, then the step-up policy gate — before it ever reaches the agents.", 12.5, MUTED, BODY, False)],
+    [("Deepan · cross-border auto-pay charge", 15, INK, DISPLAY, True)],
+    [("A payment from Singapore fires on a Kuala Lumpur card. Raptorz checks card status, then the step-up policy gate — before it ever reaches the agents.", 12.5, MUTED, BODY, False)],
 ], space_after=2, line=1.1)
 # two paths
 pw=5.7; py=3.7; ph=2.15
@@ -233,7 +233,7 @@ text(s, 1.15, py+0.55, pw-0.5, 0.5, [[("✕  Card blocked", 24, RED, DISPLAY, Tr
 text(s, 1.15, py+1.15, pw-0.5, 0.9, [[("Unverified high-value charge with auto-pay disabled — Raptorz refuses it and protects the customer, with a reason code the analyst sees instantly.", 12, MUTED, BODY, False)]], line=1.2)
 text(s, 7.15, py+0.2, pw-0.5, 0.35, [[("◆ OTP verified / auto-pay ON", 12, GREEN, MONO, False)]])
 text(s, 7.15, py+0.55, pw-0.5, 0.5, [[("✓  Approved", 24, GREEN, DISPLAY, True)]])
-text(s, 7.15, py+1.15, pw-0.5, 0.9, [[("Tyson confirms with a Mobile or Email OTP — Raptorz verifies identity and approves the same payment. A good customer is kept, not declined.", 12, MUTED, BODY, False)]], line=1.2)
+text(s, 7.15, py+1.15, pw-0.5, 0.9, [[("Deepan confirms with a one-time passcode via Twilio — Raptorz verifies identity and approves the same payment. A good customer is kept, not declined.", 12, MUTED, BODY, False)]], line=1.2)
 text(s, 0.9, 6.15, 11.5, 0.6, [[("The lesson: ", 15, MUTED, BODY, False),("verify the customer, don't just decline the charge.", 15, INK, DISPLAY, True)]])
 
 # ============================================================ 7 · AGENTS

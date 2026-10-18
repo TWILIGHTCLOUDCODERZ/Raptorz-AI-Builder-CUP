@@ -1,10 +1,169 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
-  AlertTriangle, BrainCircuit, Check, CreditCard, Eye, EyeOff, Fingerprint, Globe2, Laptop, Mail, MapPin, Network,
-  Phone, ShieldCheck, Smartphone, Sparkles, UserRound,
+  AlertTriangle, BrainCircuit, Check, ChevronDown, Clock, CreditCard, Eye, EyeOff, Fingerprint, Globe2, Laptop,
+  Lock, Mail, MapPin, Network, Phone, PhoneCall, RefreshCw, ShieldCheck, Smartphone, Sparkles, Unlock, UserRound, XCircle,
 } from 'lucide-react';
 
 const card: React.CSSProperties = { background: 'rgba(20,48,79,.4)', border: '1px solid rgba(90,130,170,.2)', borderRadius: 12 };
+
+const RM_API = (import.meta.env as any).VITE_API_URL || 'https://raptorz-bfsi-backend-282323062361.us-central1.run.app';
+
+// ---------------- Relationship Manager · Voice Call Workbench ----------------
+type RMLog = { time: string; event: string; detail: string; outcome: string };
+type RMData = {
+  name: string; tier: string; card_last4: string; home: string; phone_masked: string; email_masked: string;
+  rm_name: string; autopay: string; last_block_reason: string; card_status: string; card_status_raw: string;
+  script: string; logs: RMLog[];
+};
+
+const OUT = {
+  approved: { c: '#69c382', bg: 'rgba(105,195,130,.12)', Icon: Check },
+  declined: { c: '#f27b70', bg: 'rgba(242,123,112,.12)', Icon: XCircle },
+  error: { c: '#f27b70', bg: 'rgba(242,123,112,.12)', Icon: XCircle },
+  warn: { c: '#f2c34e', bg: 'rgba(242,195,78,.12)', Icon: AlertTriangle },
+  info: { c: '#7fb0e8', bg: 'rgba(66,133,244,.12)', Icon: PhoneCall },
+} as Record<string, { c: string; bg: string; Icon: typeof Check }>;
+
+export function RMWorkbench() {
+  const [data, setData] = useState<RMData | null>(null);
+  const [calling, setCalling] = useState(false);
+  const [open, setOpen] = useState(true);
+  const [msg, setMsg] = useState('');
+
+  const load = async () => { try { const r = await fetch(`${RM_API}/rm/customer`); setData(await r.json()); } catch { /* keep last */ } };
+  useEffect(() => { load(); const t = setInterval(load, 3000); return () => clearInterval(t); }, []);
+
+  const call = async () => {
+    setCalling(true); setMsg('Placing the automated AI voice call to the customer…');
+    try {
+      const r = await fetch(`${RM_API}/rm/call`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' });
+      const d = await r.json();
+      setMsg(d.ok ? `Call placed (status: ${d.status}). Answer the phone and respond to the agent — the card updates here automatically.` : `Could not place the call: ${d.reason || 'unknown error'}.`);
+    } catch { setMsg('Could not reach the server to place the call.'); }
+    finally { setCalling(false); setTimeout(load, 1500); }
+  };
+  const reset = async () => { setMsg(''); try { await fetch(`${RM_API}/rm/reset`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' }); } catch {} load(); };
+  const simulate = async (choice: string) => {
+    setMsg(choice === 'yes' ? 'Simulating: customer approved on the call…' : choice === 'no' ? 'Simulating: customer declined on the call…' : 'Simulating: customer did not answer…');
+    try { await fetch(`${RM_API}/rm/simulate`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ choice }) }); } catch {}
+    setTimeout(load, 400);
+  };
+
+  const blocked = (data?.card_status_raw || 'blocked') === 'blocked';
+  const logs = data?.logs || [];
+  const fmtTime = (iso: string) => { try { return new Date(iso).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', second: '2-digit' }); } catch { return iso; } };
+  const row: React.CSSProperties = { display: 'flex', justifyContent: 'space-between', gap: 14, padding: '9px 0', borderBottom: '1px solid rgba(90,130,170,.12)' };
+  const lbl: React.CSSProperties = { color: '#7f99b3', fontSize: 12 };
+  const val: React.CSSProperties = { color: '#dceaf8', fontSize: 13, fontWeight: 600, textAlign: 'right' };
+
+  return (
+    <section className="placeholder-page">
+      <div className="page-heading"><div><div className="eyebrow"><span className="pulse-small" /> RELATIONSHIP MANAGER</div><h1>RM Voice Workbench</h1><p>Recover a blocked card over an AI voice call — unblock only on validated customer approval.</p></div>
+        <div className="heading-actions"><button className="stream-button" onClick={reset} title="Reset to Blocked"><RefreshCw size={15} /> Reset demo</button></div>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(300px,1.1fr) minmax(300px,1fr)', gap: 16, alignItems: 'start' }}>
+        {/* Customer + card status */}
+        <div className="panel" style={{ padding: 20 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16 }}>
+            <div style={{ width: 50, height: 50, borderRadius: 14, display: 'grid', placeItems: 'center', background: '#265a9a', color: '#cfe5ff', font: "700 17px 'Space Mono'" }}>DP</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 9, flexWrap: 'wrap' }}><h2 style={{ color: '#eaf2fb', fontSize: 19, margin: 0 }}>{data?.name || 'Deepan'}</h2><span style={{ font: "9px 'Space Mono'", color: '#f2c34e', border: '1px solid rgba(251,188,5,.4)', borderRadius: 6, padding: '3px 7px' }}>{data?.tier || 'VIP · PRIVATE BANK'}</span></div>
+              <div style={{ color: '#8fa7c0', fontSize: 12, marginTop: 3 }}>RM: {data?.rm_name || 'Priya Nair'}</div>
+            </div>
+          </div>
+
+          {/* Card status banner */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 12,
+            background: blocked ? 'rgba(242,123,112,.1)' : 'rgba(105,195,130,.1)',
+            border: `1px solid ${blocked ? 'rgba(242,123,112,.45)' : 'rgba(105,195,130,.45)'}`, marginBottom: 16 }}>
+            {blocked ? <Lock size={22} color="#f27b70" /> : <Unlock size={22} color="#69c382" />}
+            <div style={{ flex: 1 }}>
+              <div style={{ color: '#7f99b3', fontSize: 10.5, letterSpacing: '.08em' }}>CARD •••• {data?.card_last4 || '1234'} · STATUS</div>
+              <div style={{ color: blocked ? '#f49a91' : '#8bd6a4', fontSize: 18, fontWeight: 800, letterSpacing: '.02em' }}>{data?.card_status || 'Blocked'}</div>
+            </div>
+            <span style={{ font: "10px 'Space Mono'", color: '#9fb6cf', border: '1px solid rgba(90,130,170,.3)', borderRadius: 6, padding: '4px 8px' }}>AutoPay {data?.autopay || 'Disabled'}</span>
+          </div>
+
+          <div style={{ ...row, borderTop: '1px solid rgba(90,130,170,.12)' }}><span style={lbl}><MapPin size={12} style={{ verticalAlign: -1 }} /> Home</span><span style={val}>{data?.home || 'Kuala Lumpur, Malaysia'}</span></div>
+          <div style={row}><span style={lbl}><Phone size={12} style={{ verticalAlign: -1 }} /> Mobile</span><span style={val}>{data?.phone_masked || '+96 •••• 18'}</span></div>
+          <div style={row}><span style={lbl}><Mail size={12} style={{ verticalAlign: -1 }} /> Email</span><span style={val}>{data?.email_masked || 'd•••••••@gmail.com'}</span></div>
+          <div style={{ ...row, borderBottom: 'none' }}><span style={lbl}><AlertTriangle size={12} style={{ verticalAlign: -1 }} /> Block reason</span><span style={{ ...val, color: '#f2b0a8', maxWidth: 230 }}>{data?.last_block_reason || 'Suspicious transaction from Singapore'}</span></div>
+        </div>
+
+        {/* Voice call action */}
+        <div className="panel" style={{ padding: 20 }}>
+          {kick('AI VOICE AGENT · TWILIO')}
+          <p style={{ color: '#9fb6cf', fontSize: 12.5, margin: '2px 0 12px' }}>The agent will call the customer and read:</p>
+          <div style={{ ...card, padding: '13px 15px', position: 'relative', background: 'rgba(66,133,244,.07)', borderColor: 'rgba(66,133,244,.3)' }}>
+            <PhoneCall size={15} color="#7fb0e8" style={{ position: 'absolute', top: 12, right: 12 }} />
+            <p style={{ color: '#cfe0f2', fontSize: 13, lineHeight: 1.6, margin: 0, fontStyle: 'italic' }}>“{data?.script || 'There has been a suspicious transaction originating from Singapore…'}”</p>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 9, margin: '14px 0 4px' }}>
+            {[['Customer says YES', 'Approval recorded → card unblocked (AutoPay stays off)', '#69c382'],
+              ['Customer says NO', 'Decision recorded → card stays blocked', '#f2c34e'],
+              ['No answer / call fails', 'Outcome recorded → card stays blocked', '#8fa7c0']].map(([t, d, c]) => (
+              <div key={t} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                <span style={{ width: 7, height: 7, borderRadius: 99, background: c as string, marginTop: 6, flexShrink: 0 }} />
+                <div><div style={{ color: '#dceaf8', fontSize: 12.5, fontWeight: 600 }}>{t}</div><div style={{ color: '#8299b2', fontSize: 11.5 }}>{d}</div></div>
+              </div>
+            ))}
+          </div>
+
+          <button onClick={call} disabled={calling || !blocked}
+            style={{ width: '100%', marginTop: 14, padding: '13px', borderRadius: 11, border: 'none', cursor: calling || !blocked ? 'not-allowed' : 'pointer',
+              background: !blocked ? 'rgba(105,195,130,.18)' : 'linear-gradient(135deg,#2f6bff,#1e4fd6)', color: !blocked ? '#8bd6a4' : '#fff',
+              fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, opacity: calling ? .7 : 1 }}>
+            {!blocked ? <><Unlock size={17} /> Card already unblocked</> : calling ? <><PhoneCall size={17} /> Calling customer…</> : <><PhoneCall size={17} /> Initiate AI voice call</>}
+          </button>
+          {msg && <p style={{ color: '#9fb6cf', fontSize: 12, marginTop: 10, lineHeight: 1.5 }}>{msg}</p>}
+
+          {/* Demo controls — trial Twilio cannot ring a live number; drive the real state machine */}
+          <div style={{ marginTop: 16, paddingTop: 14, borderTop: '1px dashed rgba(90,130,170,.28)' }}>
+            <div style={{ color: '#6f87a0', fontSize: 10.5, letterSpacing: '.07em', marginBottom: 9 }}>DEMO CONTROLS · SIMULATE CALL OUTCOME</div>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <button onClick={() => simulate('yes')} disabled={!blocked} style={{ flex: '1 1 120px', padding: '10px', borderRadius: 9, cursor: blocked ? 'pointer' : 'not-allowed', border: '1px solid rgba(105,195,130,.4)', background: 'rgba(105,195,130,.12)', color: '#8bd6a4', fontSize: 12.5, fontWeight: 700, opacity: blocked ? 1 : .5 }}>✓ Answers YES</button>
+              <button onClick={() => simulate('no')} disabled={!blocked} style={{ flex: '1 1 120px', padding: '10px', borderRadius: 9, cursor: blocked ? 'pointer' : 'not-allowed', border: '1px solid rgba(242,123,112,.4)', background: 'rgba(242,123,112,.12)', color: '#f49a91', fontSize: 12.5, fontWeight: 700, opacity: blocked ? 1 : .5 }}>✗ Answers NO</button>
+              <button onClick={() => simulate('noanswer')} disabled={!blocked} style={{ flex: '1 1 120px', padding: '10px', borderRadius: 9, cursor: blocked ? 'pointer' : 'not-allowed', border: '1px solid rgba(90,130,170,.35)', background: 'rgba(90,130,170,.1)', color: '#9fb6cf', fontSize: 12.5, fontWeight: 700, opacity: blocked ? 1 : .5 }}>☎ No answer</button>
+            </div>
+            <p style={{ color: '#6f87a0', fontSize: 11, marginTop: 8, lineHeight: 1.5 }}>Twilio trial can't ring a live number — these drive the same backend logic (card unblocks only on YES). The real voice call above works once the account is upgraded.</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Activity logs dropdown */}
+      <div className="panel" style={{ padding: 0, marginTop: 16, overflow: 'hidden' }}>
+        <button onClick={() => setOpen(!open)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '15px 18px', background: 'none', border: 'none', cursor: 'pointer', color: '#eaf2fb' }}>
+          <Clock size={16} color="#7fb0e8" />
+          <span style={{ fontSize: 14, fontWeight: 700 }}>Voice-call activity log</span>
+          <span style={{ font: "10px 'Space Mono'", color: '#9fb6cf', border: '1px solid rgba(90,130,170,.3)', borderRadius: 6, padding: '2px 7px' }}>{logs.length}</span>
+          <ChevronDown size={18} color="#8fa7c0" style={{ marginLeft: 'auto', transform: open ? 'rotate(180deg)' : 'none', transition: 'transform .2s' }} />
+        </button>
+        {open && (
+          <div style={{ padding: '0 18px 10px' }}>
+            {logs.length === 0 && <p style={{ color: '#7f99b3', fontSize: 13, padding: '6px 0 16px' }}>No activity yet. Initiate the AI voice call to begin.</p>}
+            {[...logs].reverse().map((l, i) => {
+              const o = OUT[l.outcome] || OUT.info; const Icon = o.Icon;
+              return (
+                <div key={i} style={{ display: 'flex', gap: 12, padding: '12px 0', borderTop: i ? '1px solid rgba(90,130,170,.12)' : 'none' }}>
+                  <div style={{ width: 30, height: 30, borderRadius: 9, flexShrink: 0, display: 'grid', placeItems: 'center', background: o.bg, color: o.c }}><Icon size={15} /></div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
+                      <strong style={{ color: '#eaf2fb', fontSize: 13 }}>{l.event}</strong>
+                      <span style={{ color: '#6f87a0', font: "11px 'Space Mono'" }}>{fmtTime(l.time)}</span>
+                    </div>
+                    {l.detail && <p style={{ color: '#8fa7c0', fontSize: 12, margin: '3px 0 0', lineHeight: 1.5 }}>{l.detail}</p>}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
 const kick = (t: string) => <div className="section-kicker" style={{ marginBottom: 6 }}>{t}</div>;
 
 // ---------------- Customer 360 ----------------

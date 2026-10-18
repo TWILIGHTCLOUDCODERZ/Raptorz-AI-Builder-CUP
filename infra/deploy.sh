@@ -22,11 +22,18 @@ AUTH_FLAG="--no-allow-unauthenticated"
 
 # Optional: mount the Gemini API key from Secret Manager (if stored via
 # infra/set-gemini-secret.sh). Otherwise the backend uses Vertex AI (ADC, no key).
-SECRET_FLAG=""
+SECRETS=""
 if gcloud secrets describe gemini-api-key --project "$PROJECT_ID" >/dev/null 2>&1; then
-  SECRET_FLAG="--set-secrets=GEMINI_API_KEY=gemini-api-key:latest"
+  SECRETS="GEMINI_API_KEY=gemini-api-key:latest"
   echo ">> Mounting Gemini API key from Secret Manager."
 fi
+# Twilio config (RM voice calls) — mount if present.
+if gcloud secrets describe twilio-config --project "$PROJECT_ID" >/dev/null 2>&1; then
+  SECRETS="${SECRETS:+$SECRETS,}TWILIO_CONFIG=twilio-config:latest"
+  echo ">> Mounting Twilio config (RM voice calls) from Secret Manager."
+fi
+SECRET_FLAG=""
+[[ -n "$SECRETS" ]] && SECRET_FLAG="--set-secrets=$SECRETS"
 
 echo ">> Deploying $SERVICE to Cloud Run (project=$PROJECT_ID region=$REGION)..."
 gcloud run deploy "$SERVICE" \

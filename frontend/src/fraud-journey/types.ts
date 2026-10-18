@@ -1,4 +1,4 @@
-// Data models for the AI Fraud Detection + Step-Up demo (Tyson scenario).
+// Data models for the AI Fraud Detection + Step-Up demo (Deepan scenario).
 // Kept separate so the UI can later be wired to real risk/OTP APIs.
 
 export type RiskLevel = 'low' | 'medium' | 'high' | 'critical';

@@ -32,6 +32,8 @@ _SEED_CUSTOMERS = {
         "confirmed_legit": [
             "Resident in Kuala Lumpur, Malaysia — usual card activity is in Kuala Lumpur",
         ],
+        "card_status": "blocked",   # RM workbench starts with the card blocked
+        "rm_logs": [],
     },
 }
 
@@ -104,6 +106,64 @@ class MemoryStore:
             except Exception as exc:  # noqa: BLE001
                 print(f"[memory] home read error: {exc}")
         return self._mem["customers"].get(customer, {}).get("home_country")
+
+    def get_card_status(self, customer: str) -> str:
+        """RM card status: 'blocked' or 'active'. Seeded 'blocked' for the demo customer."""
+        seed_default = _SEED_CUSTOMERS.get(customer, {}).get("card_status", "active")
+        if self._db:
+            try:
+                doc = self._db.collection("customers").document(customer).get()
+                if doc.exists:
+                    return doc.to_dict().get("card_status") or seed_default
+            except Exception as exc:  # noqa: BLE001
+                print(f"[memory] card_status read error: {exc}")
+        return self._mem["customers"].get(customer, {}).get("card_status") or seed_default
+
+    def set_card_status(self, customer: str, status: str) -> None:
+        if self._db:
+            try:
+                self._db.collection("customers").document(customer).set({"card_status": status}, merge=True)
+                return
+            except Exception as exc:  # noqa: BLE001
+                print(f"[memory] card_status write error: {exc}")
+        self._mem["customers"].setdefault(customer, {})["card_status"] = status
+
+    def get_rm_logs(self, customer: str) -> list[dict]:
+        if self._db:
+            try:
+                doc = self._db.collection("customers").document(customer).get()
+                if doc.exists:
+                    return doc.to_dict().get("rm_logs", [])
+            except Exception as exc:  # noqa: BLE001
+                print(f"[memory] rm_logs read error: {exc}")
+        return self._mem["customers"].get(customer, {}).get("rm_logs", [])
+
+    def append_rm_log(self, customer: str, entry: dict) -> None:
+        if self._db:
+            try:
+                from google.cloud import firestore
+
+                self._db.collection("customers").document(customer).set(
+                    {"rm_logs": firestore.ArrayUnion([entry])}, merge=True
+                )
+                return
+            except Exception as exc:  # noqa: BLE001
+                print(f"[memory] rm_log write error: {exc}")
+        self._mem["customers"].setdefault(customer, {}).setdefault("rm_logs", []).append(entry)
+
+    def reset_rm(self, customer: str) -> None:
+        """Back to the initial demo state: card blocked, no logs."""
+        if self._db:
+            try:
+                self._db.collection("customers").document(customer).set(
+                    {"card_status": "blocked", "rm_logs": []}, merge=True
+                )
+                return
+            except Exception as exc:  # noqa: BLE001
+                print(f"[memory] rm reset error: {exc}")
+        c = self._mem["customers"].setdefault(customer, {})
+        c["card_status"] = "blocked"
+        c["rm_logs"] = []
 
     def get_customer_tier(self, customer: str) -> str:
         """standard | premium | vip — drives friction/handling in the decision."""

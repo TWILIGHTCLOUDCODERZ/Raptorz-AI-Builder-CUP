@@ -51,17 +51,17 @@
 
 ---
 
-### 5 · Tyson demo · LIVE APP
-**SHOW:** Open the customer app. Click **"Run normal payment"**, then **"Run suspicious payment."**
+### 5 · Deepan demo · LIVE APP
+**SHOW:** Open the merchant site. Buy at **Earth Mart Malaysia**, then switch to **Mars Mart Singapore.**
 
 **SAY:**
-> "Here's Tyson. He's a VIP customer who lives in Dubai.
-> He pays in Dubai — Raptorz knows him, so it approves instantly. No friction.
-> Two hours later, his card is used in Italy.
-> That's impossible travel — you can't be in both places.
-> So Raptorz pauses, and asks Tyson for a one-time code.
-> Share the code — approved.
-> Don't share it in two minutes — blocked. The customer is protected."
+> "Here's Deepan. He's a VIP customer who lives in Kuala Lumpur, Malaysia.
+> He pays in Kuala Lumpur — Raptorz knows him, so it approves instantly. No friction.
+> Then his card is used for a payment from Singapore.
+> That's a cross-border anomaly away from his home country.
+> So Raptorz pauses, and sends Deepan a one-time code via Twilio.
+> Enter the right code — approved.
+> Wrong code or no response — blocked. The customer is protected."
 
 ---
 
