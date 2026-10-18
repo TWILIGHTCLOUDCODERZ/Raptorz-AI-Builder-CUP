@@ -275,18 +275,18 @@ const decColor = (d?: string) => (d === 'Blocked' ? '#ff8a93' : d === 'Approved'
 const EXAMPLE_CASES: FullCase[] = [
   {
     id: 'EX-SYD-8822', created_at: new Date(Date.now() - 120000).toISOString(),
-    transaction: { customer: 'Deepan', merchant: 'Earth Mart Australia', amount: 1799, currency: 'AUD', city: 'Sydney, Australia', country: 'AU', channel: 'Web', risk: 82 },
+    transaction: { customer: 'Deepan', merchant: 'Mars Mart Singapore', amount: 2499, currency: 'SGD', city: 'Singapore', country: 'SG', channel: 'Web', risk: 82 },
     memory_hits: ['Resident in Kuala Lumpur, Malaysia — usual card activity is in Kuala Lumpur'],
     steps: [
-      { agent: 'Orchestrator', thought: 'Routing ORD-8822: AUD 1799 at Earth Mart Australia, Sydney. Customer tier: VIP. Dispatching specialists.', evidence: ['inbound_risk=82', 'channel=Web', 'tier=vip'], status: 'done' },
+      { agent: 'Orchestrator', thought: 'Routing ORD-8822: SGD 2499 at Mars Mart Singapore. Customer tier: VIP. Dispatching specialists.', evidence: ['inbound_risk=82', 'channel=Web', 'tier=vip'], status: 'done' },
       { agent: 'Card Status', thought: 'Card is active — no stolen / lost / frozen flag.', evidence: ['card_status=active'], status: 'done' },
-      { agent: 'Step-Up Control', thought: 'Payment is outside the home country (AU vs MY) with no OTP — step-up required.', evidence: ['home_country=MY', 'otp_verified=False'], status: 'done' },
-      { agent: 'Investigator', thought: 'Impossible travel: Kuala Lumpur → Sydney within hours, on a new device and network.', evidence: ['geo_velocity=impossible', 'device=new'], status: 'done' },
+      { agent: 'Step-Up Control', thought: 'Payment is outside the home country (SG vs MY) with no OTP — step-up required.', evidence: ['home_country=MY', 'otp_verified=False'], status: 'done' },
+      { agent: 'Investigator', thought: 'Cross-border: Kuala Lumpur → Singapore on a new device and network.', evidence: ['geo=cross_border', 'device=new'], status: 'done' },
       { agent: 'Network Analyst', thought: 'No mule-ring linkage detected on this account.', evidence: ['network=clean'], status: 'done' },
       { agent: 'Intel', thought: 'No sanctions, PEP or adverse-media matches; merchant reputation acceptable.', evidence: ['sanctions=none'], status: 'done' },
       { agent: 'Critic', thought: 'Reasoning is sound — the geo mismatch is not explained by memory; block is appropriate.', evidence: ['review complete'], status: 'done' },
     ],
-    result: { decision: 'Blocked', confidence: 0.94, reason_codes: ['geo_location_mismatch', 'home_country_my', 'step_up_required', 'otp_not_received'], rationale: "Payment originated outside the customer's home country (AU vs MY) — impossible travel. Step-up required; no OTP received, so the transaction is blocked." },
+    result: { decision: 'Blocked', confidence: 0.94, reason_codes: ['geo_location_mismatch', 'home_country_my', 'step_up_required', 'otp_not_received'], rationale: "Payment originated outside the customer's home country (SG vs MY) — a cross-border anomaly. Step-up required; no OTP received, so the transaction is blocked." },
   },
   {
     id: 'EX-KL-4471', created_at: new Date(Date.now() - 300000).toISOString(),
