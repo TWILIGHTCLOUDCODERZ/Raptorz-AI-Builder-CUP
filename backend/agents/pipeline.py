@@ -182,7 +182,7 @@ def _decide(txn: Transaction, findings: list[dict], memory: list[str], card_stat
         return DecisionResult(
             decision="Blocked", confidence=0.94,
             reason_codes=["geo_location_mismatch", f"home_country_{home_country.lower()}", "step_up_required", "otp_not_received"],
-            rationale=f"Payment originated outside the customer's home country ({txn.country} vs {home_country}) — impossible travel. Auto-pay suspended and step-up required; no OTP received, so the transaction is blocked.",
+            rationale=f"Payment originated outside the customer's home country ({txn.country} vs {home_country}) — a cross-border anomaly. Step-up required; no OTP received, so the transaction is blocked.",
         )
     if MOCK:
         return _mock_decision(txn, memory, card_status, tier)

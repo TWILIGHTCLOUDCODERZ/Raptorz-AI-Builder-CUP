@@ -20,7 +20,7 @@ const DETECT = String(process.env.DETECT_LOCATION || "").toLowerCase() === "true
 // Per-location catalog: product, price and currency differ by storefront region.
 const CATALOG = {
   MY: { country: "MY", city: "Kuala Lumpur, Malaysia", risk: 18, amount: 450, currency: "MYR", symbol: "RM", item: "Aurora Wireless Headphones", merchant: "Earth Mart Malaysia" },
-  AU: { country: "AU", city: "Sydney, Australia", risk: 82, amount: 1799, currency: "AUD", symbol: "A$", item: "Apple MacBook Air", merchant: "Earth Mart Australia" },
+  SG: { country: "SG", city: "Singapore", risk: 82, amount: 2499, currency: "SGD", symbol: "S$", item: "Apple MacBook Air", merchant: "Mars Mart Singapore" },
 };
 
 app.get("/healthz", (_req, res) => res.json({ status: "ok", api: RAPTORZ_API, detect: DETECT }));

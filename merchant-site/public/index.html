@@ -73,7 +73,7 @@
 </head>
 <body>
   <header>
-    <div class="logo"><span class="dot">E</span> EARTH MART</div>
+    <div class="logo"><span class="dot" id="storeDot">E</span> <span id="storeName">EARTH MART</span></div>
     <span class="live" id="liveBadge">🛰 Live location detection</span>
     <div class="pay-by">Secure checkout by <b>Raptorz Banking Earth</b></div>
   </header>
@@ -113,17 +113,17 @@
       <div><div class="t">Malaysia · Kuala Lumpur</div><div class="s">Deepan's home region</div></div>
       <span class="tag">home</span>
     </div>
-    <div class="opt" data-mode="AU">
-      <span class="flag">🇦🇺</span>
-      <div><div class="t">Australia · Sydney</div><div class="s">Away from home</div></div>
+    <div class="opt" data-mode="SG">
+      <span class="flag">🇸🇬</span>
+      <div><div class="t">Singapore · Mars Mart</div><div class="s">Away from home</div></div>
       <span class="tag">away</span>
     </div>
   </div>
 
 <script>
   const CATALOG = {
-    MY: { symbol:"RM", amount:450, currency:"MYR", item:"Aurora Wireless Headphones", desc:"Active noise-cancelling · 40h battery · 2-year warranty.", thumb:"🎧", flag:"🇲🇾", region:"Malaysia · Kuala Lumpur", country:"MY", city:"Kuala Lumpur, Malaysia", risk:18, merchant:"Earth Mart Malaysia" },
-    AU: { symbol:"A$", amount:1799, currency:"AUD", item:'Apple MacBook Air 13"', desc:"Apple M3 chip · 16GB · 512GB SSD · 1-year warranty.", thumb:"💻", flag:"🇦🇺", region:"Australia · Sydney", country:"AU", city:"Sydney, Australia", risk:82, merchant:"Earth Mart Australia" },
+    MY: { symbol:"RM", amount:450, currency:"MYR", item:"Aurora Wireless Headphones", desc:"Active noise-cancelling · 40h battery · 2-year warranty.", thumb:"🎧", flag:"🇲🇾", region:"Malaysia · Kuala Lumpur", country:"MY", city:"Kuala Lumpur, Malaysia", risk:18, merchant:"Earth Mart Malaysia", store:"EARTH MART", dot:"E" },
+    SG: { symbol:"S$", amount:2499, currency:"SGD", item:'Apple MacBook Air 13"', desc:"Apple M3 chip · 16GB · 512GB SSD · 1-year warranty.", thumb:"💻", flag:"🇸🇬", region:"Singapore", country:"SG", city:"Singapore", risk:82, merchant:"Mars Mart Singapore", store:"MARS MART", dot:"M" },
   };
   // Fallback backend for when this page is opened as a static file (no /pay server).
   const BACKEND = "https://raptorz-bfsi-backend-282323062361.us-central1.run.app";
@@ -134,6 +134,9 @@
 
   function render() {
     const c = CATALOG[mode];
+    $("storeName").textContent = c.store;
+    $("storeDot").textContent = c.dot;
+    document.title = c.store === "MARS MART" ? "Mars Mart · Checkout" : "Earth Mart · Checkout";
     $("thumb").textContent = c.thumb;
     $("item").textContent = c.item;
     $("desc").textContent = c.desc;

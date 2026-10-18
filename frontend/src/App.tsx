@@ -390,8 +390,21 @@ function CaseDetail({ c, onNavigate }: { c: FullCase; onNavigate: (page: string)
   const decisionClass = result ? (result.decision === 'Blocked' ? 'blocked' : result.decision === 'Step-up' ? 'stepup' : result.decision === 'Held' ? 'held' : '') : '';
   const decisionHead = result ? (result.decision === 'Approved' ? 'Approve with confidence' : result.decision === 'Blocked' ? 'Block — protect customer' : result.decision === 'Step-up' ? 'Step-up verification' : 'Hold for review') : '';
   const steps = c.steps || [];
+  // play the agents one by one when a case is opened (live investigation feel)
+  const [shown, setShown] = useState(0);
+  useEffect(() => {
+    setShown(0);
+    if (!steps.length) return;
+    let i = 0;
+    const timer = setInterval(() => { i += 1; setShown(i); if (i >= steps.length) clearInterval(timer); }, 700);
+    return () => clearInterval(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [c.id]);
+  const running = shown < steps.length;
+  const visible = steps.slice(0, shown);
   return (
     <div className="investigation-panel panel">
+      <style>{`@keyframes agentIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}`}</style>
       <div className="investigation-top">
         <div>
           <div className="section-kicker blue-kicker"><span className="blue-dot" /> INVESTIGATION · {c.id}</div>
@@ -414,10 +427,10 @@ function CaseDetail({ c, onNavigate }: { c: FullCase; onNavigate: (page: string)
       {c.memory_hits && c.memory_hits.length > 0 && <div className="memory-callout"><BrainCircuit size={20} /><div><span>MEMORY RECALL</span>{c.memory_hits.map((m, i) => <p key={i}>{m}</p>)}</div><Check size={18} /></div>}
 
       {steps.length > 0 && <div className="agent-track">
-        <div className="track-head">MULTI-AGENT INVESTIGATION <span>{steps.length} agents · Gemini 3.5</span></div>
+        <div className="track-head">MULTI-AGENT INVESTIGATION <span>{running ? `${shown} / ${steps.length} agents` : `${steps.length} agents`} · Gemini 3.5</span></div>
         <div className="agent-timeline">
-          {steps.map((step, index) => { const Icon = AGENT_ICON[step.agent] || Bot; return (
-            <div className="agent-step" key={`${step.agent}-${index}`}>
+          {visible.map((step, index) => { const Icon = AGENT_ICON[step.agent] || Bot; return (
+            <div className="agent-step" key={`${step.agent}-${index}`} style={{ animation: 'agentIn .4s ease both' }}>
               <div className="agent-icon"><Icon size={16} /></div>
               <div className="agent-content">
                 <div><strong><b className="agent-num">{index + 1}</b> {step.agent}</strong><span>done</span></div>
@@ -426,12 +439,13 @@ function CaseDetail({ c, onNavigate }: { c: FullCase; onNavigate: (page: string)
               </div>
             </div>
           ); })}
+          {running && <div className="agent-step" style={{ animation: 'agentIn .4s ease both' }}><div className="agent-icon working"><Bot size={16} /></div><div className="agent-content"><div><strong>{steps[shown]?.agent || 'Agent'}</strong><span className="working">analyzing…</span></div><p>Gemini 3.5 is reasoning over the evidence…</p></div></div>}
         </div>
       </div>}
 
-      {isBlocked && <div className="block-banner"><Lock size={22} /><div><strong>CARD BLOCKED</strong><span>Customer protected · fraud case opened</span></div></div>}
+      {!running && isBlocked && <div className="block-banner"><Lock size={22} /><div><strong>CARD BLOCKED</strong><span>Customer protected · fraud case opened</span></div></div>}
 
-      {result && <div className={`decision-box ${decisionClass}`}><div><span className="section-kicker green-kicker">RAPTORZ DECISION</span><h3>{decisionHead}</h3><p>Reason codes: {result.reason_codes.map((rc, i) => <strong key={i}>{rc}{i < result.reason_codes.length - 1 ? ' · ' : ''}</strong>)}</p><p className="decision-rationale">{result.rationale}</p></div><div className="confidence">{Math.round((result.confidence || 0) * 100)}%<span>confidence</span></div></div>}
+      {!running && result && <div className={`decision-box ${decisionClass}`}><div><span className="section-kicker green-kicker">RAPTORZ DECISION</span><h3>{decisionHead}</h3><p>Reason codes: {result.reason_codes.map((rc, i) => <strong key={i}>{rc}{i < result.reason_codes.length - 1 ? ' · ' : ''}</strong>)}</p><p className="decision-rationale">{result.rationale}</p></div><div className="confidence">{Math.round((result.confidence || 0) * 100)}%<span>confidence</span></div></div>}
     </div>
   );
 }
