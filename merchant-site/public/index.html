@@ -23,6 +23,24 @@
   .live{display:none;align-items:center;gap:6px;margin-left:14px;font-size:11px;color:#7ee6a3;
     border:1px solid rgba(47,191,113,.4);background:rgba(47,191,113,.1);border-radius:999px;padding:4px 10px}
   .live.on{display:inline-flex}
+
+  .modal-bg{position:fixed;inset:0;background:rgba(5,10,20,.72);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:100;padding:16px}
+  .modal-bg.show{display:flex}
+  .modal{width:100%;max-width:400px;background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:0 30px 70px rgba(0,0,0,.6);animation:pop .25s ease}
+  .modal h3{margin:0 0 3px;font-size:17px}
+  .modal .msub{color:var(--muted);font-size:12.5px;margin-bottom:16px}
+  .tabs{display:flex;gap:8px;margin-bottom:16px}
+  .tab{flex:1;text-align:center;padding:10px;border:1px solid var(--line);border-radius:10px;cursor:pointer;font-size:13px;font-weight:700;color:var(--muted);background:rgba(255,255,255,.02)}
+  .tab.on{border-color:var(--blue);background:rgba(47,107,255,.14);color:#fff}
+  .field{margin-bottom:12px}
+  .field label{display:block;font-size:11px;color:var(--muted);margin-bottom:5px;letter-spacing:.04em}
+  .field input{width:100%;padding:12px 13px;border-radius:10px;border:1px solid var(--line);background:#0b1626;color:var(--ink);font-size:14px;font-family:ui-monospace,monospace}
+  .field input:focus{outline:0;border-color:var(--blue)}
+  .row2{display:flex;gap:12px}
+  .modal .cancel{width:100%;margin-top:8px;background:none;border:0;color:var(--muted);cursor:pointer;font-size:12px;padding:6px}
+  .otp-note{font-size:12px;color:var(--muted);line-height:1.55;margin-bottom:12px}
+  .otp-timer{float:right;font-family:ui-monospace,monospace;font-weight:700;color:var(--gold)}
+  .demo-otp{font-family:ui-monospace,monospace;color:#7ee6a3;font-weight:700;letter-spacing:2px}
   .wrap{max-width:960px;margin:28px auto;padding:0 18px;display:grid;grid-template-columns:1.3fr 1fr;gap:20px}
   @media(max-width:780px){.wrap{grid-template-columns:1fr}}
   .card{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:16px;padding:20px}
@@ -120,6 +138,8 @@
     </div>
   </div>
 
+  <div class="modal-bg" id="modalBg"><div class="modal" id="modal"></div></div>
+
 <script>
   const CATALOG = {
     MY: { symbol:"RM", amount:450, currency:"MYR", item:"Aurora Wireless Headphones", desc:"Active noise-cancelling · 40h battery · 2-year warranty.", thumb:"🎧", flag:"🇲🇾", region:"Malaysia · Kuala Lumpur", country:"MY", city:"Kuala Lumpur, Malaysia", risk:18, merchant:"Earth Mart Malaysia", store:"EARTH MART", dot:"E" },
@@ -160,39 +180,81 @@
     opt.classList.add("sel"); mode = opt.dataset.mode; render(); panel.classList.remove("show");
   });
 
-  const btn = $("payBtn"), result = $("result");
-  btn.addEventListener("click", async () => {
-    btn.disabled = true; btn.textContent = "Contacting Raptorz Banking Earth…";
-    result.className = "result";
-    try {
-      let d;
-      if (SERVED) {
-        const r = await fetch("/pay", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ mode }) });
-        d = await r.json();
-      } else {
-        // static preview (file:// or data:) — call the Raptorz backend directly (toggle only)
-        const c = CATALOG[mode];
-        const txn = { id: "ORD-" + Math.random().toString(36).slice(2, 8).toUpperCase(), customer: "Deepan", card: "1234", amount: c.amount, currency: c.currency || "USD", merchant: c.merchant, city: c.city, country: c.country, channel: "Web", risk: c.risk, auto_pay: false, otp_verified: null };
-        const r = await fetch(BACKEND + "/investigate", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(txn) });
-        const data = await r.json();
-        const res = data.result || {};
-        d = { decision: res.decision, reason_codes: res.reason_codes, rationale: res.rationale, detected_country: (data.transaction || {}).country };
-      }
-      const approved = d.decision === "Approved";
-      result.classList.add("show", approved ? "ok" : "block");
-      result.innerHTML =
-        '<div class="rh">' + (approved ? "✓ Payment approved" : "✕ Payment blocked") + "</div>" +
-        '<div class="rb">' + (d.rationale || "") +
-        (approved ? "" : "<br/><b>Step-up required</b> — verify this payment in your Raptorz Banking Earth app (one-time passcode).") +
-        "</div>" +
-        '<div class="codes">' + (d.reason_codes || []).map(c => "<span>" + c + "</span>").join("") + "</div>";
-    } catch (err) {
-      result.classList.add("show", "block");
-      result.innerHTML = '<div class="rh">✕ Checkout error</div><div class="rb">' + err.message + "</div>";
-    } finally {
-      btn.disabled = false; btn.textContent = "Pay " + fmt(CATALOG[mode]);
-    }
-  });
+  // ---------- checkout: card / UPI + OTP step-up ----------
+  const result = $("result");
+  const modalBg = $("modalBg"), modalEl = $("modal");
+  let payMethod = "card", otpTimer = null;
+  const closeModal = () => { modalBg.classList.remove("show"); if (otpTimer) clearInterval(otpTimer); };
+  modalBg.addEventListener("click", (e) => { if (e.target === modalBg) closeModal(); });
+
+  async function post(url, body) {
+    if (SERVED) { const r = await fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) }); return r.json(); }
+    // static-file fallback: call the backend directly (no OTP server available)
+    const c = CATALOG[mode];
+    const txn = { id: "ORD-" + Math.random().toString(36).slice(2, 8).toUpperCase(), customer: "Deepan", card: "1234", amount: c.amount, currency: c.currency, merchant: c.merchant, city: c.city, country: c.country, channel: "Web", risk: c.risk, auto_pay: mode === "MY", otp_verified: mode === "MY" ? true : null };
+    const r = await fetch(BACKEND + "/investigate", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(txn) });
+    const data = await r.json(); const res = data.result || {};
+    return { needsOtp: false, decision: res.decision, reason_codes: res.reason_codes, rationale: res.rationale };
+  }
+
+  function renderMethod() {
+    const c = CATALOG[mode];
+    modalEl.innerHTML =
+      '<h3>Pay ' + fmt(c) + '</h3><div class="msub">' + c.merchant + ' · ' + c.item + '</div>' +
+      '<div class="tabs"><div class="tab ' + (payMethod === "card" ? "on" : "") + '" data-m="card">💳 Card</div><div class="tab ' + (payMethod === "upi" ? "on" : "") + '" data-m="upi">🔗 UPI</div></div>' +
+      (payMethod === "card"
+        ? '<div class="field"><label>CARD NUMBER</label><input id="pcard" inputmode="numeric" placeholder="4242 4242 4242 1234" maxlength="19"/></div><div class="row2"><div class="field" style="flex:1"><label>EXPIRY</label><input id="pexp" placeholder="MM/YY" maxlength="5"/></div><div class="field" style="flex:1"><label>CVV</label><input id="pcvv" inputmode="numeric" placeholder="•••" maxlength="4"/></div></div>'
+        : '<div class="field"><label>UPI ID</label><input id="pupi" placeholder="deepan@okicici"/></div>') +
+      '<button class="pay" id="doPay">Pay ' + fmt(c) + '</button><button class="cancel" id="mCancel">Cancel</button>';
+    modalEl.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => { payMethod = t.dataset.m; renderMethod(); }));
+    $("mCancel").addEventListener("click", closeModal);
+    $("doPay").addEventListener("click", submitPay);
+    const ci = $("pcard"); if (ci) ci.addEventListener("input", () => { ci.value = ci.value.replace(/[^0-9]/g, "").replace(/(.{4})/g, "$1 ").trim(); });
+    const ei = $("pexp"); if (ei) ei.addEventListener("input", () => { let v = ei.value.replace(/[^0-9]/g, ""); ei.value = v.length >= 3 ? v.slice(0, 2) + "/" + v.slice(2, 4) : v; });
+  }
+
+  async function submitPay() {
+    const b = $("doPay"); b.disabled = true; b.textContent = "Contacting Raptorz…";
+    try { const d = await post("/pay", { mode, method: payMethod }); if (d.needsOtp) startOtp(d); else showResult(d); }
+    catch (e) { showResult({ decision: "Error", rationale: e.message }); }
+  }
+
+  function startOtp(d) {
+    let left = d.ttl || 60; const c = CATALOG[mode];
+    const demo = d.demoOtp ? '<div class="otp-note">Demo code: <span class="demo-otp">' + d.demoOtp + '</span></div>' : '';
+    modalEl.innerHTML =
+      '<h3>Verify it’s you <span class="otp-timer" id="otpTimer">0:' + String(left).padStart(2, "0") + '</span></h3>' +
+      '<div class="msub">' + c.merchant + ' · ' + fmt(c) + '</div>' +
+      '<div class="otp-note">Auto-pay is off for this store, so Raptorz sent a one-time passcode to <b>' + (d.maskedTo || "your mobile") + '</b>. ' + (d.note || "") + '</div>' + demo +
+      '<div class="field"><label>ENTER OTP</label><input id="potp" inputmode="numeric" placeholder="6-digit code" maxlength="6"/></div>' +
+      '<button class="pay" id="doVerify">Verify &amp; pay</button><button class="cancel" id="mCancel2">Cancel</button>';
+    $("mCancel2").addEventListener("click", closeModal);
+    $("doVerify").addEventListener("click", () => verifyOtp(d.order, false));
+    const t = $("otpTimer");
+    otpTimer = setInterval(() => { left -= 1; if (t) t.textContent = "0:" + String(Math.max(0, left)).padStart(2, "0"); if (left <= 0) { clearInterval(otpTimer); verifyOtp(d.order, true); } }, 1000);
+  }
+
+  async function verifyOtp(order, timeout) {
+    if (otpTimer) clearInterval(otpTimer);
+    const vb = $("doVerify"); if (vb) { vb.disabled = true; vb.textContent = "Verifying…"; }
+    try { const d = await post("/verify-otp", { orderId: order, otp: timeout ? "" : ($("potp") ? $("potp").value : "") }); showResult(d); }
+    catch (e) { showResult({ decision: "Error", rationale: e.message }); }
+  }
+
+  function showResult(d) {
+    const approved = d.decision === "Approved";
+    const codes = (d.reason_codes || []).map(x => '<span>' + x + '</span>').join("");
+    modalEl.innerHTML =
+      '<div style="font-size:19px;font-weight:800;color:' + (approved ? "#7ee6a3" : "#ff8a93") + '">' + (approved ? "✓ Payment approved" : "✕ Payment blocked") + '</div>' +
+      '<div style="font-size:13px;color:var(--muted);margin-top:8px;line-height:1.55">' + (d.rationale || "") + '</div>' +
+      '<div class="codes" style="margin-top:10px">' + codes + '</div>' +
+      '<button class="pay" id="mDone" style="margin-top:16px;background:' + (approved ? "linear-gradient(135deg,#2fbf71,#1f9d5a)" : "linear-gradient(135deg,#ef4e5b,#c53241)") + '">Done</button>';
+    $("mDone").addEventListener("click", closeModal);
+    result.className = "result show " + (approved ? "ok" : "block");
+    result.innerHTML = '<div class="rh">' + (approved ? "✓ Payment approved" : "✕ Payment blocked") + '</div><div class="rb">' + (d.rationale || "") + '</div><div class="codes">' + codes + '</div>';
+  }
+
+  $("payBtn").addEventListener("click", () => { payMethod = "card"; renderMethod(); modalBg.classList.add("show"); });
 
   render();
 

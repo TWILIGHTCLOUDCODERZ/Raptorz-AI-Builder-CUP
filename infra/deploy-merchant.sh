@@ -22,14 +22,23 @@ if [[ -z "$RAPTORZ_API" ]]; then
   echo "ERROR: could not find the backend URL. Set RAPTORZ_API=https://<backend>.run.app" >&2; exit 1
 fi
 
+# Mount the Twilio config (OTP sending) from Secret Manager if it exists.
+SECRET_FLAG=""
+if gcloud secrets describe twilio-config --project "$PROJECT_ID" >/dev/null 2>&1; then
+  SECRET_FLAG="--set-secrets=TWILIO_CONFIG=twilio-config:latest"
+  echo ">> Mounting Twilio config from Secret Manager."
+fi
+
 echo ">> Deploying $SERVICE (merchant site) -> Raptorz API: $RAPTORZ_API"
 gcloud run deploy "$SERVICE" \
   --source ./merchant-site \
   --project "$PROJECT_ID" \
   --region "$REGION" \
   --allow-unauthenticated \
+  --service-account "raptorz-runtime@${PROJECT_ID}.iam.gserviceaccount.com" \
   --set-env-vars "RAPTORZ_API=${RAPTORZ_API}" \
-  --cpu 1 --memory 256Mi --min-instances 0 --max-instances 3 --timeout 60
+  $SECRET_FLAG \
+  --cpu 1 --memory 256Mi --min-instances 0 --max-instances 3 --timeout 90
 
 URL="$(gcloud run services describe "$SERVICE" --project "$PROJECT_ID" --region "$REGION" --format='value(status.url)')"
 echo ""
