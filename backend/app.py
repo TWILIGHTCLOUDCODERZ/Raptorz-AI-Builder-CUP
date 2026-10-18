@@ -46,23 +46,6 @@ def healthz() -> dict:
     return {"status": "ok", "mock_mode": os.getenv("RAPTORZ_MOCK", "").lower() == "true" or not os.getenv("GOOGLE_CLOUD_PROJECT")}
 
 
-@app.get("/analytics/summary")
-def analytics_summary() -> dict:
-    """Decision analytics — from BigQuery when configured, else computed from the store."""
-    from analytics import bq
-
-    bq_summary = bq.summary()
-    if bq_summary:
-        return bq_summary
-    cases = store.list_cases()
-    counts: dict[str, int] = {}
-    for c in cases:
-        decision = ((c.get("result") or {}).get("decision")) or "Unknown"
-        counts[decision] = counts.get(decision, 0) + 1
-    by_decision = [{"decision": k, "n": v} for k, v in sorted(counts.items(), key=lambda kv: -kv[1])]
-    return {"source": "store", "total": len(cases), "by_decision": by_decision, "bigquery_enabled": bq.enabled()}
-
-
 @app.get("/cases")
 def list_cases(limit: int = 20) -> list[dict]:
     """Recent investigation cases (newest first) for the analyst console feed."""

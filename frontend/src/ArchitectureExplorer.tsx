@@ -14,9 +14,8 @@ const SERVICES: Svc[] = [
   { id: 'firestore', name: 'Firestore · Memory',           tag: 'Memory',       detail: 'Customer memory (confirmed-legit, tier), cases, agent steps and the live audit trail streamed to the console.', x: 21.6, y: 57.5, w: 46,   h: 5 },
   { id: 'decision',  name: 'Adaptive Decision',            tag: '6 · Policy',   detail: 'Orchestrator output — Approve / Step-up / Hold / Block. Enforces the home-country geo gate (impossible travel), stolen-card hard block and auto-pay/OTP step-up, with reason codes, confidence and evidence.', x: 71,   y: 15.6, w: 26.4, h: 47.9 },
   { id: 'firebase',  name: 'Firebase Authentication',      tag: 'Auth',         detail: 'Sign-in / sign-up (email-password + Google), security rules and guest mode.', x: 2.6,  y: 38.1, w: 16.3, h: 24.4 },
-  { id: 'stepup',    name: 'Step-Up · Mobile / Email OTP',  tag: '7 · Verify',   detail: 'Auto-pay disabled → Mobile or Email OTP → verify or block. Verify the customer instead of declining them.', x: 20.2, y: 66.4, w: 16.3, h: 19.5 },
-  { id: 'rm',        name: 'RM Alert + Investigation',     tag: 'Analyst',      detail: 'AI explanation for the relationship manager: risk, reasons and an auto-created fraud case.', x: 37.8, y: 66.4, w: 16.3, h: 19.5 },
-  { id: 'bigquery',  name: 'BigQuery · Analytics',         tag: 'Analytics',    detail: 'Every decision is streamed to BigQuery; GET /analytics/summary powers the risk/fraud dashboard.', x: 55.3, y: 66.4, w: 13.7, h: 19.5 },
+  { id: 'stepup',    name: 'Step-Up · Mobile / Email OTP',  tag: '7 · Verify',   detail: 'Auto-pay disabled → Mobile or Email OTP → verify or block. Verify the customer instead of declining them.', x: 20.2, y: 66.4, w: 20.8, h: 19.5 },
+  { id: 'rm',        name: 'RM Alert + Investigation',     tag: 'Analyst',      detail: 'AI explanation for the relationship manager: risk, reasons and an auto-created fraud case.', x: 43.6, y: 66.4, w: 20.8, h: 19.5 },
   { id: 'frontend',  name: 'Frontend Console · Cloud Run', tag: '9 · Console',  detail: 'Analyst console with the live Investigations feed, agent step trace and dashboards via Firestore / SSE.', x: 71,   y: 66.4, w: 26.4, h: 19.5 },
 ];
 

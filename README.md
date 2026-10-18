@@ -124,7 +124,6 @@ project/
 | **Cloud Run** | Hosts the backend agent service and the static frontend (scales to zero) |
 | **Pub/Sub** | Event backbone — transactions stream in and wake the router |
 | **Firestore** | Customer memory (confirmed-legit, tier), cases, live agent-step streaming |
-| **BigQuery** | Decision analytics warehouse — every case is streamed to `raptorz.decisions`; `GET /analytics/summary` queries it (fraud/risk breakdown by outcome) |
 | **Secret Manager** | Firebase web config **and the Gemini API key** — single source of truth, injected at build/runtime |
 | **Cloud Build + Artifact Registry** | Builds and stores container images on every deploy |
 | **Model Armor** | Prompt-injection / PII guardrails around the Gemini calls |
@@ -261,11 +260,6 @@ All scripts build **from source via Cloud Build** — no local Docker needed. Ru
 ```bash
 export PROJECT_ID=<your-project-id>
 bash infra/setup.sh
-```
-
-**Step 1b — provision BigQuery analytics.** Creates the `raptorz.decisions` dataset/table and grants the runtime service account access. Raptorz then streams every decision there, and `GET /analytics/summary` queries it:
-```bash
-PROJECT_ID=$PROJECT_ID bash infra/setup-bigquery.sh
 ```
 
 **Step 2 — store the Gemini API key in Secret Manager.** Skip this to use Vertex AI via the runtime service account (no key). To use a Gemini API key instead — stored in Secret Manager and mounted to Cloud Run at runtime:
