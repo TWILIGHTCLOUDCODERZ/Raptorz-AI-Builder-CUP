@@ -10,7 +10,7 @@ Raptorz Banking Earth doesn't just detect fraud — it *investigates*, *verifies
 
 `Gemini 3.5` · `Google ADK` · `Vertex AI` · `Cloud Run` · `Pub/Sub` · `Firestore` · `Secret Manager` · `Twilio (Verify + Voice)` · `Firebase Auth` · `React + TypeScript`
 
-**[▶ Live demo](https://raptorz-bfsi-frontend-gehlmzbhuq-uc.a.run.app/#)**  ·  **[▶ Demo video (YouTube)](https://youtu.be/lzjEZpbEk8Y)**  ·  **[◆ GitHub repo](https://github.com/TWILIGHTCLOUDCODERZ/Raptorz-AI-Builder-CUP)**
+**[▶ Live demo](https://raptorz-bfsi-frontend-282323062361.us-central1.run.app/)**  ·  **[🛒 Merchant demo — Earth Mart](https://earth-mart-282323062361.us-central1.run.app/)**  ·  **[▶ Demo video (YouTube)](https://youtu.be/EpZ7wcHDIKU)**  ·  **[◆ GitHub repo](https://github.com/TWILIGHTCLOUDCODERZ/Raptorz-AI-Builder-CUP)**
 
 Jump to: [Run it locally](#run-it-locally) · [Deploy to Google Cloud](#deploy-to-google-cloud--detailed-steps)
 
@@ -353,7 +353,7 @@ Raptorz reframes fraud defense from *"block anything suspicious"* to *"verify th
 
 ## Creator
 
-**Deepan** — Cloud Architect · [deepantechnoids.github.io](https://deepantechnoids.github.io/)
+**Team Raptorz** · Deepanraj Vellingiri — Cloud Architect · [github.com/TWILIGHTCLOUDCODERZ/Raptorz-AI-Builder-CUP](https://github.com/TWILIGHTCLOUDCODERZ/Raptorz-AI-Builder-CUP.git)
 
 ## Disclaimer
 
