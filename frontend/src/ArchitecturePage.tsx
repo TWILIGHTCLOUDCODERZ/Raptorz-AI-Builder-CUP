@@ -70,7 +70,7 @@ export default function ArchitecturePage() {
         <div style={{ position: 'absolute', top: -40, left: -30, width: 220, height: 220, borderRadius: '50%', background: 'radial-gradient(circle, rgba(66,133,244,.18), transparent 70%)', pointerEvents: 'none' }} />
         <div className="eyebrow" style={{ marginBottom: 12 }}><span className="pulse-small" /> SYSTEM VIEW · GOOGLE CLOUD</div>
         <h1 style={{ fontSize: 'clamp(30px,5vw,46px)', fontWeight: 900, letterSpacing: '-.035em', lineHeight: 1.04, margin: 0, background: 'linear-gradient(105deg,#7fb0ff 0%,#a78bfa 46%,#5da0ff 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-          Aegis Architecture
+          Raptorz Architecture
         </h1>
         <p style={{ color: '#8ba3bb', fontSize: 14, marginTop: 12, maxWidth: 660, lineHeight: 1.6 }}>
           Two-speed decisioning · a multi-agent fleet on <b style={{ color: '#bcd6ff' }}>Gemini 3.5</b> · step-up &amp; RM alerts · hosted end-to-end on <b style={{ color: '#bcd6ff' }}>Google Cloud</b>.
@@ -152,7 +152,7 @@ export default function ArchitecturePage() {
           </div>
           <div style={{ ...SUB, padding: '10px 12px', marginTop: 8 }}>
             <div style={{ display: 'flex', gap: 6, alignItems: 'center', color: '#dce9f4', fontSize: 12, fontWeight: 700 }}><FolderOpen size={14} style={{ color: '#b79cf7' }} /> Fraud Investigation Case Created</div>
-            <div style={{ color: '#8ba3bb', fontSize: 10.5, marginTop: 5 }}>Case ID: AEGIS-2026-00421 · Status: Open · Priority: Critical · Evidence: cross-country 2h, new device/network, behaviour mismatch, new merchant</div>
+            <div style={{ color: '#8ba3bb', fontSize: 10.5, marginTop: 5 }}>Case ID: RAPTORZ-2026-00421 · Status: Open · Priority: Critical · Evidence: cross-country 2h, new device/network, behaviour mismatch, new merchant</div>
           </div>
         </Zone>
         <Down />

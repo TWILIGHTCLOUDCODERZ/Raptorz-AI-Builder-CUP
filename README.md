@@ -1,16 +1,16 @@
 <div align="center">
 
-<img src="frontend/public/Aegis_Logo.png" alt="Aegis" width="96" />
+<img src="frontend/public/Raptorz_Logo.png" alt="Raptorz" width="96" />
 
-# Aegis — AI Fraud Intelligence
+# Raptorz — AI Fraud Intelligence
 
 **Autonomous, real-time fraud & financial-crime defense on Gemini + Google Cloud.**
 
-Aegis doesn't just detect fraud — it *investigates*, *verifies the customer*, and blocks only when it must.
+Raptorz doesn't just detect fraud — it *investigates*, *verifies the customer*, and blocks only when it must.
 
 `Gemini 3.5` · `Google ADK` · `Cloud Run` · `Pub/Sub` · `Firestore` · `Secret Manager` · `Firebase Auth` · `React + TypeScript`
 
-**[▶ Live demo](https://aegis-frontend-gehlmzbhuq-uc.a.run.app/#)**  ·  **[▶ Demo video (YouTube)](https://youtu.be/lzjEZpbEk8Y)**  ·  **[◆ GitHub repo](https://github.com/TWILIGHTCLOUDCODERZ/Aegis-Agentic-Google-Hackathon)**
+**[▶ Live demo](https://raptorz-bfsi-frontend-gehlmzbhuq-uc.a.run.app/#)**  ·  **[▶ Demo video (YouTube)](https://youtu.be/lzjEZpbEk8Y)**  ·  **[◆ GitHub repo](https://github.com/TWILIGHTCLOUDCODERZ/Raptorz-AI-Builder-CUP)**
 
 Jump to: [Run it locally](#run-it-locally) · [Deploy to Google Cloud](#deploy-to-google-cloud--detailed-steps)
 
@@ -18,15 +18,15 @@ Jump to: [Run it locally](#run-it-locally) · [Deploy to Google Cloud](#deploy-t
 
 ---
 
-## What is Aegis?
+## What is Raptorz?
 
-Traditional rule engines ask *"is this transaction suspicious?"* — Aegis asks *"does this match the customer's normal identity, device, location and behaviour?"* If not, it **verifies the customer** (step-up OTP) instead of blocking them, and only hard-blocks confirmed fraud (e.g. a reported-stolen card).
+Traditional rule engines ask *"is this transaction suspicious?"* — Raptorz asks *"does this match the customer's normal identity, device, location and behaviour?"* If not, it **verifies the customer** (step-up OTP) instead of blocking them, and only hard-blocks confirmed fraud (e.g. a reported-stolen card).
 
 A **multi-agent system on Gemini 3.5** runs the investigation: an Orchestrator delegates to specialist agents (Card Status, Step-Up Control, Investigator, Network, Intel, Compliance, Critic), each reasoning over evidence, then a memory- and policy-aware adaptive decision — with a relationship-manager alert and an AI-drafted case for high/critical risk.
 
 ### Agent orchestration — built on Google's agent stack (ADK + Gemini 3.5)
 
-Aegis runs its reasoning agents on the **Google Agent Development Kit (ADK)** with Gemini 3.5 — Google's open-source agent framework — orchestrated by a transparent pipeline that keeps bank policy in code:
+Raptorz runs its reasoning agents on the **Google Agent Development Kit (ADK)** with Gemini 3.5 — Google's open-source agent framework — orchestrated by a transparent pipeline that keeps bank policy in code:
 
 - An **Orchestrator** receives the transaction and fans out to purpose-built specialist agents.
 - Each **specialist** is a Google ADK **`LlmAgent`** on Gemini 3.5 with a dedicated role and prompt — Investigator, Network Analyst, Intel, Compliance, Critic — and the **adaptive-decision** agent emits **structured (JSON) output** (`output_schema=DecisionResult`).
@@ -34,7 +34,7 @@ Aegis runs its reasoning agents on the **Google Agent Development Kit (ADK)** wi
 - Deterministic **policy gates** (stolen-card hard block, auto-pay + OTP step-up, VIP handling) and **customer memory** stay in code — ADK does the reasoning; policy is enforced, never delegated to the model.
 - Every agent step **streams live** to the analyst console over Server-Sent Events (SSE), tagged with the engine that produced it (`engine=adk`).
 
-The full pipeline is in [`backend/agents/pipeline.py`](backend/agents/pipeline.py) and the ADK layer in [`backend/agents/adk_agents.py`](backend/agents/adk_agents.py). It degrades gracefully: if ADK is unavailable it falls back to the **Google GenAI SDK** (`google-genai`), and a deterministic **offline mode** (`AEGIS_OFFLINE=true`) runs with no cloud calls — useful for demos, tests and the eval benchmark. (Set `AEGIS_USE_ADK=false` to force the SDK path.)
+The full pipeline is in [`backend/agents/pipeline.py`](backend/agents/pipeline.py) and the ADK layer in [`backend/agents/adk_agents.py`](backend/agents/adk_agents.py). It degrades gracefully: if ADK is unavailable it falls back to the **Google GenAI SDK** (`google-genai`), and a deterministic **offline mode** (`RAPTORZ_OFFLINE=true`) runs with no cloud calls — useful for demos, tests and the eval benchmark. (Set `RAPTORZ_USE_ADK=false` to force the SDK path.)
 
 ## Scope
 
@@ -47,7 +47,7 @@ The full pipeline is in [`backend/agents/pipeline.py`](backend/agents/pipeline.p
 
 ## Solution
 
-Aegis runs a **two-speed architecture**:
+Raptorz runs a **two-speed architecture**:
 
 1. **Fast path (milliseconds)** — a rules + Gemini Flash pre-filter clears the ~90% of benign traffic and makes the instant allow / decline / step-up call.
 2. **Deep path (seconds, async)** — only genuinely suspicious transactions wake a **multi-agent investigation on Gemini 3.5**. An Orchestrator delegates to seven specialist agents, weighs **customer memory** (confirmed-legit patterns), applies **policy gates** (stolen-card hard block, auto-pay + OTP, VIP handling), and returns an adaptive decision with reason codes, a confidence score and an evidence summary.
@@ -56,7 +56,7 @@ For high/critical risk it **disables auto-pay, requests OTP, and alerts the rela
 
 ## Reference architecture
 
-![Aegis architecture](frontend/public/architecture-diagram.png)
+![Raptorz architecture](frontend/public/architecture-diagram.png)
 
 The **risk engine / policy makes the decision** — generative AI is used only for investigation summaries and explanations, never to authorize the payment.
 
@@ -64,13 +64,13 @@ The **risk engine / policy makes the decision** — generative AI is used only f
 
 ![Tyson case flow](frontend/public/tyson-flow.png)
 
-A normal Dubai purchase auto-approves (risk 18). Two hours later the same card is used in Italy — new device, new network, behaviour mismatch → risk 82. Instead of blocking, Aegis **disables auto-pay, requests OTP, and alerts RM Tessa**. Verify → approve; no OTP → block. A reported-stolen card in a new country → risk 97 → **hard block + fraud case** (OTP cannot override a stolen card).
+A normal Dubai purchase auto-approves (risk 18). Two hours later the same card is used in Italy — new device, new network, behaviour mismatch → risk 82. Instead of blocking, Raptorz **disables auto-pay, requests OTP, and alerts RM Tessa**. Verify → approve; no OTP → block. A reported-stolen card in a new country → risk 97 → **hard block + fraud case** (OTP cannot override a stolen card).
 
 ## Results — measured on a synthetic benchmark
 
-Aegis's real decision policy vs. a traditional rules-only engine, over **276 labeled transactions** (`backend/eval/evaluate.py`):
+Raptorz's real decision policy vs. a traditional rules-only engine, over **276 labeled transactions** (`backend/eval/evaluate.py`):
 
-| Metric | Rules-only | **Aegis** |
+| Metric | Rules-only | **Raptorz** |
 |---|---|---|
 | Fraud caught (recall) | 12.7% | **95.2%** |
 | Hard false-decline rate | 39.0% | **3.8%** |
@@ -111,7 +111,7 @@ project/
 ├── backend/      # FastAPI + Google ADK + Gemini 3.5 — multi-agent investigation
 ├── infra/        # GCP setup + Cloud Run deploy scripts + Secret Manager
 ├── simulator/    # Pub/Sub transaction publisher
-└── AEGIS-ROADMAP.md
+└── RAPTORZ-ROADMAP.md
 ```
 
 ## Google Cloud services
@@ -124,7 +124,7 @@ project/
 | **Cloud Run** | Hosts the backend agent service and the static frontend (scales to zero) |
 | **Pub/Sub** | Event backbone — transactions stream in and wake the router |
 | **Firestore** | Customer memory (confirmed-legit, tier), cases, live agent-step streaming |
-| **BigQuery** | Decision analytics warehouse — every case is streamed to `aegis.decisions`; `GET /analytics/summary` queries it (fraud/risk breakdown by outcome) |
+| **BigQuery** | Decision analytics warehouse — every case is streamed to `raptorz.decisions`; `GET /analytics/summary` queries it (fraud/risk breakdown by outcome) |
 | **Secret Manager** | Firebase web config **and the Gemini API key** — single source of truth, injected at build/runtime |
 | **Cloud Build + Artifact Registry** | Builds and stores container images on every deploy |
 | **Model Armor** | Prompt-injection / PII guardrails around the Gemini calls |
@@ -135,14 +135,14 @@ project/
 
 ## Deployed on Google Cloud
 
-Aegis is **live on Google Cloud** — project `ultra-mediator-506312-t2`, region `us-central1`. Verified from Cloud Shell:
+Raptorz is **live on Google Cloud** — project `ultra-mediator-506312-t2`, region `us-central1`. Verified from Cloud Shell:
 
 **Cloud Run — two services serving:**
 
 | Service | URL |
 |---|---|
-| `aegis-backend` | https://aegis-backend-282323062361.us-central1.run.app |
-| `aegis-frontend` | https://aegis-frontend-282323062361.us-central1.run.app |
+| `raptorz-bfsi-backend` | https://raptorz-bfsi-backend-282323062361.us-central1.run.app |
+| `raptorz-bfsi-frontend` | https://raptorz-bfsi-frontend-282323062361.us-central1.run.app |
 
 - **Pub/Sub topics:** `transactions` · `transactions-dead-letter`
 - **Firestore:** `(default)` database · `us-central1` · Native mode
@@ -157,8 +157,8 @@ $ gcloud config set project ultra-mediator-506312-t2
 
 $ gcloud run services list --platform managed --format="table(SERVICE,REGION,URL)"
 SERVICE         REGION       URL
-aegis-backend   us-central1  https://aegis-backend-282323062361.us-central1.run.app
-aegis-frontend  us-central1  https://aegis-frontend-282323062361.us-central1.run.app
+raptorz-bfsi-backend   us-central1  https://raptorz-bfsi-backend-282323062361.us-central1.run.app
+raptorz-bfsi-frontend  us-central1  https://raptorz-bfsi-frontend-282323062361.us-central1.run.app
 
 $ gcloud pubsub topics list
 projects/ultra-mediator-506312-t2/topics/transactions-dead-letter
@@ -189,7 +189,7 @@ logging.googleapis.com             # Cloud Logging
 
 ### Console screenshots — proof of deployment
 
-**Cloud Run — `aegis-backend` + `aegis-frontend` serving in `us-central1`:**
+**Cloud Run — `raptorz-bfsi-backend` + `raptorz-bfsi-frontend` serving in `us-central1`:**
 
 ![Cloud Run services on Google Cloud](docs/cloud-run.png)
 
@@ -211,8 +211,8 @@ logging.googleapis.com             # Cloud Logging
 
 ### 0) Get the code
 ```bash
-git clone https://github.com/TWILIGHTCLOUDCODERZ/Aegis-Agentic-Google-Hackathon.git
-cd Aegis-Agentic-Google-Hackathon
+git clone https://github.com/TWILIGHTCLOUDCODERZ/Raptorz-AI-Builder-CUP.git
+cd Raptorz-AI-Builder-CUP
 ```
 
 ### 1) Frontend (talks to the deployed backend by default)
@@ -242,12 +242,12 @@ Open **http://localhost:5173** → sign in with Firebase, or **continue as guest
 cd backend
 pip install -r requirements.txt
 # PowerShell:
-$env:AEGIS_OFFLINE="true"; uvicorn app:app --reload --port 8080
+$env:RAPTORZ_OFFLINE="true"; uvicorn app:app --reload --port 8080
 # bash:
-AEGIS_OFFLINE=true uvicorn app:app --reload --port 8080
+RAPTORZ_OFFLINE=true uvicorn app:app --reload --port 8080
 ```
 Point the frontend at it by setting `VITE_API_URL=http://localhost:8080` in `frontend/.env`, then restart `npm run dev`.
-To run against **live Gemini** locally: `gcloud auth application-default login`, drop `AEGIS_OFFLINE`, and set `GOOGLE_CLOUD_PROJECT` / `GOOGLE_CLOUD_LOCATION=global` / `GEMINI_MODEL=gemini-3.5-flash`.
+To run against **live Gemini** locally: `gcloud auth application-default login`, drop `RAPTORZ_OFFLINE`, and set `GOOGLE_CLOUD_PROJECT` / `GOOGLE_CLOUD_LOCATION=global` / `GEMINI_MODEL=gemini-3.5-flash`.
 
 ---
 
@@ -257,13 +257,13 @@ All scripts build **from source via Cloud Build** — no local Docker needed. Ru
 
 **Step 0 — one-time in the Cloud Console:** create a project, link a billing account, and note the `PROJECT_ID`.
 
-**Step 1 — provision the project.** Enables the APIs and creates Firestore, Pub/Sub topics, the Storage bucket, the Artifact Registry repo, and the least-privilege service accounts (`aegis-runtime`, `aegis-sim`):
+**Step 1 — provision the project.** Enables the APIs and creates Firestore, Pub/Sub topics, the Storage bucket, the Artifact Registry repo, and the least-privilege service accounts (`raptorz-runtime`, `raptorz-sim`):
 ```bash
 export PROJECT_ID=<your-project-id>
 bash infra/setup.sh
 ```
 
-**Step 1b — provision BigQuery analytics.** Creates the `aegis.decisions` dataset/table and grants the runtime service account access. Aegis then streams every decision there, and `GET /analytics/summary` queries it:
+**Step 1b — provision BigQuery analytics.** Creates the `raptorz.decisions` dataset/table and grants the runtime service account access. Raptorz then streams every decision there, and `GET /analytics/summary` queries it:
 ```bash
 PROJECT_ID=$PROJECT_ID bash infra/setup-bigquery.sh
 ```
@@ -325,7 +325,7 @@ Sensitive config is held in **Secret Manager** as the single source of truth —
 > Firebase **web** keys are not secret — they identify the project and ship to the browser to initialize Firebase; security comes from Firebase Auth + rules. Secret Manager keeps them out of committed source and centralizes them.
 
 **2. Gemini API key — secret `gemini-api-key`:**
-- By default the backend authenticates to **Vertex AI** via the `aegis-runtime` service account (Application Default Credentials) — **no key in code**.
+- By default the backend authenticates to **Vertex AI** via the `raptorz-runtime` service account (Application Default Credentials) — **no key in code**.
 - To use a Gemini API key instead, store it with `infra/set-gemini-secret.sh`. `infra/deploy.sh` detects the secret and **mounts it to Cloud Run at runtime** as `GEMINI_API_KEY` — it never appears in the repo, the image, or the frontend.
 
 ## Authentication
@@ -337,7 +337,7 @@ Sensitive config is held in **Secret Manager** as the single source of truth —
 
 ## Conclusion
 
-Aegis reframes fraud defense from *"block anything suspicious"* to *"verify the customer, block only real fraud."* By pairing a fast rules/Flash pre-filter with a Gemini 3.5 multi-agent investigation, customer memory, and adaptive step-up, it catches the sophisticated fraud that rules miss **and** cuts the false declines that cost banks revenue and trust — on the benchmark, **95% of fraud caught and ~90% fewer false declines**. It runs end-to-end on Google Cloud (Cloud Run, Pub/Sub, Firestore, Vertex AI, Secret Manager), scales to zero, keeps every secret in Secret Manager, and explains every decision — giving a bank both stronger protection and a better customer experience from the same event.
+Raptorz reframes fraud defense from *"block anything suspicious"* to *"verify the customer, block only real fraud."* By pairing a fast rules/Flash pre-filter with a Gemini 3.5 multi-agent investigation, customer memory, and adaptive step-up, it catches the sophisticated fraud that rules miss **and** cuts the false declines that cost banks revenue and trust — on the benchmark, **95% of fraud caught and ~90% fewer false declines**. It runs end-to-end on Google Cloud (Cloud Run, Pub/Sub, Firestore, Vertex AI, Secret Manager), scales to zero, keeps every secret in Secret Manager, and explains every decision — giving a bank both stronger protection and a better customer experience from the same event.
 
 ## Creator
 

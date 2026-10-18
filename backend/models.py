@@ -1,4 +1,4 @@
-"""Shared data models for the Aegis backend."""
+"""Shared data models for the Raptorz backend."""
 from __future__ import annotations
 
 from datetime import datetime, timezone

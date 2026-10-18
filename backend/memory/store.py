@@ -1,6 +1,6 @@
 """Memory + case store.
 
-Uses Firestore when available (on Cloud Run via the aegis-runtime service
+Uses Firestore when available (on Cloud Run via the raptorz-runtime service
 account), and transparently falls back to an in-memory store locally so the
 service always runs. Seeded with the "Maya Patel / Dubai" memory so the hero
 demo scenario works out of the box.

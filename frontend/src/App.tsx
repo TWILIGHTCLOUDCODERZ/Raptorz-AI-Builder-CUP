@@ -13,7 +13,7 @@ type Decision = 'Approved' | 'Step-up' | 'Held' | 'Blocked';
 type Transaction = { id: string; time: string; customer: string; card: string; amount: number; merchant: string; city: string; country: string; channel: string; risk: number; decision: Decision; reason: string; autoPay?: boolean; otpVerified?: boolean; };
 type NavItem = { label: string; icon: typeof LayoutDashboard };
 
-const API_BASE = (import.meta.env as any).VITE_API_URL || 'https://aegis-backend-282323062361.us-central1.run.app';
+const API_BASE = (import.meta.env as any).VITE_API_URL || 'https://raptorz-bfsi-backend-282323062361.us-central1.run.app';
 
 type LiveStep = { agent: string; thought: string; evidence: string[]; status: string };
 type LiveResult = { decision: string; confidence: number; reason_codes: string[]; rationale: string };

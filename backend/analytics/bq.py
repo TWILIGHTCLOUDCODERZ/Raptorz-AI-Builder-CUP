@@ -1,4 +1,4 @@
-"""BigQuery analytics sink for Aegis decisions.
+"""BigQuery analytics sink for Raptorz decisions.
 
 Every completed case is streamed to a BigQuery table so risk / fraud analytics can
 be queried — decisions by outcome, average risk & confidence, by tier / channel /
@@ -6,7 +6,7 @@ country, over time. This is the queryable analytics layer behind the eval and an
 executive dashboard.
 
 Graceful by design: if ``google-cloud-bigquery`` or credentials are unavailable, or
-``AEGIS_BQ=false`` / offline mode is set, every function is a safe no-op and the API
+``RAPTORZ_BQ=false`` / offline mode is set, every function is a safe no-op and the API
 serves a store-computed fallback — the demo never breaks.
 
 Provision the dataset/table once with ``infra/setup-bigquery.sh``.
@@ -18,10 +18,10 @@ import os
 from typing import Optional
 
 PROJECT = os.getenv("GOOGLE_CLOUD_PROJECT")
-DATASET = os.getenv("AEGIS_BQ_DATASET", "aegis")
-TABLE = os.getenv("AEGIS_BQ_TABLE", "decisions")
-_OFFLINE = os.getenv("AEGIS_OFFLINE", "").lower() == "true" or os.getenv("AEGIS_MOCK", "").lower() == "true"
-_ENABLED_ENV = os.getenv("AEGIS_BQ", "true").lower() != "false"
+DATASET = os.getenv("RAPTORZ_BQ_DATASET", "raptorz")
+TABLE = os.getenv("RAPTORZ_BQ_TABLE", "decisions")
+_OFFLINE = os.getenv("RAPTORZ_OFFLINE", "").lower() == "true" or os.getenv("RAPTORZ_MOCK", "").lower() == "true"
+_ENABLED_ENV = os.getenv("RAPTORZ_BQ", "true").lower() != "false"
 
 _client = None
 _available: Optional[bool] = None

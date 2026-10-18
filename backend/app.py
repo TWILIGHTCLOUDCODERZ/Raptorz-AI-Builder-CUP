@@ -1,4 +1,4 @@
-"""Aegis backend — FastAPI service for Cloud Run.
+"""Raptorz backend — FastAPI service for Cloud Run.
 
 Endpoints:
   GET  /healthz            liveness probe
@@ -43,7 +43,7 @@ app.add_middleware(
 
 @app.get("/healthz")
 def healthz() -> dict:
-    return {"status": "ok", "mock_mode": os.getenv("AEGIS_MOCK", "").lower() == "true" or not os.getenv("GOOGLE_CLOUD_PROJECT")}
+    return {"status": "ok", "mock_mode": os.getenv("RAPTORZ_MOCK", "").lower() == "true" or not os.getenv("GOOGLE_CLOUD_PROJECT")}
 
 
 @app.get("/analytics/summary")

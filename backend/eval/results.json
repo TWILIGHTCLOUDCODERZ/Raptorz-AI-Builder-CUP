@@ -5,7 +5,7 @@
     "stepup_rate": 0.0,
     "block_precision": 0.08791208791208792
   },
-  "aegis": {
+  "raptorz": {
     "fraud_recall": 0.9523809523809523,
     "false_decline_rate": 0.03755868544600939,
     "stepup_rate": 0.14084507042253522,

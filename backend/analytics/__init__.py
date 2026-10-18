@@ -1,1 +1,1 @@
-"""Aegis analytics package (BigQuery sink + summaries)."""
+"""Raptorz analytics package (BigQuery sink + summaries)."""

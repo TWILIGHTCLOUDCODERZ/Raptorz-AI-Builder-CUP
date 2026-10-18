@@ -17,8 +17,8 @@ import os
 import urllib.request
 from typing import Optional
 
-GEO_URL = os.getenv("AEGIS_GEO_URL", "http://ip-api.com/json/{ip}?fields=status,countryCode,query")
-_TIMEOUT = float(os.getenv("AEGIS_GEO_TIMEOUT", "2.5"))
+GEO_URL = os.getenv("RAPTORZ_GEO_URL", "http://ip-api.com/json/{ip}?fields=status,countryCode,query")
+_TIMEOUT = float(os.getenv("RAPTORZ_GEO_TIMEOUT", "2.5"))
 _PRIVATE = ("10.", "192.168.", "172.16.", "127.", "::1", "fc", "fd")
 
 

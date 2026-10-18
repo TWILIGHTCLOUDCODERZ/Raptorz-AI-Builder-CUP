@@ -1,7 +1,7 @@
-"""Aegis evaluation harness.
+"""Raptorz evaluation harness.
 
 Runs a labeled synthetic transaction set through (a) a traditional rules-only
-engine and (b) Aegis's REAL decision policy (the deterministic gates in
+engine and (b) Raptorz's REAL decision policy (the deterministic gates in
 agents.pipeline._decide, mock mode — no Gemini calls), then reports:
   - fraud caught (recall)
   - hard false-decline rate + reduction vs. rules
@@ -23,7 +23,7 @@ from pathlib import Path
 
 BACKEND = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(BACKEND))
-os.environ["AEGIS_MOCK"] = "true"  # deterministic policy, no Gemini/cloud
+os.environ["RAPTORZ_MOCK"] = "true"  # deterministic policy, no Gemini/cloud
 
 from models import Transaction  # noqa: E402
 from agents.pipeline import _decide  # noqa: E402
@@ -73,7 +73,7 @@ def rules_only(s: dict) -> str:
     return "Approved"
 
 
-def aegis(s: dict) -> str:
+def raptorz(s: dict) -> str:
     txn = Transaction(id=s["id"], customer="Customer", amount=float(s["amount"]), currency="USD",
                       merchant="Merchant", city=s["city"], country=s["country"], channel=s["channel"],
                       risk=s["risk"], auto_pay=s["auto_pay"], otp_verified=s["otp_verified"])
@@ -107,17 +107,17 @@ def evaluate(engine):
 
 
 rules = evaluate(rules_only)
-ag = evaluate(aegis)
+ag = evaluate(raptorz)
 fd_reduction = (rules["false_decline_rate"] - ag["false_decline_rate"]) / rules["false_decline_rate"]
 
 pct = lambda x: f"{x * 100:.1f}%"
-report = f"""# Aegis — Evaluation Results
+report = f"""# Raptorz — Evaluation Results
 
 Synthetic benchmark of **{len(SAMPLES)} labeled transactions**
 ({sum(1 for s in SAMPLES if s['label'] == 'legit')} legitimate, {sum(1 for s in SAMPLES if s['label'] == 'fraud')} fraudulent),
-run through Aegis's real decision policy vs. a traditional rules-only engine.
+run through Raptorz's real decision policy vs. a traditional rules-only engine.
 
-| Metric | Rules-only | **Aegis** |
+| Metric | Rules-only | **Raptorz** |
 |---|---|---|
 | Fraud caught (recall) | {pct(rules['fraud_recall'])} | **{pct(ag['fraud_recall'])}** |
 | Hard false-decline rate | {pct(rules['false_decline_rate'])} | **{pct(ag['false_decline_rate'])}** |
@@ -135,4 +135,4 @@ _Illustrative on synthetic data; production thresholds are calibrated on the ban
 
 print(report)
 (Path(__file__).parent / "RESULTS.md").write_text(report, encoding="utf-8")
-(Path(__file__).parent / "results.json").write_text(json.dumps({"rules": rules, "aegis": ag, "fd_reduction": fd_reduction, "n": len(SAMPLES)}, indent=2), encoding="utf-8")
+(Path(__file__).parent / "results.json").write_text(json.dumps({"rules": rules, "raptorz": ag, "fd_reduction": fd_reduction, "n": len(SAMPLES)}, indent=2), encoding="utf-8")

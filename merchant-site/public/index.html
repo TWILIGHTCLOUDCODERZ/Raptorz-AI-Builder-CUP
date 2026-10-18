@@ -126,7 +126,7 @@
     AU: { symbol:"A$", amount:1799, currency:"AUD", item:'Apple MacBook Air 13"', desc:"Apple M3 chip · 16GB · 512GB SSD · 1-year warranty.", thumb:"💻", flag:"🇦🇺", region:"Australia · Sydney", country:"AU", city:"Sydney, Australia", risk:82, merchant:"Earth Mart Australia" },
   };
   // Fallback backend for when this page is opened as a static file (no /pay server).
-  const BACKEND = "https://aegis-backend-282323062361.us-central1.run.app";
+  const BACKEND = "https://raptorz-bfsi-backend-282323062361.us-central1.run.app";
   const SERVED = location.protocol === "http:" || location.protocol === "https:";
   let mode = "MY";
   const fmt = (c) => c.symbol + " " + c.amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });

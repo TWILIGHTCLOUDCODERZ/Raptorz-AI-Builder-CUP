@@ -1,4 +1,4 @@
-# Aegis — Completion Roadmap, Services & Security
+# Raptorz — Completion Roadmap, Services & Security
 
 Track: **The Taskmaster** (event-driven workflow with autonomous routing).
 Hackathon hard requirements: **Gemini 3.5+**, **a Google agent framework (ADK)**, **≥1 Google Cloud service**.
@@ -107,7 +107,7 @@ Hackathon hard requirements: **Gemini 3.5+**, **a Google agent framework (ADK)**
 
 ---
 
-## Securing Aegis
+## Securing Raptorz
 
 ### A. Infrastructure & app security (must-do hygiene)
 - **Never put the Gemini/Vertex key in the frontend.** All model calls go through the backend. No `VITE_*` secret keys, ever.
@@ -119,7 +119,7 @@ Hackathon hard requirements: **Gemini 3.5+**, **a Google agent framework (ADK)**
 - **PII handling**: use **synthetic data** for the demo (no real PII). In the pipeline, **tokenize/redact PII before it reaches the LLM** (Cloud DLP); store minimal PII.
 - **Audit logging**: Cloud Audit Logs on, plus your own immutable case trace.
 
-### B. Product security features (part of Aegis — also scores architecture/enterprise points)
+### B. Product security features (part of Raptorz — also scores architecture/enterprise points)
 - **Prompt-injection defense**: wrap every Gemini call with **Model Armor** (screens malicious input in merchant names/memos, filters PII leaks in responses).
 - **PII-leak prevention** on agent outputs before they hit the UI or customer.
 - **Zero-trust + RBAC**: analyst roles, scoped access, every action attributable.

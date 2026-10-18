@@ -1,4 +1,4 @@
-# Build Aegis pitch deck as a native, editable .pptx (16:9), dark theme.
+# Build Raptorz pitch deck as a native, editable .pptx (16:9), dark theme.
 from pptx import Presentation
 from pptx.util import Inches, Pt, Emu
 from pptx.dml.color import RGBColor
@@ -124,7 +124,7 @@ bm = box(s, 0.9, 0.78, 0.72, 0.72, fill=BG2, line=LINE, line_w=1.2, radius=0.24)
 dot(s, 1.06, 0.95, 0.38, RGBColor(0x14,0x30,0x5a))
 text(s, 0.95, 0.86, 0.62, 0.55, [[("A", 26, BLUELT, DISPLAY, True)]], align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
 text(s, 1.78, 0.80, 8, 0.8, [
-    [("AEGIS", 22, INK, DISPLAY, True, 3)],
+    [("RAPTORZ", 22, INK, DISPLAY, True, 3)],
     [("AI FRAUD INTELLIGENCE", 10, FAINT, MONO, False, 3)],
 ], space_after=2)
 text(s, 0.88, 2.35, 11.5, 2.6, [
@@ -167,10 +167,10 @@ for i,(h,b,c) in enumerate(cards):
 
 # ============================================================ 4 · SOLUTION
 s = slide()
-eyebrow(s, "03", "THE AEGIS SOLUTION")
+eyebrow(s, "03", "THE RAPTORZ SOLUTION")
 title(s, "A team of AI agents that investigates every risky payment.", 30, w=12)
 text(s, 0.9, 2.5, 11.4, 1.3, [[(
-    "Aegis replaces the static rulebook with an autonomous investigation. Low-risk payments clear in milliseconds; anything suspicious goes to specialist Gemini 3.5 agents that gather evidence, weigh it, and return a decision with its reasons — then verify the customer instead of declining them.",
+    "Raptorz replaces the static rulebook with an autonomous investigation. Low-risk payments clear in milliseconds; anything suspicious goes to specialist Gemini 3.5 agents that gather evidence, weigh it, and return a decision with its reasons — then verify the customer instead of declining them.",
     16, MUTED, BODY, False)]], line=1.35)
 cards=[("AUTONOMOUS","Investigates, not just scores","Agents pull evidence, debate, and reach a verdict — no analyst in the loop."),
        ("ADAPTIVE","Verify, don't decline","Borderline? Step up with an OTP instead of losing a good customer."),
@@ -222,7 +222,7 @@ dot(s, 1.12, 2.68, 0.5, BG2)
 text(s, 1.12, 2.68, 0.5, 0.5, [[("T", 20, BLUELT, DISPLAY, True)]], align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
 text(s, 1.8, 2.55, 10.4, 0.8, [
     [("Tyson · large auto-pay charge", 15, INK, DISPLAY, True)],
-    [("A high-value payment fires. Aegis checks card status, then the step-up policy gate — before it ever reaches the agents.", 12.5, MUTED, BODY, False)],
+    [("A high-value payment fires. Raptorz checks card status, then the step-up policy gate — before it ever reaches the agents.", 12.5, MUTED, BODY, False)],
 ], space_after=2, line=1.1)
 # two paths
 pw=5.7; py=3.7; ph=2.15
@@ -230,10 +230,10 @@ box(s, 0.9, py, pw, ph, fill=RGBColor(0x22,0x11,0x12), line=RGBColor(0x6a,0x2a,0
 box(s, 6.9, py, pw, ph, fill=RGBColor(0x0f,0x22,0x18), line=RGBColor(0x27,0x55,0x38), line_w=1.2, radius=0.07)
 text(s, 1.15, py+0.2, pw-0.5, 0.35, [[("◆ auto-pay OFF · no OTP verified", 12, RED, MONO, False)]])
 text(s, 1.15, py+0.55, pw-0.5, 0.5, [[("✕  Card blocked", 24, RED, DISPLAY, True)]])
-text(s, 1.15, py+1.15, pw-0.5, 0.9, [[("Unverified high-value charge with auto-pay disabled — Aegis refuses it and protects the customer, with a reason code the analyst sees instantly.", 12, MUTED, BODY, False)]], line=1.2)
+text(s, 1.15, py+1.15, pw-0.5, 0.9, [[("Unverified high-value charge with auto-pay disabled — Raptorz refuses it and protects the customer, with a reason code the analyst sees instantly.", 12, MUTED, BODY, False)]], line=1.2)
 text(s, 7.15, py+0.2, pw-0.5, 0.35, [[("◆ OTP verified / auto-pay ON", 12, GREEN, MONO, False)]])
 text(s, 7.15, py+0.55, pw-0.5, 0.5, [[("✓  Approved", 24, GREEN, DISPLAY, True)]])
-text(s, 7.15, py+1.15, pw-0.5, 0.9, [[("Tyson confirms with a Mobile or Email OTP — Aegis verifies identity and approves the same payment. A good customer is kept, not declined.", 12, MUTED, BODY, False)]], line=1.2)
+text(s, 7.15, py+1.15, pw-0.5, 0.9, [[("Tyson confirms with a Mobile or Email OTP — Raptorz verifies identity and approves the same payment. A good customer is kept, not declined.", 12, MUTED, BODY, False)]], line=1.2)
 text(s, 0.9, 6.15, 11.5, 0.6, [[("The lesson: ", 15, MUTED, BODY, False),("verify the customer, don't just decline the charge.", 15, INK, DISPLAY, True)]])
 
 # ============================================================ 7 · AGENTS
@@ -268,16 +268,16 @@ s = slide()
 eyebrow(s, "05", "BEHIND THE SCENES", "measured impact")
 title(s, "Benchmarked against a rules-only engine.", 32)
 text(s, 0.9, 2.45, 11.3, 0.8, [[(
-    "Aegis and a traditional rules baseline were run over the same labeled transaction set. The gap is the whole point.",
+    "Raptorz and a traditional rules baseline were run over the same labeled transaction set. The gap is the whole point.",
     16, MUTED, BODY, False)]], line=1.3)
 res=[("95.2","%","Fraud caught","rules baseline: 12.7%",GREEN),
      ("90.4","%","Fewer false declines","39.0% → 3.8%",BLUELT),
-     ("88.2","%","Block precision","when Aegis blocks, it's right",PURPLE),
+     ("88.2","%","Block precision","when Raptorz blocks, it's right",PURPLE),
      ("<100","ms","Fast-path decision","deep path runs async",YELLOW)]
 for i,(n,suf,l,sub,c) in enumerate(res):
     metric(s, 0.95+i*3.05, 3.7, 2.9, n, suf, l, c, sub)
 text(s, 0.9, 6.35, 11.4, 0.5, [[(
-    "Evaluated on a labeled synthetic transaction set; Aegis decision engine vs a static rules baseline.",
+    "Evaluated on a labeled synthetic transaction set; Raptorz decision engine vs a static rules baseline.",
     12, FAINT, MONO, False)]])
 
 # ============================================================ 9 · TECHNOLOGY
@@ -309,7 +309,7 @@ tstack(s, 6.95, "PLATFORM & EXPERIENCE", right)
 s = slide()
 eyebrow(s, "07", "CONCLUSION")
 text(s, 0.9, 1.5, 11.2, 1.8, [
-    [("Aegis turns fraud defense from a static gate", 30, INK, DISPLAY, True)],
+    [("Raptorz turns fraud defense from a static gate", 30, INK, DISPLAY, True)],
     [("into an ", 30, INK, DISPLAY, True),("autonomous investigator", 30, BLUELT, DISPLAY, True)],
     [("that thinks, verifies, and explains — in real time.", 30, INK, DISPLAY, True)],
 ], line=1.12, space_after=0)
@@ -321,9 +321,9 @@ for i,(t,d) in enumerate(ta):
     ln=s.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(x), Inches(4.35), Inches(3.6), Inches(0.03))
     ln.fill.solid(); ln.fill.fore_color.rgb=BLUE; ln.line.fill.background(); _noshadow(ln)
     text(s, x, 4.5, 3.6, 1.5, [[(t, 15, INK, DISPLAY, True)],[(d, 12, MUTED, BODY, False)]], space_after=4, line=1.2)
-for i,(lbl,c) in enumerate([("Aegis · AI Fraud Intelligence",BLUE),("Built by Deepan",GREEN),("Thank you",YELLOW)]):
+for i,(lbl,c) in enumerate([("Raptorz · AI Fraud Intelligence",BLUE),("Built by Deepan",GREEN),("Thank you",YELLOW)]):
     chip(s, 0.9+i*3.6, 6.5, 3.4, lbl, c)
 
-out = r"D:\DEVPOST\google hackathon\project\pitch\Aegis-Pitch-Deck.pptx"
+out = r"D:\DEVPOST\google hackathon\project\pitch\Raptorz-Pitch-Deck.pptx"
 prs.save(out)
 print("saved", out, "slides:", len(prs.slides._sldIdLst))

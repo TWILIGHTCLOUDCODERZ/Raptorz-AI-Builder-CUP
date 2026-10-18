@@ -6,7 +6,7 @@ node_modules/
 dist/
 build/
 
-# env & secrets  (NEVER commit keys — Aegis uses ADC / Secret Manager)
+# env & secrets  (NEVER commit keys — Raptorz uses ADC / Secret Manager)
 .env
 .env.*
 !.env.example

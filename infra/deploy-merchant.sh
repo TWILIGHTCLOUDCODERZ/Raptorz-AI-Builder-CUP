@@ -7,7 +7,7 @@ set -euo pipefail
 PROJECT_ID="${PROJECT_ID:-CHANGE_ME}"
 REGION="${REGION:-us-central1}"
 SERVICE="earth-mart"
-BACKEND_SERVICE="${BACKEND_SERVICE:-aegis-backend}"   # the Raptorz fraud backend
+BACKEND_SERVICE="${BACKEND_SERVICE:-raptorz-bfsi-backend}"   # the Raptorz fraud backend
 RAPTORZ_API="${RAPTORZ_API:-}"
 
 if [[ "$PROJECT_ID" == "CHANGE_ME" ]]; then

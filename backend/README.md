@@ -1,11 +1,11 @@
-# Aegis backend — multi-agent investigation service
+# Raptorz backend — multi-agent investigation service
 
 Python + **FastAPI**, agents on the **Google GenAI SDK** with **Gemini 3.5**
 (an accepted hackathon agent framework). Mirrors the UI: Orchestrator →
 Investigator · Network Analyst · Intel · Compliance · Critic, then a
 memory-aware adaptive decision.
 
-Runs anywhere — if Vertex/Gemini isn't reachable (local, or `AEGIS_MOCK=true`)
+Runs anywhere — if Vertex/Gemini isn't reachable (local, or `RAPTORZ_MOCK=true`)
 it falls back to deterministic mock reasoning so the demo never breaks.
 
 ## Files
@@ -31,17 +31,17 @@ backend/
 ```bash
 cd backend
 pip install -r requirements.txt
-AEGIS_MOCK=true uvicorn app:app --reload --port 8080
+RAPTORZ_MOCK=true uvicorn app:app --reload --port 8080
 # then:
 curl -s -X POST localhost:8080/investigate -H 'content-type: application/json' -d @sample_transaction.json
 ```
 
 ## Deploy (Cloud Run, from repo root)
 ```bash
-PROJECT_ID=aegis-agentic-google-hackathon bash infra/deploy.sh
+PROJECT_ID=raptorz-agentic-google-hackathon bash infra/deploy.sh
 ```
 Builds from source via Cloud Build — no local Docker needed. Uses the
-`aegis-runtime` service account and Vertex AI (no API keys).
+`raptorz-runtime` service account and Vertex AI (no API keys).
 
 > **Model id:** `.env.example`/deploy default is `gemini-3.5-pro` — confirm the
 > exact current id in Vertex **Model Garden** and pass `GEMINI_MODEL=...` if different.

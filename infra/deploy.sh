@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Aegis — deploy the backend to Cloud Run.
+# Raptorz — deploy the backend to Cloud Run.
 # Run from the repo root (the folder containing backend/) AFTER infra/setup.sh:
-#   PROJECT_ID=aegis-agentic-google-hackathon bash infra/deploy.sh
+#   PROJECT_ID=raptorz-agentic-google-hackathon bash infra/deploy.sh
 # Builds from source via Cloud Build (no local Docker needed).
 set -euo pipefail
 
@@ -10,10 +10,10 @@ REGION="${REGION:-us-central1}"                 # Cloud Run + Firestore region
 MODEL="${GEMINI_MODEL:-gemini-3.5-flash}"       # Gemini 3.5 (meets "3.5 or newer")
 MODEL_LOCATION="${MODEL_LOCATION:-global}"      # 3.5-flash is served from the global endpoint
 ALLOW_UNAUTH="${ALLOW_UNAUTH:-true}"   # demo convenience; set false to require auth
-SERVICE="aegis-backend"
+SERVICE="raptorz-bfsi-backend"
 
 if [[ "$PROJECT_ID" == "CHANGE_ME" ]]; then
-  echo "ERROR: set PROJECT_ID first:  export PROJECT_ID=aegis-agentic-google-hackathon" >&2
+  echo "ERROR: set PROJECT_ID first:  export PROJECT_ID=raptorz-agentic-google-hackathon" >&2
   exit 1
 fi
 
@@ -33,7 +33,7 @@ gcloud run deploy "$SERVICE" \
   --source ./backend \
   --project "$PROJECT_ID" \
   --region "$REGION" \
-  --service-account "aegis-runtime@${PROJECT_ID}.iam.gserviceaccount.com" \
+  --service-account "raptorz-runtime@${PROJECT_ID}.iam.gserviceaccount.com" \
   --set-env-vars "GOOGLE_CLOUD_PROJECT=${PROJECT_ID},GOOGLE_CLOUD_LOCATION=${MODEL_LOCATION},GOOGLE_GENAI_USE_VERTEXAI=true,GEMINI_MODEL=${MODEL}" \
   --cpu 1 --memory 512Mi \
   --min-instances 0 --max-instances 3 \

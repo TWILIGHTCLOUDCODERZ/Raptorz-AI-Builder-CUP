@@ -1,4 +1,4 @@
-"""Google ADK (Agent Development Kit) orchestration layer for Aegis.
+"""Google ADK (Agent Development Kit) orchestration layer for Raptorz.
 
 Each specialist and the adaptive-decision step is a Google ADK ``LlmAgent`` running
 on Gemini 3.5. ADK does the *reasoning*; the deterministic policy gates
@@ -7,9 +7,9 @@ policy is enforced in code, never left to the model.
 
 Graceful by design: if ``google-adk`` is not installed, ``ADK_AVAILABLE`` is
 False and the pipeline falls back to the Gemini SDK / offline path — the demo and
-existing deployment keep working. Set ``AEGIS_USE_ADK=false`` to force the SDK path.
+existing deployment keep working. Set ``RAPTORZ_USE_ADK=false`` to force the SDK path.
 
-Why ADK: it is Google's open-source agent framework, so Aegis runs on Google's
+Why ADK: it is Google's open-source agent framework, so Raptorz runs on Google's
 agent stack end to end (ADK + Gemini 3.5 + Vertex AI on Cloud Run).
 """
 from __future__ import annotations
@@ -24,7 +24,7 @@ from typing import Optional, Type
 from pydantic import BaseModel
 
 MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash")
-APP_NAME = "aegis"
+APP_NAME = "raptorz"
 
 # Bridge: ADK reads GOOGLE_API_KEY for the AI Studio path; our deploy may set the
 # key as GEMINI_API_KEY. (The default Cloud Run path uses Vertex AI via ADC.)
@@ -47,7 +47,7 @@ _runners: dict[str, "InMemoryRunner"] = {}
 def _get_agent(name: str, instruction: str, output_schema: Optional[Type[BaseModel]] = None) -> "LlmAgent":
     safe = name.replace(" ", "_").replace("-", "_")
     if safe not in _agents:
-        kwargs = dict(name=safe, model=MODEL, instruction=instruction, description=f"Aegis {name} agent")
+        kwargs = dict(name=safe, model=MODEL, instruction=instruction, description=f"Raptorz {name} agent")
         if output_schema is not None:
             kwargs["output_schema"] = output_schema  # structured JSON output
         _agents[safe] = LlmAgent(**kwargs)
@@ -59,11 +59,11 @@ async def _arun(name: str, instruction: str, payload: dict, output_schema) -> st
     agent = _get_agent(name, instruction, output_schema)
     runner = _runners[agent.name]
     session = await runner.session_service.create_session(
-        app_name=APP_NAME, user_id="aegis", session_id=uuid.uuid4().hex
+        app_name=APP_NAME, user_id="raptorz", session_id=uuid.uuid4().hex
     )
     message = types.Content(role="user", parts=[types.Part(text=json.dumps(payload, default=str))])
     final = ""
-    async for event in runner.run_async(user_id="aegis", session_id=session.id, new_message=message):
+    async for event in runner.run_async(user_id="raptorz", session_id=session.id, new_message=message):
         if event.is_final_response() and event.content and event.content.parts:
             final = event.content.parts[0].text or final
     return (final or "").strip()

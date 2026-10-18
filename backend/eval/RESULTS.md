@@ -1,10 +1,10 @@
-# Aegis — Evaluation Results
+# Raptorz — Evaluation Results
 
 Synthetic benchmark of **276 labeled transactions**
 (213 legitimate, 63 fraudulent),
-run through Aegis's real decision policy vs. a traditional rules-only engine.
+run through Raptorz's real decision policy vs. a traditional rules-only engine.
 
-| Metric | Rules-only | **Aegis** |
+| Metric | Rules-only | **Raptorz** |
 |---|---|---|
 | Fraud caught (recall) | 12.7% | **95.2%** |
 | Hard false-decline rate | 39.0% | **3.8%** |

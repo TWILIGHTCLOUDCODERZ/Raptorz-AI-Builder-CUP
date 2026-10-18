@@ -1,4 +1,4 @@
-# Aegis — Demo Video Script (Simple Cut)
+# Raptorz — Demo Video Script (Simple Cut)
 
 **Runtime:** ~2 minutes · **Style:** read it like you're explaining to a friend. Short sentences. Pause at each line break.
 
@@ -7,13 +7,13 @@
 ---
 
 ### 1 · Hook · Slide 1 (Title)
-**SHOW:** Aegis title slide.
+**SHOW:** Raptorz title slide.
 
 **SAY:**
 > "Every time you tap a card, a bank has one second to decide — is this really you?
 > Get it wrong, and fraud gets through.
 > Get it too strict, and a real customer gets blocked.
-> This is Aegis. It gets both right."
+> This is Raptorz. It gets both right."
 
 ---
 
@@ -32,11 +32,11 @@
 **SHOW:** Solution slide.
 
 **SAY:**
-> "Aegis works differently.
+> "Raptorz works differently.
 > Normal payments clear in milliseconds.
 > Anything suspicious goes to a team of AI agents, powered by Gemini 3.5.
 > They gather the evidence, weigh it, and make a decision — and they tell you why.
-> And instead of just blocking a customer, Aegis verifies them."
+> And instead of just blocking a customer, Raptorz verifies them."
 
 ---
 
@@ -56,10 +56,10 @@
 
 **SAY:**
 > "Here's Tyson. He's a VIP customer who lives in Dubai.
-> He pays in Dubai — Aegis knows him, so it approves instantly. No friction.
+> He pays in Dubai — Raptorz knows him, so it approves instantly. No friction.
 > Two hours later, his card is used in Italy.
 > That's impossible travel — you can't be in both places.
-> So Aegis pauses, and asks Tyson for a one-time code.
+> So Raptorz pauses, and asks Tyson for a one-time code.
 > Share the code — approved.
 > Don't share it in two minutes — blocked. The customer is protected."
 
@@ -81,8 +81,8 @@
 **SHOW:** Metrics slide.
 
 **SAY:**
-> "We tested Aegis against old-style rules.
-> Aegis caught ninety-five percent of fraud. The rules caught thirteen.
+> "We tested Raptorz against old-style rules.
+> Raptorz caught ninety-five percent of fraud. The rules caught thirteen.
 > And it cut wrongly-blocked customers by ninety percent.
 > It catches more, and blocks fewer good people."
 
@@ -94,8 +94,8 @@
 **SAY:**
 > "It's all built on Google Cloud and Gemini 3.5.
 > Fast, explainable, real-time.
-> Aegis turns fraud defense into a smart investigator that thinks, verifies, and explains.
-> That's Aegis. Thanks for watching."
+> Raptorz turns fraud defense into a smart investigator that thinks, verifies, and explains.
+> That's Raptorz. Thanks for watching."
 
 ---
 
@@ -107,4 +107,4 @@
 - [ ] Keep it near **2 minutes**. If long, trim section 2.
 
 ## One-line pitch (for Devpost)
-> Aegis is a team of Gemini 3.5 agents that investigates every risky payment, verifies the customer instead of blocking them, and explains every decision — catching 95% of fraud while cutting false declines by 90%.
+> Raptorz is a team of Gemini 3.5 agents that investigates every risky payment, verifies the customer instead of blocking them, and explains every decision — catching 95% of fraud while cutting false declines by 90%.

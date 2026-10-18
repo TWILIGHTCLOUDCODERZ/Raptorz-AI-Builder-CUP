@@ -11,7 +11,7 @@ PROJECT_ID="${PROJECT_ID:-CHANGE_ME}"
 REGION="${REGION:-us-central1}"
 ZONE="${ZONE:-asia-southeast1-a}"            # Singapore — closest region to Malaysia
 VM="${VM:-earth-mart-vm}"
-BACKEND_SERVICE="${BACKEND_SERVICE:-aegis-backend}"
+BACKEND_SERVICE="${BACKEND_SERVICE:-raptorz-bfsi-backend}"
 IMAGE="gcr.io/${PROJECT_ID}/earth-mart"
 RAPTORZ_API="${RAPTORZ_API:-}"
 

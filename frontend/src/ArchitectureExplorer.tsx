@@ -66,12 +66,12 @@ export default function ArchitectureExplorer() {
       </div>
 
       <style>{`
-        @keyframes aegisPopIn { from { opacity:0; transform:scale(.9) translateY(8px) } to { opacity:1; transform:none } }
-        @keyframes aegisCountdown { from { width:100% } to { width:0% } }
+        @keyframes raptorzPopIn { from { opacity:0; transform:scale(.9) translateY(8px) } to { opacity:1; transform:none } }
+        @keyframes raptorzCountdown { from { width:100% } to { width:0% } }
       `}</style>
 
       <div style={{ position: 'relative', width: '100%', aspectRatio: '1536 / 1024', borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(90,130,170,.25)', background: '#0a1526' }}>
-        <img src="/Aegis-ARC.png" alt="Aegis architecture" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', transformOrigin: origin, transform: `scale(${zoom})`, transition: anim }} />
+        <img src="/raptorz-architecture.png" alt="Raptorz architecture" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', transformOrigin: origin, transform: `scale(${zoom})`, transition: anim }} />
         <div style={{ position: 'absolute', inset: 0, transformOrigin: origin, transform: `scale(${zoom})`, transition: anim, pointerEvents: 'none' }}>
           {SERVICES.map((s) => {
             const on = active === s.id || hover === s.id;
@@ -90,7 +90,7 @@ export default function ArchitectureExplorer() {
             onMouseEnter={() => setPaused(true)}
             onMouseLeave={() => setPaused(false)}
             style={{ position: 'absolute', [popTop ? 'top' : 'bottom']: 14, [popLeft ? 'left' : 'right']: 14, width: 'min(340px, 56%)', zIndex: 5,
-              padding: 1.5, borderRadius: 14, animation: 'aegisPopIn .28s cubic-bezier(.2,.8,.2,1)',
+              padding: 1.5, borderRadius: 14, animation: 'raptorzPopIn .28s cubic-bezier(.2,.8,.2,1)',
               background: 'linear-gradient(135deg, rgba(66,133,244,.9), rgba(167,139,250,.7) 52%, rgba(66,133,244,.15))',
               boxShadow: '0 24px 60px rgba(0,0,0,.6), 0 0 34px rgba(66,133,244,.28)' }}>
             <div style={{ borderRadius: 12.5, overflow: 'hidden', background: '#0b1a2e', border: '1px solid rgba(255,255,255,.05)' }}>
@@ -109,7 +109,7 @@ export default function ArchitectureExplorer() {
               {/* countdown bar */}
               <div style={{ height: 3, background: 'rgba(255,255,255,.05)' }}>
                 <div key={sel.id + (paused ? ':p' : ':r')} style={{ height: '100%', background: 'linear-gradient(90deg,#4285f4,#a78bfa)',
-                  animation: `aegisCountdown ${AUTO_CLOSE_MS}ms linear forwards`,
+                  animation: `raptorzCountdown ${AUTO_CLOSE_MS}ms linear forwards`,
                   animationPlayState: paused ? 'paused' : 'running' }} />
               </div>
             </div>

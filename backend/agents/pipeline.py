@@ -1,19 +1,19 @@
-"""Aegis multi-agent investigation pipeline.
+"""Raptorz multi-agent investigation pipeline.
 
 Built on Google's agent stack: each specialist and the adaptive-decision step runs
 as a Google ADK (Agent Development Kit) ``LlmAgent`` on Gemini 3.5 (see
 ``agents/adk_agents.py``). If ADK is unavailable it falls back to the Google GenAI
-SDK, and offline (``AEGIS_OFFLINE``) to deterministic reasoning — so the demo never
+SDK, and offline (``RAPTORZ_OFFLINE``) to deterministic reasoning — so the demo never
 breaks. The pipeline mirrors the UI: an Orchestrator routes to a card-status gate
 and five specialists (Investigator, Network Analyst, Intel, Compliance, Critic),
 then a memory- and tier-aware adaptive decision.
 
 VIP handling: a reported-stolen/lost/frozen card is a HARD block regardless of
 tier (anti-exploit). For VIP/premium clients that are NOT compromised, a false
-decline costs more than the fraud, so Aegis prefers a silent approve (on memory
+decline costs more than the fraud, so Raptorz prefers a silent approve (on memory
 match) or a discreet concierge step-up over a cold decline.
 
-Runs anywhere: if Vertex/Gemini is unavailable (local, or AEGIS_MOCK=true) it
+Runs anywhere: if Vertex/Gemini is unavailable (local, or RAPTORZ_MOCK=true) it
 falls back to deterministic mock reasoning so the demo never breaks.
 """
 from __future__ import annotations
@@ -34,10 +34,10 @@ MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash")
 # Gemini API key (optional) — mounted from Secret Manager on Cloud Run. When unset,
 # the backend authenticates to Vertex AI via the runtime service account (ADC).
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-_OFFLINE = os.getenv("AEGIS_OFFLINE", "").lower() == "true" or os.getenv("AEGIS_MOCK", "").lower() == "true"
+_OFFLINE = os.getenv("RAPTORZ_OFFLINE", "").lower() == "true" or os.getenv("RAPTORZ_MOCK", "").lower() == "true"
 MOCK = _OFFLINE or (not PROJECT and not GEMINI_API_KEY)
-# Prefer Google ADK for the reasoning agents when it's installed (set AEGIS_USE_ADK=false to force the SDK path).
-USE_ADK = os.getenv("AEGIS_USE_ADK", "true").lower() != "false" and adk.ADK_AVAILABLE
+# Prefer Google ADK for the reasoning agents when it's installed (set RAPTORZ_USE_ADK=false to force the SDK path).
+USE_ADK = os.getenv("RAPTORZ_USE_ADK", "true").lower() != "false" and adk.ADK_AVAILABLE
 
 _COMPROMISED = ("reported_stolen", "lost", "frozen")
 
@@ -70,7 +70,7 @@ _SPECIALISTS = {
 }
 
 _DECISION_SYSTEM = (
-    "You are Aegis, an autonomous fraud decision engine for a bank. Choose exactly one outcome "
+    "You are Raptorz, an autonomous fraud decision engine for a bank. Choose exactly one outcome "
     "from: Approved, Step-up, Held, Blocked. Rules:\n"
     "1) A VIP or premium customer must NEVER be cold-declined — a false decline costs more than "
     "the fraud. If confirmed-legit memory explains the activity, Approve silently. If risk is "

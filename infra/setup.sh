@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Aegis — Phase 0 GCP setup
+# Raptorz — Phase 0 GCP setup
 # Run in Google Cloud Shell (recommended) or a local shell with gcloud installed + authenticated.
 #
 # Do these MANUAL steps first, in the Cloud Console (cannot be scripted safely):
@@ -12,17 +12,17 @@
 set -euo pipefail
 
 # ---------- config ----------
-PROJECT_ID="${PROJECT_ID:-CHANGE_ME}"          # lowercase, e.g. aegis-agentic-google-hackathon
-PROJECT_NAME="${PROJECT_NAME:-Aegis-Agentic-Google-Hackathon}"
+PROJECT_ID="${PROJECT_ID:-CHANGE_ME}"          # lowercase, e.g. raptorz-agentic-google-hackathon
+PROJECT_NAME="${PROJECT_NAME:-Raptorz-AI-Builder-CUP}"
 REGION="${REGION:-us-central1}"
 CREATE_PROJECT="${CREATE_PROJECT:-false}"      # set true to create the project
 BILLING_ACCOUNT="${BILLING_ACCOUNT:-}"         # e.g. 0X0X0X-0X0X0X-0X0X0X to link billing
-RECEIPTS_BUCKET="gs://${PROJECT_ID}-aegis-receipts"
-AR_REPO="aegis"
+RECEIPTS_BUCKET="gs://${PROJECT_ID}-raptorz-receipts"
+AR_REPO="raptorz"
 # ----------------------------
 
 if [[ "$PROJECT_ID" == "CHANGE_ME" ]]; then
-  echo "ERROR: set PROJECT_ID first:  export PROJECT_ID=aegis-agentic-google-hackathon" >&2
+  echo "ERROR: set PROJECT_ID first:  export PROJECT_ID=raptorz-agentic-google-hackathon" >&2
   exit 1
 fi
 
@@ -75,17 +75,17 @@ gcloud storage buckets create "$RECEIPTS_BUCKET" --location="$REGION" --uniform-
 echo ">> Creating Artifact Registry (Docker) repo..."
 gcloud artifacts repositories create "$AR_REPO" \
   --repository-format=docker --location="$REGION" \
-  --description="Aegis container images" \
+  --description="Raptorz container images" \
   || echo "   (repo exists — continuing.)"
 
 echo ">> Creating service accounts..."
-gcloud iam service-accounts create aegis-runtime \
-  --display-name="Aegis runtime (agents + router)" || echo "   (aegis-runtime exists)"
-gcloud iam service-accounts create aegis-sim \
-  --display-name="Aegis transaction simulator" || echo "   (aegis-sim exists)"
+gcloud iam service-accounts create raptorz-runtime \
+  --display-name="Raptorz runtime (agents + router)" || echo "   (raptorz-runtime exists)"
+gcloud iam service-accounts create raptorz-sim \
+  --display-name="Raptorz transaction simulator" || echo "   (raptorz-sim exists)"
 
-RUNTIME_SA="aegis-runtime@${PROJECT_ID}.iam.gserviceaccount.com"
-SIM_SA="aegis-sim@${PROJECT_ID}.iam.gserviceaccount.com"
+RUNTIME_SA="raptorz-runtime@${PROJECT_ID}.iam.gserviceaccount.com"
+SIM_SA="raptorz-sim@${PROJECT_ID}.iam.gserviceaccount.com"
 
 echo ">> Granting least-privilege roles to runtime SA..."
 for role in \

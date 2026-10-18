@@ -10,7 +10,7 @@ import './index.css';
 function Root() {
   const [hash, setHash] = useState(window.location.hash);
   const [user, setUser] = useState<User | null>(null);
-  const [guest, setGuest] = useState<string>(() => sessionStorage.getItem('aegis_guest') || '');
+  const [guest, setGuest] = useState<string>(() => sessionStorage.getItem('raptorz_guest') || '');
   const [ready, setReady] = useState(false);
 
   useEffect(() => onAuthStateChanged(auth, (u) => { setUser(u); setReady(true); }), []);
@@ -20,9 +20,9 @@ function Root() {
     return () => window.removeEventListener('hashchange', on);
   }, []);
 
-  const signInGuest = (name: string) => { sessionStorage.setItem('aegis_guest', name); setGuest(name); };
+  const signInGuest = (name: string) => { sessionStorage.setItem('raptorz_guest', name); setGuest(name); };
   const doSignOut = () => {
-    sessionStorage.removeItem('aegis_guest'); setGuest('');
+    sessionStorage.removeItem('raptorz_guest'); setGuest('');
     if (auth.currentUser) signOut(auth);
   };
 

@@ -10,7 +10,7 @@ const app = express();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
-const RAPTORZ_API = process.env.RAPTORZ_API || "https://aegis-backend-282323062361.us-central1.run.app";
+const RAPTORZ_API = process.env.RAPTORZ_API || "https://raptorz-bfsi-backend-282323062361.us-central1.run.app";
 const PORT = process.env.PORT || 8080;
 // On the VM, set DETECT_LOCATION=true: the real (VPN) egress IP decides the country,
 // so turning on a VPN to Australia makes Raptorz block. On Cloud Run leave it off and
