@@ -1,6 +1,7 @@
+import { useState } from 'react';
 import {
-  AlertTriangle, BrainCircuit, Check, CreditCard, Fingerprint, Globe2, Laptop, MapPin, Network,
-  ShieldCheck, Smartphone, Sparkles, UserRound,
+  AlertTriangle, BrainCircuit, Check, CreditCard, Eye, EyeOff, Fingerprint, Globe2, Laptop, Mail, MapPin, Network,
+  Phone, ShieldCheck, Smartphone, Sparkles, UserRound,
 } from 'lucide-react';
 
 const card: React.CSSProperties = { background: 'rgba(20,48,79,.4)', border: '1px solid rgba(90,130,170,.2)', borderRadius: 12 };
@@ -8,27 +9,71 @@ const kick = (t: string) => <div className="section-kicker" style={{ marginBotto
 
 // ---------------- Customer 360 ----------------
 export function Customer360() {
+  const [showPhone, setShowPhone] = useState(false);
+  const [showEmail, setShowEmail] = useState(false);
+  const PHONE = '+9629096218';
+  const EMAIL = 'deepanrey@gmail.com';
+  const maskPhone = PHONE.slice(0, 4) + ' •••• ' + PHONE.slice(-2);
+  const maskEmail = EMAIL[0] + '•••••••' + EMAIL.slice(EMAIL.indexOf('@'));
+  const revealBtn: React.CSSProperties = { background: 'none', border: 0, cursor: 'pointer', color: '#7f99b3', display: 'grid', placeItems: 'center', padding: 2 };
+
   const merchants = [['Shopee Malaysia', 46], ['Lazada', 29], ['Grab', 16], ['Apple', 9]];
-  const txns = [
-    ['TX-KL-4471', 'Shopee · Kuala Lumpur', 'RM 450', 'Approved', '#69c382'],
-    ['TX-SYD-8822', 'Earth Mart · Sydney', 'A$ 1,799', 'Blocked', '#f27b70'],
-    ['TX-KL-4409', 'Grab · Kuala Lumpur', 'RM 65', 'Approved', '#69c382'],
-    ['TX-SG-7730', 'Changi · Singapore', 'S$ 320', 'Step-up', '#f2c34e'],
+  const txns: [string, string, string, string, number, string, string][] = [
+    ['Today · 12:04', 'Earth Mart', 'Sydney, Australia', 'A$ 1,799.00', 82, 'Web', 'Blocked'],
+    ['Today · 10:00', 'Shopee', 'Kuala Lumpur, MY', 'RM 450.00', 18, 'Web', 'Approved'],
+    ['Yesterday · 19:22', 'Grab', 'Kuala Lumpur, MY', 'RM 38.00', 9, 'App', 'Approved'],
+    ['Yesterday · 13:10', 'Lazada', 'Kuala Lumpur, MY', 'RM 1,290.00', 24, 'Web', 'Approved'],
+    ['2 days ago · 20:40', 'Changi Duty Free', 'Singapore, SG', 'S$ 320.00', 54, 'POS', 'Step-up'],
+    ['3 days ago · 08:15', 'Petronas', 'Petaling Jaya, MY', 'RM 150.00', 12, 'Card', 'Approved'],
   ];
+  const decColor = (d: string) => (d === 'Blocked' ? '#f27b70' : d === 'Step-up' ? '#f2c34e' : '#69c382');
+  const riskColor = (r: number) => (r > 70 ? '#f27b70' : r > 40 ? '#f2c34e' : '#69c382');
   return (
     <section className="placeholder-page">
       <div className="page-heading"><div><div className="eyebrow"><span className="pulse-small" /> RELATIONSHIP</div><h1>Customer 360</h1><p>Everything Raptorz knows and remembers about this customer.</p></div></div>
 
       <div className="panel" style={{ padding: 22 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
-          <div style={{ width: 56, height: 56, borderRadius: 16, display: 'grid', placeItems: 'center', background: '#265a9a', color: '#cfe5ff', font: "700 18px 'Space Mono'" }}>DP</div>
-          <div style={{ flex: 1, minWidth: 200 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}><h2 style={{ color: '#eaf2fb', fontSize: 20, margin: 0 }}>Deepan</h2><span style={{ font: "9px 'Space Mono'", color: '#f2c34e', border: '1px solid rgba(251,188,5,.4)', borderRadius: 6, padding: '3px 7px' }}>VIP · PRIVATE BANK</span></div>
-            <div style={{ color: '#8ba3bb', fontSize: 12, marginTop: 4 }}>Customer since 2021 · Home: Kuala Lumpur, Malaysia · **** 1234</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 22, justifyContent: 'space-between', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, flex: '1 1 340px', minWidth: 280 }}>
+            <div style={{ width: 56, height: 56, borderRadius: 16, display: 'grid', placeItems: 'center', background: '#265a9a', color: '#cfe5ff', font: "700 18px 'Space Mono'" }}>DP</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}><h2 style={{ color: '#eaf2fb', fontSize: 20, margin: 0 }}>Deepan</h2><span style={{ font: "9px 'Space Mono'", color: '#f2c34e', border: '1px solid rgba(251,188,5,.4)', borderRadius: 6, padding: '3px 7px' }}>VIP · PRIVATE BANK</span></div>
+              <div style={{ color: '#8ba3bb', fontSize: 12, marginTop: 4 }}>Customer since 2021 · Home: Kuala Lumpur, Malaysia · **** 1234</div>
+              <div style={{ display: 'flex', gap: 10, marginTop: 10, flexWrap: 'wrap' }}>
+                <div style={{ ...card, padding: '6px 10px', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <Phone size={13} style={{ color: '#6ba9ff' }} />
+                  <span style={{ font: "12px 'Space Mono'", color: '#cfe0ef', letterSpacing: .5 }}>{showPhone ? PHONE : maskPhone}</span>
+                  <button style={revealBtn} onClick={() => setShowPhone((s) => !s)} title={showPhone ? 'Hide number' : 'Show number'}>{showPhone ? <EyeOff size={13} /> : <Eye size={13} />}</button>
+                </div>
+                <div style={{ ...card, padding: '6px 10px', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <Mail size={13} style={{ color: '#6ba9ff' }} />
+                  <span style={{ font: "12px 'Space Mono'", color: '#cfe0ef' }}>{showEmail ? EMAIL : maskEmail}</span>
+                  <button style={revealBtn} onClick={() => setShowEmail((s) => !s)} title={showEmail ? 'Hide email' : 'Show email'}>{showEmail ? <EyeOff size={13} /> : <Eye size={13} />}</button>
+                </div>
+              </div>
+            </div>
           </div>
-          <div style={{ display: 'flex', gap: 10 }}>
-            {[['Lifetime value', 'RM 1.8M'], ['Avg ticket', 'RM 620'], ['Risk profile', 'Low']].map(([k, v]) => <div key={k} style={{ ...card, padding: '10px 14px', textAlign: 'center' }}><div style={{ color: '#7f99b3', fontSize: 10 }}>{k}</div><div style={{ color: '#e1edf8', font: "700 15px 'Space Mono'" }}>{v}</div></div>)}
+
+          <div style={{ width: 330, height: 200, borderRadius: 18, padding: '18px 22px', position: 'relative', overflow: 'hidden', flex: '0 0 auto', background: 'radial-gradient(130% 130% at 100% 0%, #1c3e72 0%, #0d2142 42%, #070f1c 100%)', border: '1px solid rgba(245,181,61,.4)', boxShadow: '0 22px 48px rgba(0,0,0,.55), inset 0 0 50px rgba(47,107,255,.07)' }}>
+            <div style={{ position: 'absolute', right: -50, top: -50, width: 180, height: 180, borderRadius: '50%', background: 'radial-gradient(circle, rgba(245,181,61,.16), transparent 70%)' }} />
+            <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <div>
+                <div style={{ font: "800 16px 'Space Grotesk',sans-serif", letterSpacing: 1, background: 'linear-gradient(90deg,#f5b53d,#ffe6ad)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>RAPTORZ</div>
+                <div style={{ fontSize: 8, letterSpacing: 2.5, color: '#9fb6cd', marginTop: 1 }}>BANKING EARTH</div>
+              </div>
+              <span style={{ font: "700 10px 'Space Mono'", color: '#1a1200', background: 'linear-gradient(135deg,#f5b53d,#e0a62e)', borderRadius: 6, padding: '4px 9px', letterSpacing: 1 }}>VIP</span>
+            </div>
+            <div style={{ position: 'relative', width: 42, height: 31, borderRadius: 7, marginTop: 16, background: 'linear-gradient(135deg,#f5d98a,#c9a23f)', border: '1px solid rgba(255,255,255,.25)' }} />
+            <div style={{ position: 'relative', font: "600 18px 'Space Mono',monospace", color: '#eaf2fb', letterSpacing: 2, marginTop: 13 }}>5412&nbsp;&nbsp;••••&nbsp;&nbsp;••••&nbsp;&nbsp;1234</div>
+            <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 14 }}>
+              <div><div style={{ fontSize: 7.5, letterSpacing: 1.5, color: '#7f99b3' }}>CARDHOLDER</div><div style={{ font: "600 13px 'Space Mono'", color: '#dce9f4', letterSpacing: 1 }}>DEEPAN</div></div>
+              <div><div style={{ fontSize: 7.5, letterSpacing: 1.5, color: '#7f99b3' }}>VALID THRU</div><div style={{ font: "600 13px 'Space Mono'", color: '#dce9f4' }}>09/28</div></div>
+              <div style={{ display: 'flex', alignItems: 'center' }}><div style={{ width: 22, height: 22, borderRadius: '50%', background: 'rgba(245,181,61,.85)' }} /><div style={{ width: 22, height: 22, borderRadius: '50%', background: 'rgba(47,107,255,.75)', marginLeft: -9 }} /></div>
+            </div>
           </div>
+        </div>
+        <div style={{ display: 'flex', gap: 10, marginTop: 16, flexWrap: 'wrap' }}>
+          {[['Lifetime value', 'RM 1.8M'], ['Avg ticket', 'RM 620'], ['Risk profile', 'Low'], ['Tier', 'VIP · Private']].map(([k, v]) => <div key={k} style={{ ...card, padding: '10px 16px', textAlign: 'center' }}><div style={{ color: '#7f99b3', fontSize: 10 }}>{k}</div><div style={{ color: '#e1edf8', font: "700 15px 'Space Mono'" }}>{v}</div></div>)}
         </div>
       </div>
 
@@ -63,16 +108,25 @@ export function Customer360() {
       </div>
 
       <div className="panel" style={{ padding: 20, marginTop: 16 }}>
-        {kick('RECENT ACTIVITY')}
-        <h2 style={{ color: '#e1edf8', fontSize: 14, margin: '0 0 12px' }}>Transactions</h2>
-        {txns.map(([id, m, amt, dec, col]) => (
-          <div key={id as string} style={{ display: 'grid', gridTemplateColumns: '1.1fr 2fr 1fr auto', gap: 10, alignItems: 'center', padding: '10px 0', borderTop: '1px solid rgba(90,130,170,.1)' }}>
-            <span style={{ font: "10px 'Space Mono'", color: '#acc5dc' }}>{id}</span>
-            <span style={{ color: '#c7d7e6', fontSize: 12 }}>{m}</span>
-            <span style={{ font: "11px 'Space Mono'", color: '#cfe0ef' }}>{amt}</span>
-            <span style={{ fontSize: 10, fontWeight: 700, color: col as string }}>{dec}</span>
+        {kick('RECENT ACTIVITY · AGENT-SCORED')}
+        <h2 style={{ color: '#e1edf8', fontSize: 14, margin: '0 0 12px' }}>Last 6 transactions</h2>
+        <div style={{ overflowX: 'auto' }}>
+          <div style={{ minWidth: 640 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1.3fr 1.5fr 1fr .55fr .9fr', gap: 10, padding: '0 0 8px', fontSize: 9.5, letterSpacing: 1, color: '#6d87a0', borderBottom: '1px solid rgba(90,130,170,.18)' }}>
+              <span>TIME</span><span>MERCHANT</span><span>LOCATION</span><span>AMOUNT</span><span>RISK</span><span>DECISION</span>
+            </div>
+            {txns.map(([t, m, loc, amt, risk, ch, dec]) => (
+              <div key={t + m} style={{ display: 'grid', gridTemplateColumns: '1.1fr 1.3fr 1.5fr 1fr .55fr .9fr', gap: 10, alignItems: 'center', padding: '11px 0', borderTop: '1px solid rgba(90,130,170,.1)' }}>
+                <span style={{ fontSize: 11, color: '#8ba3bb' }}>{t}</span>
+                <span style={{ fontSize: 12, color: '#c7d7e6' }}>{m} <span style={{ color: '#6d87a0', fontSize: 10 }}>· {ch}</span></span>
+                <span style={{ fontSize: 12, color: '#a9c0d6', display: 'flex', alignItems: 'center', gap: 5 }}><MapPin size={11} style={{ color: '#6ba9ff', flex: '0 0 auto' }} /> {loc}</span>
+                <span style={{ font: "11px 'Space Mono'", color: '#cfe0ef' }}>{amt}</span>
+                <span style={{ font: "700 11px 'Space Mono'", color: riskColor(risk) }}>{risk}</span>
+                <span style={{ fontSize: 10, fontWeight: 700, color: decColor(dec) }}>{dec}</span>
+              </div>
+            ))}
           </div>
-        ))}
+        </div>
       </div>
     </section>
   );
